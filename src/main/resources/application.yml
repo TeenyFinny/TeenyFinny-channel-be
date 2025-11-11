@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: teenyfinny_channel
+  lifecycle:
+    timeout-per-shutdown-phase: 60S # ??: ?, ???? ?? ????
+  profiles:
+    include: secret
+
+server:
+  port: 8080
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: health, metrics, info, drain
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
