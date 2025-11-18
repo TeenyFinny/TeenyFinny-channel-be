@@ -37,7 +37,7 @@ public class SampleController {
 
         if (flag == 1){
             // ApiResponseUtil.success에 성공 코드만 넣어주면 메시지 없이 응답 코드만 보낼 수 있습니다.
-            log.info("성공 status만 응답!");
+            log.info("성공 status만 응답!!");
             res = ApiResponseUtil.success(SuccessCode.OK);
 
         } else if (flag == 2) {
