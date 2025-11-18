@@ -44,8 +44,8 @@ tasks.named('test') {
 
 sonarqube {
     properties {
-        property "sonar.projectKey", "core_banking"
-        property "sonar.projectName", "core_banking"
+        property "sonar.projectKey", "channel"
+        property "sonar.projectName", "channel"
 
         // main과 test를 분리
         property "sonar.sources", "src/main/java"
