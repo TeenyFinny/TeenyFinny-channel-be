@@ -1,9 +1,8 @@
 name: Notify Slack on Re-Requested Review
 
-# 'review_requested' 이벤트 감지
 on:
   pull_request:
-    types: [ review_requested ]
+    types: [ opened, ready_for_review, review_requested, closed, reopened ]
     branches:
       - '**'
 
