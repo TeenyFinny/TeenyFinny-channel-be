@@ -23,7 +23,6 @@ public class ApiRequestLog extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
-    // TODO: 카테고리 Enum 전환 예정
     @Enumerated(EnumType.STRING)
     @Column(name = "category", nullable = false, length = 50)
     private Category category;

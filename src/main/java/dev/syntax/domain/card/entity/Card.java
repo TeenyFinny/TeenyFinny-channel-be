@@ -5,10 +5,8 @@ import dev.syntax.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
-
 @Entity
-@Table(name = "card_info")
+@Table(name = "card")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,7 +18,6 @@ public class Card extends BaseEntity {
     @Column(name = "card_id")
     private Long id;
 
-    // FK → account_info.account_id
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", nullable = false)
     private Account account;
