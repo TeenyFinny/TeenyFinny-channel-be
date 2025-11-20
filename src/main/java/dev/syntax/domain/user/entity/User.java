@@ -60,9 +60,11 @@ public class User extends BaseTimeEntity {
     @Column(name = "provider_id", length = 10)
     private String providerId;
 
+    @Builder.Default
     @OneToMany(mappedBy = "parent")
     private List<UserRelationship> children = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "child")
     private List<UserRelationship> parents = new ArrayList<>();
 }
