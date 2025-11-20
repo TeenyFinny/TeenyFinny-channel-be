@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "card_info")
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
