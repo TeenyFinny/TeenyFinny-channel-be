@@ -1,0 +1,29 @@
+name: Notify Slack on Re-Requested Review
+
+# 'review_requested' 이벤트 감지
+on:
+  pull_request:
+    types: [ review_requested ]
+    branches:
+      - '**'
+
+jobs:
+  notify-slack:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send Slack Notification
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_URL="${{ github.event.pull_request.html_url }}"
+          REQUESTED_REVIEWER="${{ github.event.requested_reviewer.login }}"
+          PR_AUTHOR="${{ github.event.pull_request.user.login }}"
+
+          # Slack Webhook 호출
+          curl -X POST \
+               -H 'Content-type: application/json' \
+               --data '{
+                 "text": "📢 *리뷰 요청 알림*\n*PR 제목:* '"${PR_TITLE}"' (#'"${PR_NUMBER}"')\n*작성자:* '"${PR_AUTHOR}"'\n*리뷰어:* '"${REQUESTED_REVIEWER}"'\n*링크:* '"${PR_URL}"'"
+               }' \
+               ${{ secrets.SLACK_WEBHOOK_URL }}

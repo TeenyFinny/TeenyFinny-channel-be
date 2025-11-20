@@ -1,0 +1,37 @@
+name: Folder Tree Preview
+
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  preview-tree:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install tree
+        run: sudo apt-get update && sudo apt-get install -y tree
+
+      - name: Generate clean folder tree
+        run: |
+          echo "📦 Project Folder Structure" > tree.md
+          echo "" >> tree.md
+          echo '```' >> tree.md
+          # tree without node_modules and .git
+          tree -d -I "node_modules|.next|.git|lib-test" \
+            | sed 's/├/├─/g' \
+            | sed 's/└/└─/g' \
+            >> tree.md
+          echo '```' >> tree.md
+
+      - name: Comment folder tree to PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: "📂 Folder Structure"
+          path: tree.md
