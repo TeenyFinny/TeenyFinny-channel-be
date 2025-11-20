@@ -1,6 +1,7 @@
 package dev.syntax.domain.card.entity;
 
 import dev.syntax.domain.account.entity.Account;
+import dev.syntax.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Card {
+public class Card extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,12 +36,4 @@ public class Card {
 
     @Column(name = "password", nullable = false, length = 255)
     private String password;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
 }
