@@ -162,6 +162,44 @@ docker logs --tail=50 "${TEST_APP_NAME}" || true
                     if (branch == 'dev' || branch == 'origin/dev') {
                         sh('''
 
+# 0) 헬스체크 - 서버가 살아있는지 확인
+echo "[health-check] Checking server health..."
+health_status=$(curl -s --connect-timeout 2 --max-time 3 "http://192.168.0.79:8260/actuator/health" 2>/dev/null | jq -r '.status' 2>/dev/null)
+
+if [ "$health_status" = "UP" ]; then
+    echo "[health-check] Server is healthy. Proceeding with graceful shutdown..."
+
+    # 1) readiness OFF 요청 보내고 응답 출력
+    echo "[readiness/off] request"
+    curl -XPOST "http://192.168.0.79:8260/internal/readiness/off" || echo "[readiness/off] curl failed: $?"
+    echo ""  # 줄바꿈
+
+    # 2) drain 루프 - 매번 응답 JSON 출력
+    echo "[drain] start polling..."
+    while true; do
+        resp="$(curl -s "http://192.168.0.79:8260/actuator/drain")"
+        echo "[drain] response: ${resp}"
+
+        echo "${resp}" | jq -e '.drained == true' >/dev/null 2>&1 && {
+            echo "[drain] drained == true, continue pipeline."
+            break
+        }
+
+        echo "[drain] Waiting to drain..."
+        sleep 1
+    done
+fi
+
+# 4) 새 컨테이너 실행 (백그라운드)
+docker rm -f ${TEST_APP_NAME} || true
+
+cd /home/sw_team_3/backend
+
+docker compose -p sw_team_3 up -d app-local-1
+
+# 5) 상태 확인
+docker ps --filter "name=${TEST_APP_NAME}"
+docker logs --tail=50 "${TEST_APP_NAME}" || true
                         ''')
                     }
 
