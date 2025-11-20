@@ -1,4 +1,4 @@
-name: Folder Tree Preview
+name: Folder Tree Preview (Spring)
 
 on:
   pull_request:
@@ -20,11 +20,12 @@ jobs:
 
       - name: Generate clean folder tree
         run: |
-          echo "📦 Project Folder Structure" > tree.md
+          echo "📦 Spring Project Folder Structure" > tree.md
           echo "" >> tree.md
           echo '```' >> tree.md
-          # tree without node_modules and .git
-          tree -d -I "node_modules|.next|.git|lib-test" \
+          # tree command optimized for Spring Boot project
+          tree -d \
+            -I "target|.git|.idea|.gradle|build|out|node_modules|__pycache__|lib-test" \
             | sed 's/├/├─/g' \
             | sed 's/└/└─/g' \
             >> tree.md
