@@ -1,0 +1,40 @@
+name: Folder Tree Preview (Spring Gradle)
+
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  preview-tree:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install tree
+        run: sudo apt-get update && sudo apt-get install -y tree
+
+      - name: Generate clean folder tree
+        run: |
+          echo "📦 Spring Boot (Gradle) Project Folder Structure" > tree.md
+          echo "" >> tree.md
+          echo '```' >> tree.md
+
+          # Spring Gradle 프로젝트 전용 제외 규칙
+          tree -d \
+            -I ".git|.idea|.gradle|build|out|node_modules|__pycache__|lib-test" \
+            | sed 's/├/├─/g' \
+            | sed 's/└/└─/g' \
+            >> tree.md
+
+          echo '```' >> tree.md
+
+      - name: Comment folder tree to PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: "📂 Folder Structure"
+          path: tree.md
