@@ -30,9 +30,14 @@ import org.springframework.http.HttpStatus;
 public enum ErrorAuthCode implements ErrorBaseCodeForErrorCode {
 
     /**
-     * 401 UNAUTHORIZED - 리소스 접근 권한
+     * 401 UNAUTHORIZED - 인증 실패
      */
-    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증되지 않은 사용자입니다.", "AUTH01");
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증되지 않은 사용자입니다.", "AUTH01"),
+
+    /**
+     * 403 FORBIDDEN - 권한 부족
+     */
+    ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다.", "AUTH02");
 
     // 마지막 항목의 ;을 쉼표로 바꾸고 여기에 마저 추가
 
