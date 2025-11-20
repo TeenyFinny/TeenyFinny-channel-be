@@ -46,7 +46,7 @@ public class JwtTokenProvider {
 		this.key = Keys.hmacShaKeyFor(keyBytes);
 
 		// days → ms 변환
-		this.accessTokenExpireTime = expirationDays * 24 * 60 * 60 * 1000;
+		this.accessTokenExpireTime = java.util.concurrent.TimeUnit.DAYS.toMillis(expirationDays);
 	}
 
 	/**
