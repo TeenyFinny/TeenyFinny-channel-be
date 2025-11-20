@@ -2,6 +2,8 @@ package dev.syntax.global.jwt;
 
 import java.io.IOException;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -37,7 +39,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
 		FilterChain filterChain) throws ServletException, IOException {
 
-		// TODO(다음 PR에서 구현 예정): 인증정보 SecurityContext에 저장
+		String token = resolveToken(request);
+
+		if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
+			Authentication authentication = jwtTokenProvider.getAuthentication(token);
+			SecurityContextHolder.getContext().setAuthentication(authentication);
+		}
 
 		filterChain.doFilter(request, response);
 	}
@@ -48,11 +55,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	 * @param request HttpServletRequest
 	 * @return 추출된 토큰 문자열, 없으면 null
 	 */
-	@SuppressWarnings("java:S1144")
 	private String resolveToken(HttpServletRequest request) {
 		String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
 		if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
-			return bearerToken.substring(7);
+			return bearerToken.substring(BEARER_PREFIX.length());
 		}
 		return null;
 	}
