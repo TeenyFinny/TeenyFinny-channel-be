@@ -1,4 +1,4 @@
-package dev.syntax.domain.auth.service;
+package dev.syntax.global.auth.service;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -6,9 +6,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dev.syntax.domain.auth.dto.UserContext;
 import dev.syntax.domain.user.entity.User;
 import dev.syntax.domain.user.repository.UserRepository;
+import dev.syntax.global.auth.dto.UserContext;
 import lombok.RequiredArgsConstructor;
 
 @Service

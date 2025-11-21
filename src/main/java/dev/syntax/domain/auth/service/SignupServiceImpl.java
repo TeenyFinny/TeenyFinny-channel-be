@@ -1,4 +1,4 @@
-package dev.syntax.domain.auth.service.impl;
+package dev.syntax.domain.auth.service;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -6,7 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dev.syntax.domain.auth.dto.SignupReq;
 import dev.syntax.domain.auth.factory.UserFactory;
-import dev.syntax.domain.auth.service.SignupService;
 import dev.syntax.domain.user.entity.User;
 import dev.syntax.domain.user.repository.UserRepository;
 import dev.syntax.global.exception.BusinessException;

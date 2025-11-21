@@ -1,10 +1,10 @@
-package dev.syntax.global.jwt.test;
+package dev.syntax.global.auth.jwt.test;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
-import dev.syntax.domain.auth.dto.UserContext;
 import dev.syntax.domain.user.entity.User;
 import dev.syntax.domain.user.enums.Role;
+import dev.syntax.global.auth.dto.UserContext;
 
 public class TestAuthenticationFactory {
 

@@ -12,10 +12,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import dev.syntax.global.jwt.JwtAccessDeniedHandler;
-import dev.syntax.global.jwt.JwtAuthenticationEntryPoint;
-import dev.syntax.global.jwt.JwtAuthenticationFilter;
-import dev.syntax.global.jwt.JwtTokenProvider;
+import dev.syntax.global.auth.jwt.JwtAccessDeniedHandler;
+import dev.syntax.global.auth.jwt.JwtAuthenticationEntryPoint;
+import dev.syntax.global.auth.jwt.JwtAuthenticationFilter;
+import dev.syntax.global.auth.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 
 /**
