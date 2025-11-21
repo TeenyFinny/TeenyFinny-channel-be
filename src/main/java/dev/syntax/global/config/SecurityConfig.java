@@ -79,6 +79,7 @@ public class SecurityConfig {
 				.requestMatchers(
 					"/auth/**",
 					"/public/**",
+					"/sample/**",
 					"/docs/**").permitAll()
 				.anyRequest().authenticated()
 			)

@@ -2,16 +2,14 @@ package dev.syntax.global.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import dev.syntax.global.response.error.ErrorAuthCode;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
- * ErrorBaseCode, SuccessCode, ErrorAuthCode 등의 열거형을 기반으로
- * API 응답 바디를 표준화하여 전달합니다.
+ * API 성공 응답을 나타내는 클래스입니다.
+ * 성공 상태 코드와 함께 데이터 페이로드를 전달합니다.
  *
  * @param <T> 응답 데이터의 제네릭 타입
  */
@@ -26,12 +24,13 @@ public class SuccessResponse<T> implements BaseResponse<T> {
     private T data;
 
     /**
-     * 성공 코드와 함께 데이터 페이로드를 포함한 응답을 생성합니다.
+     * 성공 데이터로 응답 객체를 생성합니다.
      *
-     * @param successCode 성공 코드를 나타내는 열거형
-     * @param data        응답 본문에 포함할 데이터
+     * @param data 응답 본문에 포함할 데이터
+     * @param <T>  데이터의 타입
+     * @return 생성된 SuccessResponse 객체
      */
-    public static <T> SuccessResponse<?> of(SuccessCode successCode, T data) {
+    public static <T> SuccessResponse<?> of(T data) {
         return SuccessResponse.builder()
                 .data(data)
                 .build();

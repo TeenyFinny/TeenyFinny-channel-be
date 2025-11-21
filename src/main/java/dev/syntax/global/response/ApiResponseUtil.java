@@ -33,7 +33,7 @@ public class ApiResponseUtil {
      */
     public static ResponseEntity<BaseResponse<?>> success(final SuccessCode successCode) {
         return ResponseEntity.status(successCode.getHttpStatus())
-                .body(SuccessResponse.of(successCode, null));
+                .body(SuccessResponse.of(null));
     }
 
     /**
@@ -62,7 +62,7 @@ public class ApiResponseUtil {
      */
     public static <T> ResponseEntity<BaseResponse<?>> success(final SuccessCode successCode, final T data) {
         return ResponseEntity.status(successCode.getHttpStatus())
-                .body(SuccessResponse.of(successCode, data));
+                .body(SuccessResponse.of(data));
     }
 
     /**

@@ -1,18 +1,14 @@
 package dev.syntax.global.response;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import dev.syntax.global.response.error.ErrorAuthCode;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 /**
- * ErrorBaseCode, SuccessCode, ErrorAuthCode 등의 열거형을 기반으로
- * API 응답 바디를 표준화하여 전달합니다.
+ * API 에러 응답의 기본 클래스입니다.
+ * 에러 메시지를 포함하여 클라이언트에게 에러 상황을 전달합니다.
  *
  * @param <T> 응답 데이터의 제네릭 타입
  */
@@ -26,9 +22,10 @@ public class BaseErrorResponse<T> implements BaseResponse<T> {
     private String message;
 
     /**
-     * 성공/실패 공통 인터페이스인 {@link ApiCode}로부터 메시지를 추출해 응답을 생성합니다.
+     * ApiCode 인터페이스 구현체로부터 에러 응답 객체를 생성합니다.
      *
-     * @param apiMessage 응답 메시지를 제공하는 ApiCode 구현체
+     * @param apiMessage 에러 메시지를 제공하는 ApiCode 구현체
+     * @return 생성된 BaseErrorResponse 객체
      */
     public static BaseErrorResponse<?> of(final ApiCode apiMessage) {
         return BaseErrorResponse.builder()
