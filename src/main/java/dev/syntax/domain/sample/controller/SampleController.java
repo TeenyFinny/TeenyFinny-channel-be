@@ -51,10 +51,9 @@ public class SampleController {
             LocalDateTime created = LocalDateTime.now();
             SampleEntity sample = new SampleEntity();
             sample.setPrice(Utils.NumberFormattingService(230010000));
-            SampleEntity saved = sampleRepository.save(sample);
 
             log.info("성공 status와 data 바디 응답!");
-            res = ApiResponseUtil.success(SuccessCode.OK, SampleDTO.create(saved));
+            res = ApiResponseUtil.success(SuccessCode.OK, SampleDTO.create(sample));
 
         } else if (flag == 4) {
             // ApiResponseUtil.failure에 ErrorAuthCode를 넣어주면 errorCode도 함께 응답됩니다.

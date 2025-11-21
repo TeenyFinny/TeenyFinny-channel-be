@@ -2,6 +2,7 @@ package dev.syntax.global.jwt;
 
 import java.io.IOException;
 
+import dev.syntax.global.response.AuthErrorResponse;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
@@ -35,7 +36,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
 		ErrorAuthCode errorCode = ErrorAuthCode.UNAUTHORIZED;
 
-		BaseResponse<?> body = BaseResponse.of(errorCode);
+		BaseResponse<?> body = AuthErrorResponse.of(errorCode);
 
 		response.setStatus(errorCode.getHttpStatus().value());
 		response.setContentType("application/json;charset=UTF-8");
