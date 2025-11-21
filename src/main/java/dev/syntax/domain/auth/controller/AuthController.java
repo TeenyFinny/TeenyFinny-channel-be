@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import dev.syntax.domain.auth.dto.EmailValidationReq;
 import dev.syntax.domain.auth.dto.EmailValidationRes;
+import dev.syntax.domain.auth.dto.SignupReq;
+import dev.syntax.domain.auth.service.SignupService;
 import dev.syntax.domain.user.repository.UserRepository;
 import dev.syntax.global.response.ApiResponseUtil;
 import dev.syntax.global.response.BaseResponse;
@@ -30,7 +32,14 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class AuthController {
 
+	private final SignupService signupService;
 	private final UserRepository userRepository;
+
+	@PostMapping("/signup")
+	public ResponseEntity<BaseResponse<?>> signup(@Valid @RequestBody SignupReq signupReq) {
+		signupService.signup(signupReq);
+		return ApiResponseUtil.success(SuccessCode.CREATED);
+	}
 
 	@PostMapping("/email")
 	public ResponseEntity<BaseResponse<?>> verifyEmail(
