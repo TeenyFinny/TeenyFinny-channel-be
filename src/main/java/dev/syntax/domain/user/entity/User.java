@@ -36,9 +36,6 @@ public class User extends BaseTimeEntity {
     @Column(name = "simple_password", nullable = false, length = 255)
     private String simplePassword;
 
-    @Column(name = "salt", nullable = false, length = 255)
-    private String salt;
-
     @Column(name = "birth_date", nullable = false)
     private LocalDate birthDate;
 
