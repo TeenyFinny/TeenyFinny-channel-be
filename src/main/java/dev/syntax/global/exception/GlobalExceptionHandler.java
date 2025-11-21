@@ -15,10 +15,17 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * 전역 예외 처리를 담당하는 핸들러입니다.
  * <p>
- * 애플리케이션 전역에서 발생하는 예외를 일관된 형식으로 처리하여
- * 클라이언트에게 표준화된 에러 응답을 제공합니다.
+ * 처리 대상 예외 종류:
+ * - CustomBaseException: 컨트롤러·프레젠테이션 계층에서 발생하는 예외
+ * - BusinessException: 서비스·도메인 계층에서 발생하는 비즈니스 규칙 예외
+ * - AuthenticationException: 인증 실패 시 발생하는 스프링 시큐리티 예외
+ * - AccessDeniedException: 인가 실패(권한 부족) 예외
+ * - Exception: 위에 포함되지 않는 모든 예외(서버 오류)
+ *
+ * 모든 예외는 ApiResponseUtil을 통해 BaseResponse 형태로 변환되며,
+ * HTTP 상태 코드와 메시지는 ErrorCode 계열(enum)에서 정의한 값으로 매핑됩니다.
  * </p>
- * @SuppressWarnings("java:S1452") : DTO 타입이 다양한 API 응답은 ResponseEntity<?> 혹은 ApiResponse<?> 사용을 허용한다
+ * SuppressWarnings("java:S1452") : DTO 타입이 다양한 API 응답은 ResponseEntity<?> 혹은 ApiResponse<?> 사용을 허용한다
  */
 @SuppressWarnings("java:S1452")
 @Slf4j
@@ -26,14 +33,22 @@ import lombok.extern.slf4j.Slf4j;
 public class GlobalExceptionHandler {
 
 	/**
-	 * CustomBaseException 처리
-	 * <p>
-	 * 도메인 로직에서 발생하는 비즈니스 예외를 처리합니다.
-	 * </p>
+	 * CustomBaseException 처리.
+	 * 컨트롤러 또는 요청 처리 과정에서 발생한 커스텀 예외를 변환합니다.
 	 */
 	@ExceptionHandler(CustomBaseException.class)
 	public ResponseEntity<BaseResponse<?>> handleCustomException(CustomBaseException e) {
 		log.error("CustomException: {}", e.getMessage());
+		return ApiResponseUtil.failure(e.getErrorCode());
+	}
+
+	/**
+	 * BusinessException 처리.
+	 * 서비스·도메인 계층의 비즈니스 규칙 위반 예외를 처리합니다.
+	 */
+	@ExceptionHandler(BusinessException.class)
+	public ResponseEntity<BaseResponse<?>> handleBusinessException(BusinessException e) {
+		log.error("BusinessException: {}", e.getMessage());
 		return ApiResponseUtil.failure(e.getErrorCode());
 	}
 

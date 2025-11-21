@@ -1,77 +1,104 @@
 package dev.syntax.global.config;
 
-import dev.syntax.global.jwt.JwtAccessDeniedHandler;
-import dev.syntax.global.jwt.JwtAuthenticationEntryPoint;
-import dev.syntax.global.jwt.JwtAuthenticationFilter;
-import dev.syntax.global.jwt.JwtTokenProvider;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import dev.syntax.global.jwt.JwtAccessDeniedHandler;
+import dev.syntax.global.jwt.JwtAuthenticationEntryPoint;
+import dev.syntax.global.jwt.JwtAuthenticationFilter;
+import dev.syntax.global.jwt.JwtTokenProvider;
+import lombok.RequiredArgsConstructor;
+
 /**
- * Spring Security 설정을 담당하는 클래스입니다.
- * JWT 기반 인증을 적용하기 위해 필요한 필터, 예외 처리기, 세션 정책 등을 정의합니다.
+ * SecurityConfig
  *
- * 주요 기능:
- * - CSRF 비활성화
- * - 인증 실패(401), 인가 실패(403)에 대한 커스텀 핸들러 적용
- * - 세션을 사용하지 않는 Stateless 환경 설정
- * - 요청 경로별 접근 권한 설정
- * - UsernamePasswordAuthenticationFilter 이전에 JWT 인증 필터 적용
+ * <p>Spring Security의 전역 보안 설정을 담당하는 구성 클래스입니다.
+ * 본 서비스는 JWT 기반의 인증 방식을 사용하기 때문에
+ * 세션을 생성하지 않는 Stateless 환경을 기본 정책으로 구성합니다.
+ *
+ * <h2>인증 흐름 요약</h2>
+ * <ol>
+ *     <li>클라이언트가 HTTP Authorization 헤더로 JWT 토큰을 전송합니다.</li>
+ *     <li>JwtAuthenticationFilter가 요청을 가로채 토큰 유효성 검증을 수행합니다.</li>
+ *     <li>유효한 토큰이면 SecurityContext에 Authentication(UserContext 기반)을 저장합니다.</li>
+ *     <li>이후 컨트롤러 계층까지 인증 정보가 전달되며, 인가 검사가 적용됩니다.</li>
+ * </ol>
+ *
+ * @see JwtAuthenticationFilter
+ * @see JwtTokenProvider
+ * @see JwtAuthenticationEntryPoint
+ * @see JwtAccessDeniedHandler
  */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtTokenProvider jwtTokenProvider;
-    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+	private final JwtTokenProvider jwtTokenProvider;
+	private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+	private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
-    /**
-     * SecurityFilterChain을 구성합니다.
-     * JWT 기반 인증을 사용하므로 세션을 생성하지 않고,
-     * 인증이 필요한 요청에 대해 JwtAuthenticationFilter가 먼저 실행되도록 설정합니다.
-     *
-     * @param http HttpSecurity
-     * @return SecurityFilterChain
-     * @throws Exception 설정 중 발생한 예외
-     */
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                // JWT 기반 인증에서는 CSRF가 필요하지 않음
-                .csrf(csrf -> csrf.disable())
+	/**
+	 * SecurityFilterChain을 구성합니다.
+	 *
+	 * <p>JWT 기반 인증 구조에서는 서버가 세션을 유지하지 않으므로
+	 * SessionCreationPolicy.STATELESS 정책을 설정합니다.
+	 * UsernamePasswordAuthenticationFilter 이전에 JwtAuthenticationFilter를 등록하여
+	 * 모든 요청에서 JWT 유효성 검증을 먼저 수행합니다.
+	 *
+	 * @param http HttpSecurity 보안 설정 DSL
+	 * @return SecurityFilterChain 빌드된 보안 필터 체인
+	 * @throws Exception 설정 중 발생할 수 있는 예외
+	 */
+	@Bean
+	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+		http
+			// JWT 기반 인증에서는 CSRF가 필요하지 않음
+			.csrf(csrf -> csrf.disable())
 
-                // 인증 및 인가 관련 예외 처리기 등록
-                .exceptionHandling(exceptionHandling -> exceptionHandling
-                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                        .accessDeniedHandler(jwtAccessDeniedHandler)
-                )
+			// 인증 및 인가 관련 예외 처리기 등록
+			.exceptionHandling(exceptionHandling -> exceptionHandling
+				.authenticationEntryPoint(jwtAuthenticationEntryPoint)
+				.accessDeniedHandler(jwtAccessDeniedHandler)
+			)
 
-                // 세션을 사용하지 않는 Stateless 정책 적용
-                .sessionManagement(sessionManagement -> sessionManagement
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+			// 세션을 사용하지 않는 Stateless 정책 적용
+			.sessionManagement(sessionManagement -> sessionManagement
+				.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+			)
 
-                // 경로별 인증 여부 설정
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(
-                                "/auth/**",
-                                "/public/**",
-                                "/docs/**").permitAll()
-                        .anyRequest().authenticated()
-                )
+			// 경로별 인증 여부 설정
+			.authorizeHttpRequests(authorize -> authorize
+				.requestMatchers(
+					"/auth/**",
+					"/public/**",
+					"/docs/**").permitAll()
+				.anyRequest().authenticated()
+			)
+			// UsernamePasswordAuthenticationFilter 전에 JWT 필터 등록
+			.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
+				UsernamePasswordAuthenticationFilter.class);
 
-                // UsernamePasswordAuthenticationFilter보다 먼저 JWT 필터 실행
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
-                        UsernamePasswordAuthenticationFilter.class);
+		return http.build();
+	}
 
-        return http.build();
-    }
+	/**
+	 * BCryptPasswordEncoder Bean 등록
+	 *
+	 * <p>bcrypt는 자체적으로 Salt를 내장하고 있으며,
+	 * 비밀번호 검증 시 matches() 호출만으로 비교가 가능합니다.
+	 *
+	 * @return BCryptPasswordEncoder 인스턴스
+	 */
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
 }
