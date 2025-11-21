@@ -20,9 +20,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * AuthController
- *
- * <p>/auth 영역의 인증 관련 엔드포인트를 담당합니다.</p>
+ * 인증(Auth) 및 회원가입 관련 엔드포인트를 제공하는 컨트롤러입니다.
+ * <p>
+ * 이메일 중복 확인, 회원가입 등 인증 초기 단계 기능을 담당합니다.
  */
 @Slf4j
 @Validated
@@ -34,12 +34,22 @@ public class AuthController {
 	private final AuthService authService;
 	private final SignupService signupService;
 
+	/**
+	 * 회원가입을 수행합니다.
+	 *
+	 * @param signupReq 회원가입 요청 DTO
+	 */
 	@PostMapping("/signup")
 	public ResponseEntity<BaseResponse<?>> signup(@Valid @RequestBody SignupReq signupReq) {
 		signupService.signup(signupReq);
 		return ApiResponseUtil.success(SuccessCode.CREATED);
 	}
 
+	/**
+	 * 이메일 중복 여부를 확인합니다.
+	 *
+	 * @param req 이메일 검증 요청 DTO
+	 */
 	@PostMapping("/email")
 	public ResponseEntity<BaseResponse<?>> verifyEmail(
 		@Valid @RequestBody EmailValidationReq req
