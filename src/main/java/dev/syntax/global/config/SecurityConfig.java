@@ -2,6 +2,8 @@ package dev.syntax.global.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -101,5 +103,21 @@ public class SecurityConfig {
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
+	}
+
+	/**
+	 * AuthenticationManager Bean 등록
+	 *
+	 * <p>Spring Security 내부 인증 프로세스를 수행하는 핵심 컴포넌트입니다.
+	 * AuthService에서 이메일·비밀번호 로그인 시 AuthenticationManager를 호출하여
+	 * UserDetailsService, PasswordEncoder 등을 통한 인증 절차가 수행됩니다.</p>
+	 *
+	 * @param configuration AuthenticationManager 설정 정보
+	 * @return AuthenticationManager 인스턴스
+	 * @throws Exception 설정 오류 발생 시
+	 */
+	@Bean
+	public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+		return configuration.getAuthenticationManager();
 	}
 }

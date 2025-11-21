@@ -4,15 +4,14 @@ import dev.syntax.domain.auth.dto.EmailValidationReq;
 import dev.syntax.global.exception.BusinessException;
 
 /**
- * 인증(Authentication) 및 인가(Authorization)와 관련된
- * 도메인 로직을 제공하는 Service 인터페이스입니다.
- * <p>
- * 회원가입, 로그인, 토큰 검증 등 보안 관련 기능을 처리하며,
- * 그 중 이메일 중복 여부 검증은 회원가입 과정에서 필요한
- * 사전 확인 절차로 제공됩니다.
+ * 인증(Authentication)과 인가(Authorization)에 필요한
+ * 보안 관련 도메인 로직을 제공하는 Service 인터페이스입니다.
+ *
+ * <p>토큰 및 비밀번호 검증 기능을 포함하며,
+ * 회원가입 과정에서 필요한 이메일 중복 확인 기능도 제공합니다.
  */
 public interface AuthService {
-	
+
 	/**
 	 * 이메일 중복 여부를 검증합니다.
 	 * <p>
