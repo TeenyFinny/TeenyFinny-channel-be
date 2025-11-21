@@ -4,6 +4,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import dev.syntax.global.response.AuthErrorResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +57,7 @@ class JwtSecurityUnauthorizedTest {
 	@DisplayName("JWT 없이 인증 필요 API 접근 → 401 Unauthorized")
 	void unauthorizedWithoutJwt() throws Exception {
 
-		BaseResponse<?> expected = BaseResponse.of(ErrorAuthCode.UNAUTHORIZED);
+		BaseResponse<?> expected = AuthErrorResponse.of(ErrorAuthCode.UNAUTHORIZED);
 		String expectedJson = objectMapper.writeValueAsString(expected);
 
 		mockMvc.perform(get("/test/secure")

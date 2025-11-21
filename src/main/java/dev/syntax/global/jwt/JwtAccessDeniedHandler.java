@@ -2,6 +2,7 @@ package dev.syntax.global.jwt;
 
 import java.io.IOException;
 
+import dev.syntax.global.response.AuthErrorResponse;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
@@ -35,7 +36,7 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
 
 		ErrorAuthCode errorCode = ErrorAuthCode.ACCESS_DENIED;
 
-		BaseResponse<?> body = BaseResponse.of(errorCode);
+		BaseResponse<?> body = AuthErrorResponse.of(errorCode);
 
 		response.setStatus(errorCode.getHttpStatus().value());
 		response.setContentType("application/json;charset=UTF-8");
