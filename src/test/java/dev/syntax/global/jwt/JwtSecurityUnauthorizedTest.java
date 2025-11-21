@@ -4,7 +4,6 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import dev.syntax.global.response.AuthErrorResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +17,11 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import dev.syntax.domain.auth.dto.UserContext;
-import dev.syntax.domain.auth.service.UserContextServiceImpl;
+import dev.syntax.global.auth.dto.UserContext;
+import dev.syntax.global.auth.jwt.JwtTokenProvider;
+import dev.syntax.global.auth.service.UserContextServiceImpl;
 import dev.syntax.global.jwt.test.TestAuthenticationFactory;
+import dev.syntax.global.response.AuthErrorResponse;
 import dev.syntax.global.response.BaseResponse;
 import dev.syntax.global.response.error.ErrorAuthCode;
 

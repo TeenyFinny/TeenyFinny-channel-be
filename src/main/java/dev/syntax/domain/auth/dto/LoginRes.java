@@ -1,5 +1,6 @@
 package dev.syntax.domain.auth.dto;
 
+import dev.syntax.global.auth.dto.UserContext;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 

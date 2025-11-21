@@ -7,9 +7,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
-import dev.syntax.domain.auth.dto.UserContext;
-import dev.syntax.domain.auth.service.UserContextServiceImpl;
 import dev.syntax.domain.user.entity.User;
+import dev.syntax.global.auth.dto.UserContext;
+import dev.syntax.global.auth.jwt.JwtTokenProvider;
+import dev.syntax.global.auth.service.UserContextServiceImpl;
 
 class JwtTokenProviderTest {
 

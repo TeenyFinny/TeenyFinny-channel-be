@@ -1,14 +1,14 @@
-package dev.syntax.global.jwt;
+package dev.syntax.global.auth.jwt;
 
 import java.io.IOException;
 
-import dev.syntax.global.response.AuthErrorResponse;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import dev.syntax.global.response.AuthErrorResponse;
 import dev.syntax.global.response.BaseResponse;
 import dev.syntax.global.response.error.ErrorAuthCode;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,24 +17,24 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
+public class JwtAccessDeniedHandler implements AccessDeniedHandler {
 
 	private final ObjectMapper objectMapper;
 
 	/**
-	 * 인증되지 않은 사용자가 보호된 리소스에 접근할 때 호출됩니다.
+	 * 권한이 없는 리소스에 접근할 때 호출됩니다.
 	 *
-	 * @param request       HttpServletRequest
-	 * @param response      HttpServletResponse
-	 * @param authException AuthenticationException
+	 * @param request               HttpServletRequest
+	 * @param response              HttpServletResponse
+	 * @param accessDeniedException AccessDeniedException
 	 * @throws IOException      입출력 예외
 	 */
 	@Override
-	public void commence(HttpServletRequest request,
+	public void handle(HttpServletRequest request,
 		HttpServletResponse response,
-		AuthenticationException authException) throws IOException {
+		AccessDeniedException accessDeniedException) throws IOException {
 
-		ErrorAuthCode errorCode = ErrorAuthCode.UNAUTHORIZED;
+		ErrorAuthCode errorCode = ErrorAuthCode.ACCESS_DENIED;
 
 		BaseResponse<?> body = AuthErrorResponse.of(errorCode);
 

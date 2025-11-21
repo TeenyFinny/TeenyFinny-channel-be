@@ -1,4 +1,4 @@
-package dev.syntax.global.jwt;
+package dev.syntax.global.auth.jwt;
 
 import java.security.Key;
 import java.util.Date;
@@ -10,8 +10,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
-import dev.syntax.domain.auth.dto.UserContext;
-import dev.syntax.domain.auth.service.UserContextServiceImpl;
+import dev.syntax.global.auth.dto.UserContext;
+import dev.syntax.global.auth.service.UserContextServiceImpl;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;

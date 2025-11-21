@@ -1,4 +1,4 @@
-package dev.syntax.domain.auth.dto;
+package dev.syntax.global.auth.dto;
 
 import java.util.Collection;
 import java.util.Collections;

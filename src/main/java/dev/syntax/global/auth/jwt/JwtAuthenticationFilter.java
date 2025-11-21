@@ -1,4 +1,4 @@
-package dev.syntax.global.jwt;
+package dev.syntax.global.auth.jwt;
 
 import java.io.IOException;
 

@@ -8,8 +8,8 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-import dev.syntax.domain.auth.dto.UserContext;
 import dev.syntax.global.auth.annotation.CurrentUser;
+import dev.syntax.global.auth.dto.UserContext;
 
 /**
  * CurrentUserArgumentResolver

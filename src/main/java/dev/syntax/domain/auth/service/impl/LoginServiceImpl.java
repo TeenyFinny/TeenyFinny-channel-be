@@ -7,9 +7,9 @@ import org.springframework.stereotype.Service;
 
 import dev.syntax.domain.auth.dto.LoginReq;
 import dev.syntax.domain.auth.dto.LoginRes;
-import dev.syntax.domain.auth.dto.UserContext;
 import dev.syntax.domain.auth.service.LoginService;
-import dev.syntax.global.jwt.JwtTokenProvider;
+import dev.syntax.global.auth.dto.UserContext;
+import dev.syntax.global.auth.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
