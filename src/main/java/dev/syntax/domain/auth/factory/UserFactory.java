@@ -3,6 +3,8 @@ package dev.syntax.domain.auth.factory;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import dev.syntax.domain.auth.dto.SignupReq;
 import dev.syntax.domain.user.entity.User;
 import dev.syntax.domain.user.enums.Role;
@@ -14,7 +16,7 @@ public class UserFactory {
 		throw new UnsupportedOperationException("Utility class");
 	}
 
-	public static User create(SignupReq req) {
+	public static User create(SignupReq req, PasswordEncoder encoder) {
 
 		Role role = Role.valueOf(req.role().toUpperCase());
 
@@ -22,8 +24,8 @@ public class UserFactory {
 			.name(req.name())
 			.email(req.email())
 			.phoneNumber(req.phoneNumber())
-			.password(req.password())
-			.simplePassword(req.simplePassword())
+			.password(encoder.encode(req.password()))
+			.simplePassword(encoder.encode(req.simplePassword()))
 			.birthDate(LocalDate.parse(req.birthDate(), DateTimeFormatter.ofPattern("yyyyMMdd")))
 			.gender(req.gender().byteValue())
 			.role(role)

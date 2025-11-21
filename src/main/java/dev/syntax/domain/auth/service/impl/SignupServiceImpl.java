@@ -1,5 +1,6 @@
 package dev.syntax.domain.auth.service.impl;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import dev.syntax.domain.auth.dto.SignupReq;
@@ -19,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional
 public class SignupServiceImpl implements SignupService {
 
+	private final PasswordEncoder encoder;
 	private final UserRepository userRepository;
 
 	@Override
@@ -27,7 +29,7 @@ public class SignupServiceImpl implements SignupService {
 		if (userRepository.findByEmail(inputUser.email()).isPresent()) {
 			throw new BusinessException(ErrorAuthCode.EMAIL_CONFLICT);
 		}
-		User user = UserFactory.create(inputUser);
+		User user = UserFactory.create(inputUser, encoder);
 		userRepository.save(user);
 		log.info("회원가입 성공: userId = {}", user.getId());
 	}
