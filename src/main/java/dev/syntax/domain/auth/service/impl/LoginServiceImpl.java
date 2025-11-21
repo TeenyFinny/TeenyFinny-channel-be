@@ -29,7 +29,6 @@ public class LoginServiceImpl implements LoginService {
 		// 토큰 발급
 		String accessToken = jwtTokenProvider.generateToken(authentication);
 		UserContext userContext = (UserContext)authentication.getPrincipal();
-		log.info("UserContext: {}", userContext.toString());
 		log.info("로그인 성공: userId = {}", userContext.getId());
 		return LoginRes.of(userContext, accessToken);
 	}
