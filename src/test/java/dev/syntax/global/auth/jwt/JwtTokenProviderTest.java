@@ -1,4 +1,4 @@
-package dev.syntax.global.jwt;
+package dev.syntax.global.auth.jwt;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -9,7 +9,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 
 import dev.syntax.domain.user.entity.User;
 import dev.syntax.global.auth.dto.UserContext;
-import dev.syntax.global.auth.jwt.JwtTokenProvider;
 import dev.syntax.global.auth.service.UserContextServiceImpl;
 
 class JwtTokenProviderTest {

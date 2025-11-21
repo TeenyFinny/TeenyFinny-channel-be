@@ -1,4 +1,4 @@
-package dev.syntax.global.jwt.test;
+package dev.syntax.global.auth.jwt.test;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 

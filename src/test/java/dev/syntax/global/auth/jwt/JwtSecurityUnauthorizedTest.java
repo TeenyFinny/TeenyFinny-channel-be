@@ -1,4 +1,4 @@
-package dev.syntax.global.jwt;
+package dev.syntax.global.auth.jwt;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -18,9 +18,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dev.syntax.global.auth.dto.UserContext;
-import dev.syntax.global.auth.jwt.JwtTokenProvider;
+import dev.syntax.global.auth.jwt.test.TestAuthenticationFactory;
 import dev.syntax.global.auth.service.UserContextServiceImpl;
-import dev.syntax.global.jwt.test.TestAuthenticationFactory;
 import dev.syntax.global.response.AuthErrorResponse;
 import dev.syntax.global.response.BaseResponse;
 import dev.syntax.global.response.error.ErrorAuthCode;
