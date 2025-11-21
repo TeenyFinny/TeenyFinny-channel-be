@@ -40,7 +40,7 @@ public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolve
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
 		return parameter.hasParameterAnnotation(CurrentUser.class)
-			&& parameter.getParameterType().equals(UserContext.class);
+			&& UserContext.class.isAssignableFrom(parameter.getParameterType());
 	}
 
 	/**
@@ -57,10 +57,9 @@ public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolve
 	) {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-		if (authentication == null || authentication.getPrincipal() == null) {
-			return null;
+		if (authentication != null && authentication.getPrincipal() instanceof UserContext) {
+			return authentication.getPrincipal();
 		}
-
-		return authentication.getPrincipal();
+		return null;
 	}
 }
