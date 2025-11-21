@@ -7,7 +7,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import dev.syntax.domain.auth.dto.SignupReq;
 import dev.syntax.domain.user.entity.User;
-import dev.syntax.domain.user.enums.Role;
 
 public class UserFactory {
 
@@ -18,8 +17,6 @@ public class UserFactory {
 
 	public static User create(SignupReq req, PasswordEncoder encoder) {
 
-		Role role = Role.valueOf(req.role().toUpperCase());
-
 		return User.builder()
 			.name(req.name())
 			.email(req.email())
@@ -28,7 +25,7 @@ public class UserFactory {
 			.simplePassword(encoder.encode(req.simplePassword()))
 			.birthDate(LocalDate.parse(req.birthDate(), DateTimeFormatter.ofPattern("yyyyMMdd")))
 			.gender(req.gender().byteValue())
-			.role(role)
+			.role(req.role())
 			.build();
 	}
 }

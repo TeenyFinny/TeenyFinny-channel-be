@@ -1,5 +1,6 @@
 package dev.syntax.domain.auth.dto;
 
+import dev.syntax.domain.user.enums.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -20,7 +21,7 @@ public record SignupReq(
 	String name,
 
 	@NotNull
-	String role,
+	Role role,
 
 	@Size(min = 6, max = 6)
 	String simplePassword,
