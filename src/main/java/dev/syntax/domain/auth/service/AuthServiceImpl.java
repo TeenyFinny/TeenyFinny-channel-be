@@ -1,9 +1,8 @@
-package dev.syntax.domain.auth.service.impl;
+package dev.syntax.domain.auth.service;
 
 import org.springframework.stereotype.Service;
 
 import dev.syntax.domain.auth.dto.EmailValidationReq;
-import dev.syntax.domain.auth.service.AuthService;
 import dev.syntax.domain.user.repository.UserRepository;
 import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorAuthCode;
