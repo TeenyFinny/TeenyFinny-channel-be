@@ -22,7 +22,7 @@ import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.global.auth.jwt.JwtTokenProvider;
 
 @ExtendWith(MockitoExtension.class)
-class AuthServiceTest {
+class LoginServiceTest {
 
 	@Mock
 	private AuthenticationManager authenticationManager;
