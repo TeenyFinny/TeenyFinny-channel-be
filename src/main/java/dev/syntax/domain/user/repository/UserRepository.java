@@ -34,7 +34,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	 * @param id 사용자 ID
 	 * @return parents가 로드된 User 엔티티
 	 */
-	@Query("SELECT u FROM User u " +
+	@Query("SELECT DISTINCT u FROM User u " +
 		"LEFT JOIN FETCH u.parents p " +
 		"LEFT JOIN FETCH p.parent " +
 		"WHERE u.id = :id")
@@ -61,7 +61,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	 * @param email 사용자 이메일
 	 * @return parents가 로드된 User 엔티티
 	 */
-	@Query("SELECT u FROM User u " +
+	@Query("SELECT DISTINCT u FROM User u " +
 		"LEFT JOIN FETCH u.parents p " +
 		"LEFT JOIN FETCH p.parent " +
 		"WHERE u.email = :email")
