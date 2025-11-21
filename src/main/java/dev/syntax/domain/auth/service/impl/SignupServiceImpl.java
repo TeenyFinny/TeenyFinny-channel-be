@@ -26,7 +26,7 @@ public class SignupServiceImpl implements SignupService {
 	@Override
 	public void signup(SignupReq inputUser) {
 
-		if (userRepository.findByEmail(inputUser.email()).isPresent()) {
+		if (userRepository.existsByEmail(inputUser.email())) {
 			throw new BusinessException(ErrorAuthCode.EMAIL_CONFLICT);
 		}
 		User user = UserFactory.create(inputUser, encoder);

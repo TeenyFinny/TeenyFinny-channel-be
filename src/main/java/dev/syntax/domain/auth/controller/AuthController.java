@@ -10,12 +10,12 @@ import org.springframework.web.bind.annotation.RestController;
 import dev.syntax.domain.auth.dto.EmailValidationReq;
 import dev.syntax.domain.auth.dto.EmailValidationRes;
 import dev.syntax.domain.auth.dto.SignupReq;
+import dev.syntax.domain.auth.service.AuthService;
 import dev.syntax.domain.auth.service.SignupService;
 import dev.syntax.domain.user.repository.UserRepository;
 import dev.syntax.global.response.ApiResponseUtil;
 import dev.syntax.global.response.BaseResponse;
 import dev.syntax.global.response.SuccessCode;
-import dev.syntax.global.response.error.ErrorAuthCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class AuthController {
 
+	private final AuthService authService;
 	private final SignupService signupService;
 	private final UserRepository userRepository;
 
@@ -45,11 +46,7 @@ public class AuthController {
 	public ResponseEntity<BaseResponse<?>> verifyEmail(
 		@Valid @RequestBody EmailValidationReq req
 	) {
-		boolean exists = userRepository.findByEmail(req.email()).isPresent();
-		// 이미 존재
-		if (exists) {
-			return ApiResponseUtil.failure(ErrorAuthCode.EMAIL_CONFLICT);
-		}
+		authService.checkEmailDuplicate(req);
 		return ApiResponseUtil.success(SuccessCode.OK, new EmailValidationRes(true));
 	}
 }
