@@ -12,7 +12,6 @@ import dev.syntax.domain.auth.dto.EmailValidationRes;
 import dev.syntax.domain.auth.dto.SignupReq;
 import dev.syntax.domain.auth.service.AuthService;
 import dev.syntax.domain.auth.service.SignupService;
-import dev.syntax.domain.user.repository.UserRepository;
 import dev.syntax.global.response.ApiResponseUtil;
 import dev.syntax.global.response.BaseResponse;
 import dev.syntax.global.response.SuccessCode;
@@ -34,7 +33,6 @@ public class AuthController {
 
 	private final AuthService authService;
 	private final SignupService signupService;
-	private final UserRepository userRepository;
 
 	@PostMapping("/signup")
 	public ResponseEntity<BaseResponse<?>> signup(@Valid @RequestBody SignupReq signupReq) {
