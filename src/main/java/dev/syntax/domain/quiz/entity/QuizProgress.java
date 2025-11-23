@@ -1,5 +1,6 @@
 package dev.syntax.domain.quiz.entity;
 
+import dev.syntax.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
 
 import lombok.*;
@@ -14,7 +15,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class QuizProgress {
+public class QuizProgress extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,11 +24,30 @@ public class QuizProgress {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    private int streakDays;
-    private boolean courseCompleted;
+    @Builder.Default
+    @Column(name = "streak_days", nullable = false)
+    private int streakDays = 0;
+
+    @Builder.Default
+    @Column(name = "course_completed", nullable = false)
+    private boolean courseCompleted = false;
+
+    @Column(name = "quiz_date", nullable = false)
     private int quizDate;
-    private boolean monthlyReward;
-    private int todaySolved;
-    private int coupon;
-    private boolean requestCompleted;
+
+    @Builder.Default
+    @Column(name = "monthly_reward", nullable = false)
+    private boolean monthlyReward = false;
+
+    @Builder.Default
+    @Column(name = "today_solved", nullable = false)
+    private int todaySolved = 0;
+
+    @Builder.Default
+    @Column(name = "coupon", nullable = false)
+    private int coupon = 0;
+
+    @Builder.Default
+    @Column(name = "request_completed", nullable = false)
+    private boolean requestCompleted = false;
 }
