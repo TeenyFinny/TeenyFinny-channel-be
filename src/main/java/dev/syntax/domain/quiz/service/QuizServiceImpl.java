@@ -1,12 +1,14 @@
-package dev.syntax.domain.quiz.service.impl;
+package dev.syntax.domain.quiz.service;
 
+import dev.syntax.global.response.error.ErrorBaseCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import dev.syntax.global.exception.BusinessException;
 
 import dev.syntax.domain.quiz.dto.QuizProgressRes;
 import dev.syntax.domain.quiz.entity.QuizProgress;
 import dev.syntax.domain.quiz.repository.QuizProgressRepository;
-import dev.syntax.domain.quiz.service.QuizService;
 import dev.syntax.global.auth.dto.UserContext;
 import lombok.RequiredArgsConstructor;
 
@@ -21,7 +23,7 @@ public class QuizServiceImpl implements QuizService {
     public QuizProgressRes getQuizProgress(UserContext context) {
         Long userId = context.getId();
         QuizProgress progress = quizProgressRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자 진행도가 존재하지 않습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.QUIZ_PROGRESS_NOT_FOUND));
 
         return QuizProgressRes.builder()
                 .progressId(progress.getId())
