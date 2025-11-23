@@ -75,6 +75,7 @@ public class UserContext implements UserDetails {
 		this.children = user.getChildren() != null
 			? user.getChildren().stream()
 			.map(UserRelationship::getChild)
+			.filter(child -> child != null)  // child가 null인 경우 제외 (OTP 대기 중인 관계)
 			.map(User::getId)
 			.collect(Collectors.toList())
 			: Collections.emptyList();

@@ -8,15 +8,20 @@ import dev.syntax.domain.user.entity.UserRelationship;
 import dev.syntax.domain.user.enums.Role;
 import dev.syntax.domain.user.repository.UserRelationshipRepository;
 import dev.syntax.domain.user.repository.UserRepository;
+import dev.syntax.global.auth.dto.UserContext;
+import dev.syntax.global.auth.jwt.JwtTokenProvider;
 import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorAuthCode;
 import dev.syntax.global.response.error.ErrorBaseCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,12 +30,14 @@ public class FamilyServiceImpl implements FamilyService {
 
     private final UserRepository userRepository;
     private final UserRelationshipRepository relationshipRepository;
+    private final JwtTokenProvider jwtTokenProvider;
     private static final SecureRandom RANDOM = new SecureRandom();
     private static final long OTP_EXPIRATION_MINUTES = 1;
 
     /**
      * 부모 사용자를 위한 6자리 OTP를 생성하고 UserRelationship에 저장합니다.
      * child는 null로 설정되어 나중에 자녀가 OTP를 입력하면 업데이트됩니다.
+     * 이미 미사용 OTP가 있으면 삭제 후 새로운 OTP를 생성합니다.
      */
     @Override
     @Transactional
@@ -42,16 +49,19 @@ public class FamilyServiceImpl implements FamilyService {
             throw new BusinessException(ErrorAuthCode.ACCESS_DENIED);
         }
 
+        // 기존 pending OTP가 있으면 삭제 (createdAt 갱신을 위해)
+        Optional<UserRelationship> existingPending = relationshipRepository.findByParentAndChildIsNull(parent);
+        existingPending.ifPresent(relationshipRepository::delete);
+
         // 6자리 랜덤 OTP 생성
         String otp = String.format("%06d", RANDOM.nextInt(1000000));
 
-        // child가 null인 UserRelationship 생성 (OTP 임시 저장용)
+        // 새로운 pending relationship 생성
         UserRelationship pendingRelationship = UserRelationship.builder()
                 .parent(parent)
-                .child(null)  // 자녀는 나중에 업데이트
+                .child(null) // 자녀는 나중에 업데이트
                 .familyOtp(otp)
                 .build();
-        
         relationshipRepository.save(pendingRelationship);
 
         return OtpGenerateRes.builder()
@@ -69,6 +79,14 @@ public class FamilyServiceImpl implements FamilyService {
             throw new BusinessException(ErrorAuthCode.ACCESS_DENIED);
         }
 
+        // 자녀가 이미 부모가 있는지 확인 (다른 부모와 등록되어 있는지)
+        boolean hasParent = child.getParents() != null && !child.getParents().isEmpty()
+                && child.getParents().stream().anyMatch(rel -> rel.getChild() != null);
+        
+        if (hasParent) {
+            throw new BusinessException(ErrorBaseCode.CONFLICT);
+        }
+
         // OTP로 child가 null인 UserRelationship 찾기
         UserRelationship pendingRelationship = relationshipRepository
                 .findByFamilyOtpAndChildIsNull(request.familyOtp())
@@ -76,19 +94,14 @@ public class FamilyServiceImpl implements FamilyService {
 
         // 생성 시간 검증 (1분 이내)
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime expirationTime = pendingRelationship.getCreatedAt().plusMinutes(OTP_EXPIRATION_MINUTES);
-        
+        LocalDateTime createdAt = pendingRelationship.getCreatedAt();
+        LocalDateTime expirationTime = createdAt.plusMinutes(OTP_EXPIRATION_MINUTES);
+
         if (now.isAfter(expirationTime)) {
             throw new BusinessException(ErrorAuthCode.FAMILY_OTP_TIMEOUT);
         }
 
         User parent = pendingRelationship.getParent();
-
-        // 이미 이 부모와 자녀 간에 관계가 있는지 확인
-        boolean relationshipExists = relationshipRepository.existsByParentAndChild(parent, child);
-        if (relationshipExists) {
-            throw new BusinessException(ErrorBaseCode.CONFLICT);
-        }
 
         // pending relationship의 child를 업데이트
         UserRelationship updatedRelationship = UserRelationship.builder()
@@ -100,9 +113,24 @@ public class FamilyServiceImpl implements FamilyService {
         
         relationshipRepository.save(updatedRelationship);
 
+        // 가족 관계가 변경되었으므로 User 다시 조회하여 최신 UserContext 생성
+        User updatedChild = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorAuthCode.ACCESS_DENIED));
+        
+        UserContext updatedContext = new UserContext(updatedChild);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                updatedContext,
+                null,
+                updatedContext.getAuthorities()
+        );
+        
+        // 새로운 JWT 토큰 생성
+        String newAccessToken = jwtTokenProvider.generateToken(authentication);
+
         return OtpVerifyRes.builder()
                 .userId(child.getId())
                 .parentId(parent.getId())
+                .accessToken(newAccessToken)
                 .build();
     }
 }

@@ -66,6 +66,20 @@ public class AuthController {
 	}
 
 	/**
+	 * 사용자의 최신 정보로 새로운 JWT 토큰을 발급합니다.
+	 * 가족 관계 변경 등으로 UserContext 업데이트가 필요할 때 사용합니다.
+	 *
+	 * @param context 인증된 사용자 컨텍스트
+	 * @return 새로운 JWT 토큰
+	 */
+	@GetMapping("/refresh")
+	public ResponseEntity<BaseResponse<?>> refreshToken(@CurrentUser UserContext context) {
+		RefreshTokenRes response = authService.refreshToken(context.getId());
+		log.info("[토큰 갱신 완료] user_id: {}", context.getId());
+		return ApiResponseUtil.success(SuccessCode.OK, response);
+	}
+
+	/**
 	 * 부모 사용자를 위한 OTP를 생성합니다.
 	 *
 	 * @param context 인증된 사용자 컨텍스트
