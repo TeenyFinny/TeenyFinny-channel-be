@@ -8,14 +8,10 @@ import dev.syntax.domain.user.entity.UserRelationship;
 import dev.syntax.domain.user.enums.Role;
 import dev.syntax.domain.user.repository.UserRelationshipRepository;
 import dev.syntax.domain.user.repository.UserRepository;
-import dev.syntax.global.auth.dto.UserContext;
-import dev.syntax.global.auth.jwt.JwtTokenProvider;
 import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorAuthCode;
 import dev.syntax.global.response.error.ErrorBaseCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +26,7 @@ public class FamilyServiceImpl implements FamilyService {
 
     private final UserRepository userRepository;
     private final UserRelationshipRepository relationshipRepository;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final AuthService authService;
     private static final SecureRandom RANDOM = new SecureRandom();
     private static final long OTP_EXPIRATION_MINUTES = 1;
 
@@ -80,9 +76,8 @@ public class FamilyServiceImpl implements FamilyService {
         }
 
         // 자녀가 이미 부모가 있는지 확인 (다른 부모와 등록되어 있는지)
-        boolean hasParent = child.getParents() != null && !child.getParents().isEmpty()
-                && child.getParents().stream().anyMatch(rel -> rel.getChild() != null);
-        
+        boolean hasParent = !child.getParents().isEmpty();
+
         if (hasParent) {
             throw new BusinessException(ErrorBaseCode.CONFLICT);
         }
@@ -113,19 +108,9 @@ public class FamilyServiceImpl implements FamilyService {
         
         relationshipRepository.save(updatedRelationship);
 
-        // 가족 관계가 변경되었으므로 User 다시 조회하여 최신 UserContext 생성
-        User updatedChild = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorAuthCode.ACCESS_DENIED));
-        
-        UserContext updatedContext = new UserContext(updatedChild);
-        Authentication authentication = new UsernamePasswordAuthenticationToken(
-                updatedContext,
-                null,
-                updatedContext.getAuthorities()
-        );
-        
-        // 새로운 JWT 토큰 생성
-        String newAccessToken = jwtTokenProvider.generateToken(authentication);
+        // 가족 관계가 변경되었으므로 User 다시 조회하여 최신 UserContext 생성 후 JWT 토큰 생성
+        // refreshToken() 호출로 토큰 재발급 책임 단일화
+        String newAccessToken = authService.refreshToken(userId).accessToken();
 
         return OtpVerifyRes.builder()
                 .userId(child.getId())

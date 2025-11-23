@@ -1,16 +1,16 @@
 package dev.syntax.global.exception;
 
+import dev.syntax.global.response.ApiResponseUtil;
+import dev.syntax.global.response.BaseResponse;
+import dev.syntax.global.response.error.ErrorAuthCode;
+import dev.syntax.global.response.error.ErrorBaseCode;
+import dev.syntax.global.response.error.ErrorCode;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import dev.syntax.global.response.ApiResponseUtil;
-import dev.syntax.global.response.BaseResponse;
-import dev.syntax.global.response.error.ErrorAuthCode;
-import dev.syntax.global.response.error.ErrorBaseCode;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 전역 예외 처리를 담당하는 핸들러입니다.
@@ -39,15 +39,8 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler(CustomBaseException.class)
 	public ResponseEntity<BaseResponse<?>> handleCustomException(CustomBaseException e) {
-		log.error("CustomException: {}", e.getMessage());
-		
-		// ErrorAuthCode인 경우 AuthErrorResponse 반환
-		if (e.getErrorCode() instanceof ErrorAuthCode) {
-			return ApiResponseUtil.failure((ErrorAuthCode) e.getErrorCode());
-		}
-		
-		// 그 외에는 BaseErrorResponse 반환
-		return ApiResponseUtil.failure(e.getErrorCode());
+		log.error("[CustomException] {}: {}", e.getErrorCode(), e.getMessage());
+		return createErrorResponse(e.getErrorCode());
 	}
 
 	/**
@@ -57,15 +50,15 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler(BusinessException.class)
 	public ResponseEntity<BaseResponse<?>> handleBusinessException(BusinessException e) {
-		log.error("BusinessException: {}", e.getMessage());
-		
-		// ErrorAuthCode인 경우 AuthErrorResponse 반환
-		if (e.getErrorCode() instanceof ErrorAuthCode) {
-			return ApiResponseUtil.failure((ErrorAuthCode) e.getErrorCode());
+		log.error("[BusinessException] {} : {}", e.getErrorCode(), e.getMessage());
+		return createErrorResponse(e.getErrorCode());
+	}
+
+	private ResponseEntity<BaseResponse<?>> createErrorResponse(ErrorCode errorCode) {
+		if (errorCode instanceof ErrorAuthCode) {
+			return ApiResponseUtil.failure((ErrorAuthCode) errorCode);
 		}
-		
-		// 그 외에는 BaseErrorResponse 반환
-		return ApiResponseUtil.failure(e.getErrorCode());
+		return ApiResponseUtil.failure(errorCode);
 	}
 
 	/**
