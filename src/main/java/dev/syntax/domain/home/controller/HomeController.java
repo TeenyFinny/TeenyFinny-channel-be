@@ -29,13 +29,13 @@ public class HomeController {
 	/**
 	 * 홈 화면 데이터를 조회합니다.
 	 *
-	 * @param user 인증된 사용자 컨텍스트
+	 * @param context 인증된 사용자 컨텍스트
 	 * @return 홈 화면 데이터 응답
 	 */
 	@GetMapping
-	public ResponseEntity<BaseResponse<?>> getHome(@CurrentUser UserContext user) {
-		HomeRes response = homeService.getHomeData(user.getId());
-		log.info("홈 화면 조회 성공: userId = {}, userRole = {}", user.getId(), user.getRole());
+	public ResponseEntity<BaseResponse<?>> getHome(@CurrentUser UserContext context) {
+		HomeRes response = homeService.getHomeData(context);
+		log.info("홈 화면 조회 성공: userId = {}, userRole = {}", context.getId(), context.getRole());
 		return ApiResponseUtil.success(SuccessCode.OK, response);
 	}
 }

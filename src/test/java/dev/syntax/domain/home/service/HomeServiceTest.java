@@ -5,7 +5,6 @@ import static org.mockito.BDDMockito.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,7 +18,7 @@ import dev.syntax.domain.home.dto.HomeRes;
 import dev.syntax.domain.user.entity.User;
 import dev.syntax.domain.user.entity.UserRelationship;
 import dev.syntax.domain.user.enums.Role;
-import dev.syntax.domain.user.repository.UserRepository;
+import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.global.service.BalanceProvider;
 
 /**
@@ -32,9 +31,6 @@ class HomeServiceTest {
 	private HomeServiceImpl homeService;
 
 	@Mock
-	private UserRepository userRepository;
-
-	@Mock
 	private BalanceProvider balanceProvider;
 
 	/**
@@ -44,20 +40,20 @@ class HomeServiceTest {
 	@DisplayName("부모 - 자녀 없는 경우")
 	void getHomeData_Parent_NoChildren() {
 		// given
-		Long userId = 1L;
 		User user = User.builder()
-			.id(userId)
+			.id(1L)
 			.name("이부모")
 			.role(Role.PARENT)
 			.email("parent@teenyfinny.com")
 			.children(new ArrayList<>())
 			.build();
 
-		given(userRepository.findById(userId)).willReturn(Optional.of(user));
+		UserContext context = new UserContext(user);
+
 		given(balanceProvider.getUserTotalBalance(user)).willReturn(50000L);
 
 		// when
-		HomeRes response = homeService.getHomeData(userId);
+		HomeRes response = homeService.getHomeData(context);
 
 		// then
 		assertThat(response.user().role()).isEqualTo(Role.PARENT);
@@ -71,15 +67,15 @@ class HomeServiceTest {
 	@Test
 	@DisplayName("부모 - 자녀 있는 경우")
 	void getHomeData_Parent_WithChildren() {
-		// given
-		Long parentId = 1L;
+		// parent
 		User parent = User.builder()
-			.id(parentId)
+			.id(1L)
 			.name("김부모")
 			.role(Role.PARENT)
 			.email("parent@teenyfinny.com")
 			.build();
 
+		// children
 		User child1 = User.builder()
 			.id(2L)
 			.name("김티니")
@@ -105,21 +101,21 @@ class HomeServiceTest {
 		List<UserRelationship> children = List.of(rel1, rel2);
 
 		parent = User.builder()
-			.id(parentId)
+			.id(1L)
 			.name("김부모")
 			.role(Role.PARENT)
 			.email("parent@teenyfinny.com")
 			.children(children)
 			.build();
 
-		given(userRepository.findById(parentId)).willReturn(Optional.of(parent));
+		UserContext context = new UserContext(parent);
 
 		given(balanceProvider.getUserTotalBalance(parent)).willReturn(100000L);
 		given(balanceProvider.getUserTotalBalance(child1)).willReturn(10000L);
 		given(balanceProvider.getUserTotalBalance(child2)).willReturn(5000L);
 
 		// when
-		HomeRes response = homeService.getHomeData(parentId);
+		HomeRes response = homeService.getHomeData(context);
 
 		// then
 		assertThat(response.user().role()).isEqualTo(Role.PARENT);
@@ -140,15 +136,14 @@ class HomeServiceTest {
 	@DisplayName("자녀의 경우")
 	void getHomeData_Child() {
 		// given
-		Long childId = 2L;
 		User child = User.builder()
-			.id(childId)
+			.id(2L)
 			.name("김티니")
 			.role(Role.CHILD)
 			.email("child@teenyfinny.com")
 			.build();
 
-		given(userRepository.findById(childId)).willReturn(Optional.of(child));
+		UserContext context = new UserContext(child);
 
 		given(balanceProvider.getUserTotalBalance(child)).willReturn(10000L);
 		given(balanceProvider.getUserBalanceByType(child, AccountType.ALLOWANCE)).willReturn(1000L);
@@ -156,7 +151,7 @@ class HomeServiceTest {
 		given(balanceProvider.getUserBalanceByType(child, AccountType.INVEST)).willReturn(0L);
 
 		// when
-		HomeRes response = homeService.getHomeData(childId);
+		HomeRes response = homeService.getHomeData(context);
 
 		// then
 		assertThat(response.user().role()).isEqualTo(Role.CHILD);

@@ -46,6 +46,8 @@ import lombok.Getter;
 @Getter
 public class UserContext implements UserDetails {
 
+	private final User user;
+
 	private final Long id;
 	private final String email;
 	private final String password;   // bcrypt 해시
@@ -58,6 +60,7 @@ public class UserContext implements UserDetails {
 	private final Collection<? extends GrantedAuthority> authorities;
 
 	public UserContext(User user) {
+		this.user = user;
 		this.id = user.getId();
 		this.email = user.getEmail();
 		this.password = user.getPassword();
@@ -106,4 +109,5 @@ public class UserContext implements UserDetails {
 	public boolean isEnabled() {
 		return true;
 	}
+
 }
