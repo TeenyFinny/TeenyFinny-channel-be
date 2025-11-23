@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -33,5 +34,15 @@ public class AccountHistoryController { // 클래스명 오타(Accout -> Account
             @ModelAttribute AccountHistoryReq req) {
         return ApiResponseUtil.success(SuccessCode.OK,
                 accountHistoryService.getHistory(user.getId(), req, user));
+    }
+
+    @GetMapping("/{childId}/history")
+    public ResponseEntity<BaseResponse<?>> getChildHistory(
+            @CurrentUser UserContext user,
+            @PathVariable Long childId,
+            @ModelAttribute AccountHistoryReq req) {
+        return ApiResponseUtil.success(
+                SuccessCode.OK,
+                accountHistoryService.getHistory(childId, req, user));
     }
 }
