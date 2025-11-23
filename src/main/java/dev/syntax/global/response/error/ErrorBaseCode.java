@@ -1,9 +1,10 @@
 package dev.syntax.global.response.error;
 
+import org.springframework.http.HttpStatus;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 
 /**
  * 인증/인가(Auth)를 제외한 일반 도메인/플랫폼 영역의 오류 코드를 관리하는 열거형입니다.
@@ -35,99 +36,97 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public enum ErrorBaseCode implements ErrorCode {
 
-    /**
-     * 400 BAD_REQUEST - 잘못된 요청
-     */
-    BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
+	/**
+	 * 400 BAD_REQUEST - 잘못된 요청
+	 */
+	BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
 
-    /**
-     * 401 UNAUTHORIZED - 리소스 접근 권한
-     */
-    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증되지 않은 사용자입니다."),
+	/**
+	 * 401 UNAUTHORIZED - 리소스 접근 권한
+	 */
+	UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증되지 않은 사용자입니다."),
 
-    /**
-     * 403 FORBIDDEN - 리소스 접근 금지
-     */
-    FORBIDDEN(HttpStatus.FORBIDDEN, "리소스 접근이 거부되었습니다."),
+	/**
+	 * 403 FORBIDDEN - 리소스 접근 금지
+	 */
+	FORBIDDEN(HttpStatus.FORBIDDEN, "리소스 접근이 거부되었습니다."),
 
-    /**
-     * 404 NOT FOUND - 찾을 수 없음
-     */
-    NOT_FOUND_ENTITY(HttpStatus.NOT_FOUND, "대상을 찾을 수 없습니다."),
+	/**
+	 * 404 NOT FOUND - 찾을 수 없음
+	 */
+	NOT_FOUND_ENTITY(HttpStatus.NOT_FOUND, "대상을 찾을 수 없습니다."),
+	USER_NOT_FOUND(HttpStatus.NOT_FOUND, "대상을 찾을 수 없습니다."),
 
-    /**
-     * 405 METHOD NOT ALLOWED - 허용되지 않은 메서드
-     */
-    METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED,  "잘못된 HTTP METHOD 요청입니다."),
+	/**
+	 * 405 METHOD NOT ALLOWED - 허용되지 않은 메서드
+	 */
+	METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "잘못된 HTTP METHOD 요청입니다."),
 
-    /**
-     * 409 CONFLICT
-     */
-    CONFLICT(HttpStatus.CONFLICT, "이미 존재하는 리소스입니다."),
+	/**
+	 * 409 CONFLICT
+	 */
+	CONFLICT(HttpStatus.CONFLICT, "이미 존재하는 리소스입니다."),
 
-    /**
-     * 410 GONE
-     */
-    GONE(HttpStatus.GONE, "더 이상 사용되지 않는 리소스입니다."),
+	/**
+	 * 410 GONE
+	 */
+	GONE(HttpStatus.GONE, "더 이상 사용되지 않는 리소스입니다."),
 
-    /**
-     * 413 PAYLOAD_TOO_LARGE
-     */
-    PAYLOAD_TOO_LARGE(HttpStatus.PAYLOAD_TOO_LARGE, "요청 데이터 크기가 너무 큽니다."),
+	/**
+	 * 413 PAYLOAD_TOO_LARGE
+	 */
+	PAYLOAD_TOO_LARGE(HttpStatus.PAYLOAD_TOO_LARGE, "요청 데이터 크기가 너무 큽니다."),
 
-    /**
-     * 415 UNSUPPORTED_MEDIA_TYPE
-     */
-    UNSUPPORTED_MEDIA_TYPE(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "지원되지 않는 데이터 형식입니다."),
+	/**
+	 * 415 UNSUPPORTED_MEDIA_TYPE
+	 */
+	UNSUPPORTED_MEDIA_TYPE(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "지원되지 않는 데이터 형식입니다."),
 
-    /**
-     * 429 TOO_MANY_REQUESTS
-     */
-    TOO_MANY_REQUESTS(HttpStatus.TOO_MANY_REQUESTS, "너무 많은 요청입니다."),
+	/**
+	 * 429 TOO_MANY_REQUESTS
+	 */
+	TOO_MANY_REQUESTS(HttpStatus.TOO_MANY_REQUESTS, "너무 많은 요청입니다."),
 
-    /**
-     * 500 INTERNAL SERVER ERROR
-     */
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류입니다."),
+	/**
+	 * 500 INTERNAL SERVER ERROR
+	 */
+	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류입니다."),
 
-    /**
-     * 501 NOT IMPLEMENTED
-     */
-    NOT_IMPLEMENTED(HttpStatus.NOT_IMPLEMENTED, "NOT_IMPLEMENTED"),
+	/**
+	 * 501 NOT IMPLEMENTED
+	 */
+	NOT_IMPLEMENTED(HttpStatus.NOT_IMPLEMENTED, "NOT_IMPLEMENTED"),
 
-    /**
-     * 502 BAD_GATEWAY
-     */
-    BAD_GATEWAY(HttpStatus.BAD_GATEWAY, "BAD GATEWAY."),
+	/**
+	 * 502 BAD_GATEWAY
+	 */
+	BAD_GATEWAY(HttpStatus.BAD_GATEWAY, "BAD GATEWAY."),
 
-    /**
-     * 503 SERVICE_UNAVAILABLE
-     */
-    SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "SERVICE_UNAVAILABLE"),
+	/**
+	 * 503 SERVICE_UNAVAILABLE
+	 */
+	SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "SERVICE_UNAVAILABLE"),
 
+	/**
+	 * 504 GATEWAY_TIMEOUT
+	 */
+	GATEWAY_TIMEOUT(HttpStatus.GATEWAY_TIMEOUT, "GATEWAY_TIMEOUT"),
 
-    /**
-     * 504 GATEWAY_TIMEOUT
-     */
-    GATEWAY_TIMEOUT(HttpStatus.GATEWAY_TIMEOUT, "GATEWAY_TIMEOUT"),
+	/**
+	 * 504 GATEWAY_TIMEOUT
+	 */
+	HTTP_VERSION_NOT_SUPPORTED(HttpStatus.HTTP_VERSION_NOT_SUPPORTED, "HTTP_VERSION_NOT_SUPPORTED");
 
-    /**
-     * 504 GATEWAY_TIMEOUT
-     */
-    HTTP_VERSION_NOT_SUPPORTED(HttpStatus.HTTP_VERSION_NOT_SUPPORTED, "HTTP_VERSION_NOT_SUPPORTED");
+	private final HttpStatus httpStatus;
+	private final String message;
 
+	@Override
+	public HttpStatus getHttpStatus() {
+		return httpStatus;
+	}
 
-
-    private final HttpStatus httpStatus;
-    private final String message;
-
-    @Override
-    public HttpStatus getHttpStatus() {
-        return httpStatus;
-    }
-
-    @Override
-    public String getMessage() {
-        return message;
-    }
+	@Override
+	public String getMessage() {
+		return message;
+	}
 }

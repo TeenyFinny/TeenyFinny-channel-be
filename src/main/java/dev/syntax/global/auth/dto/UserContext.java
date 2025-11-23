@@ -17,34 +17,42 @@ import lombok.Getter;
  * UserContext
  *
  * <p>Spring Security의 UserDetails 구현체로,
- * 인증된 사용자 정보를 SecurityContext에서 유지하기 위한 DTO입니다.
- * User 엔티티의 핵심 정보(권한, 가족 관계 등)를 인증 객체 형태로 변환하며,
- * JWT 인증 후에도 재구성 가능한 형태로 사용됩니다.
+ * 인증된 사용자 정보를 SecurityContext에 저장하기 위한 인증 모델입니다.
+ *
+ * <p>User 엔티티를 내부에 그대로 보관하며(children/parents는 fetch join으로 로딩됨),
+ * 서비스 계층(HomeService 등)에서 User 엔티티를 직접 사용해도 N+1 문제가 발생하지 않도록 설계되어 있습니다.
  *
  * <h2>담고 있는 정보</h2>
  * <ul>
+ *     <li><b>user</b> – 원본 User 엔티티 (children/parents 포함)</li>
  *     <li><b>id</b> – 사용자 PK (JWT subject로 사용)</li>
  *     <li><b>email</b> – 사용자 이메일</li>
- *     <li><b>password</b> – bcrypt 해시 비밀번호 (로그인 검증 시 사용)</li>
+ *     <li><b>password</b> – bcrypt 해시 비밀번호</li>
  *     <li><b>role</b> – 사용자 역할(PARENT / CHILD)</li>
- *     <li><b>familyId</b> – 가족 그룹 기준 ID (부모: 본인, 자녀: 부모 ID)</li>
- *     <li><b>parentId</b> – 자녀 계정일 경우 부모 ID</li>
- *     <li><b>children</b> – 부모 계정일 경우 자녀 ID 목록</li>
- *     <li><b>authorities</b> – Spring Security 인가에 사용할 권한 값(ROLE_ prefix 포함)</li>
+ *     <li><b>familyId</b> – 가족 단위 기준 ID (부모: 본인 ID / 자녀: 부모 ID)</li>
+ *     <li><b>parentId</b> – 자녀일 경우 부모 ID</li>
+ *     <li><b>children</b> – 부모일 경우 자녀 ID 목록</li>
+ *     <li><b>authorities</b> – Spring Security 인가 처리를 위한 권한 리스트</li>
  * </ul>
  *
  * <h2>역할</h2>
  * <ul>
- *     <li>로그인 성공 시 Authentication 객체의 Principal로 저장</li>
- *     <li>JWT 검증 후 DB 재조회로 최신 UserContext 재구성</li>
- *     <li>Spring Security 인가 처리(@PreAuthorize, hasRole 등)에서 사용</li>
+ *     <li>로그인 성공 시 Authentication의 Principal로 저장</li>
+ *     <li>JWT 재인증 시 DB에서 User를 재조회하여 최신 UserContext 생성</li>
+ *     <li>서비스 계층에서 @CurrentUser로 직접 UserContext를 주입받아 사용</li>
  * </ul>
+ *
+ * <p>이 클래스는 User 엔티티를 그대로 보관하므로,
+ * HomeService 등에서 userRepository.findById()를 다시 호출할 필요가 없으며
+ * Lazy Loading 및 N+1 문제를 원천적으로 차단합니다.</p>
  *
  * @see org.springframework.security.core.userdetails.UserDetails
  * @see dev.syntax.domain.user.entity.User
  */
 @Getter
 public class UserContext implements UserDetails {
+
+	private final User user;
 
 	private final Long id;
 	private final String email;
@@ -58,6 +66,7 @@ public class UserContext implements UserDetails {
 	private final Collection<? extends GrantedAuthority> authorities;
 
 	public UserContext(User user) {
+		this.user = user;
 		this.id = user.getId();
 		this.email = user.getEmail();
 		this.password = user.getPassword();
@@ -106,4 +115,5 @@ public class UserContext implements UserDetails {
 	public boolean isEnabled() {
 		return true;
 	}
+
 }
