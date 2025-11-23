@@ -29,7 +29,7 @@ class QuizServiceTest {
         User user = User.builder()
                 .id(1L)
                 .email("test@test.com")
-                .role(Role.PARENT)
+                .role(Role.CHILD)
                 .children(Collections.emptyList())
                 .parents(Collections.emptyList())
                 .build();
