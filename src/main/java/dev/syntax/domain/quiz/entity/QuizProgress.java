@@ -1,41 +1,33 @@
 package dev.syntax.domain.quiz.entity;
 
-import dev.syntax.domain.user.entity.User;
-import dev.syntax.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
+
 import lombok.*;
 
-import java.time.LocalDate;
-
+/**
+ * 퀴즈 진행도 엔티티
+ */
 @Entity
 @Table(name = "quiz_progress")
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class QuizProgress extends BaseTimeEntity {
+public class QuizProgress {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "progress_id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
-    @Column(name = "quiz_date")
-    private LocalDate quizDate;
-
-    @Builder.Default
-    @Column(name = "streak_days")
-    private Integer streakDays = 0;
-
-    @Builder.Default
-    @Column(name = "monthly_reward", nullable = false)
-    private Boolean monthlyReward = false;
-
-    @Builder.Default
-    @Column(name = "course_completed")
-    private Boolean courseCompleted = false;
+    private int streakDays;
+    private boolean courseCompleted;
+    private int quizDate;
+    private boolean monthlyReward;
+    private int todaySolved;
+    private int coupon;
+    private boolean requestCompleted;
 }
