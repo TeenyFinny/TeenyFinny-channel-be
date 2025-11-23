@@ -22,7 +22,7 @@ public class UserRelationship extends BaseEntity {
     private User parent;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "child_id", nullable = false)
+    @JoinColumn(name = "child_id", nullable = true)
     private User child;
 
     @Column(name = "family_otp", nullable = false, length = 10)

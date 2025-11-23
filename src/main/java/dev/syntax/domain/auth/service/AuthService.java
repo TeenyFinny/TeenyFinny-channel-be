@@ -1,6 +1,7 @@
 package dev.syntax.domain.auth.service;
 
 import dev.syntax.domain.auth.dto.EmailValidationReq;
+import dev.syntax.domain.auth.dto.RefreshTokenRes;
 import dev.syntax.global.exception.BusinessException;
 
 /**
@@ -22,5 +23,13 @@ public interface AuthService {
 	 * @throws BusinessException 이메일이 이미 존재하는 경우 발생
 	 */
 	void checkEmailDuplicate(EmailValidationReq request);
+
+	/**
+	 * 사용자의 최신 정보로 새로운 JWT 토큰을 발급합니다.
+	 *
+	 * @param userId 사용자 ID
+	 * @return 새로운 JWT 토큰
+	 */
+	RefreshTokenRes refreshToken(Long userId);
 }
 
