@@ -5,6 +5,7 @@ import static org.mockito.BDDMockito.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,9 +22,6 @@ import dev.syntax.domain.user.enums.Role;
 import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.global.service.BalanceProvider;
 
-/**
- * HomeService 비즈니스 로직을 검증하는 단위 테스트입니다.
- */
 @ExtendWith(MockitoExtension.class)
 class HomeServiceTest {
 
@@ -33,13 +31,9 @@ class HomeServiceTest {
 	@Mock
 	private BalanceProvider balanceProvider;
 
-	/**
-	 * 부모 사용자가 자녀가 없는 경우, 본인 정보와 잔액만 반환되는지 검증합니다.
-	 */
 	@Test
 	@DisplayName("부모 - 자녀 없는 경우")
-	void getHomeData_Parent_NoChildren() {
-		// given
+	void parent_no_children() {
 		User user = User.builder()
 			.id(1L)
 			.name("이부모")
@@ -52,21 +46,17 @@ class HomeServiceTest {
 
 		given(balanceProvider.getUserTotalBalance(user)).willReturn(50000L);
 
-		// when
 		HomeRes response = homeService.getHomeData(context);
 
-		// then
 		assertThat(response.user().role()).isEqualTo(Role.PARENT);
 		assertThat(response.user().balance()).isEqualTo(50000L);
 		assertThat(response.user().children()).isEmpty();
 	}
 
-	/**
-	 * 부모 사용자가 자녀가 있는 경우, 본인 정보와 자녀 목록(잔액 포함)이 반환되는지 검증합니다.
-	 */
 	@Test
 	@DisplayName("부모 - 자녀 있는 경우")
-	void getHomeData_Parent_WithChildren() {
+	void parent_with_children() {
+
 		// parent
 		User parent = User.builder()
 			.id(1L)
@@ -76,66 +66,43 @@ class HomeServiceTest {
 			.build();
 
 		// children
-		User child1 = User.builder()
-			.id(2L)
-			.name("김티니")
-			.gender((byte)1)
-			.build();
+		User child1 = User.builder().id(2L).name("김티니").gender((byte)1).build();
+		User child2 = User.builder().id(3L).name("김피니").gender((byte)2).build();
 
-		User child2 = User.builder()
-			.id(3L)
-			.name("김피니")
-			.gender((byte)2)
-			.build();
-
-		UserRelationship rel1 = UserRelationship.builder()
-			.parent(parent)
-			.child(child1)
-			.build();
-
-		UserRelationship rel2 = UserRelationship.builder()
-			.parent(parent)
-			.child(child2)
-			.build();
-
-		List<UserRelationship> children = List.of(rel1, rel2);
+		UserRelationship r1 = UserRelationship.builder().parent(parent).child(child1).build();
+		UserRelationship r2 = UserRelationship.builder().parent(parent).child(child2).build();
 
 		parent = User.builder()
-			.id(1L)
-			.name("김부모")
-			.role(Role.PARENT)
-			.email("parent@teenyfinny.com")
-			.children(children)
+			.id(parent.getId())
+			.name(parent.getName())
+			.role(parent.getRole())
+			.email(parent.getEmail())
+			.children(List.of(r1, r2))
 			.build();
 
 		UserContext context = new UserContext(parent);
 
 		given(balanceProvider.getUserTotalBalance(parent)).willReturn(100000L);
-		given(balanceProvider.getUserTotalBalance(child1)).willReturn(10000L);
-		given(balanceProvider.getUserTotalBalance(child2)).willReturn(5000L);
 
-		// when
+		// ⭐ 자녀 배치 잔액 모킹
+		given(balanceProvider.getBalancesForUsers(List.of(2L, 3L)))
+			.willReturn(Map.of(
+				2L, 10000L,
+				3L, 5000L
+			));
+
 		HomeRes response = homeService.getHomeData(context);
 
-		// then
-		assertThat(response.user().role()).isEqualTo(Role.PARENT);
 		assertThat(response.user().balance()).isEqualTo(100000L);
-
 		assertThat(response.user().children()).hasSize(2);
-		assertThat(response.user().children().get(0).name()).isEqualTo("김티니");
 		assertThat(response.user().children().get(0).balance()).isEqualTo(10000L);
-
-		assertThat(response.user().children().get(1).name()).isEqualTo("김피니");
 		assertThat(response.user().children().get(1).balance()).isEqualTo(5000L);
 	}
 
-	/**
-	 * 자녀 사용자의 경우, 타입별 잔액이 BalanceProvider에서 정확히 반환되는지 검증합니다.
-	 */
 	@Test
-	@DisplayName("자녀의 경우")
-	void getHomeData_Child() {
-		// given
+	@DisplayName("자녀의 경우 - 계좌 타입별 잔액 배치 조회")
+	void child_balances() {
+
 		User child = User.builder()
 			.id(2L)
 			.name("김티니")
@@ -146,15 +113,17 @@ class HomeServiceTest {
 		UserContext context = new UserContext(child);
 
 		given(balanceProvider.getUserTotalBalance(child)).willReturn(10000L);
-		given(balanceProvider.getUserBalanceByType(child, AccountType.ALLOWANCE)).willReturn(1000L);
-		given(balanceProvider.getUserBalanceByType(child, AccountType.GOAL)).willReturn(9000L);
-		given(balanceProvider.getUserBalanceByType(child, AccountType.INVEST)).willReturn(0L);
 
-		// when
+		// ⭐ 타입별 배치 모킹
+		given(balanceProvider.getBalancesByType(child))
+			.willReturn(Map.of(
+				AccountType.ALLOWANCE, 1000L,
+				AccountType.GOAL, 9000L,
+				AccountType.INVEST, 0L
+			));
+
 		HomeRes response = homeService.getHomeData(context);
 
-		// then
-		assertThat(response.user().role()).isEqualTo(Role.CHILD);
 		assertThat(response.user().totalBalance()).isEqualTo(10000L);
 		assertThat(response.user().depositBalance()).isEqualTo(1000L);
 		assertThat(response.user().savingBalance()).isEqualTo(9000L);

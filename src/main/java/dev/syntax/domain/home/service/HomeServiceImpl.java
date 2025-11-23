@@ -1,6 +1,7 @@
 package dev.syntax.domain.home.service;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,13 +40,24 @@ public class HomeServiceImpl implements HomeService {
 
 		long parentBalance = balanceProvider.getUserTotalBalance(user);
 
-		List<HomeRes.ChildDto> children = user.getChildren().stream()
+		// 자녀 userId 리스트 추출
+		List<User> childrenUsers = user.getChildren().stream()
 			.map(UserRelationship::getChild)
+			.toList();
+
+		List<Long> childIds = childrenUsers.stream()
+			.map(User::getId)
+			.toList();
+
+		// 배치 조회
+		Map<Long, Long> childBalances = balanceProvider.getBalancesForUsers(childIds);
+
+		List<HomeRes.ChildDto> children = childrenUsers.stream()
 			.map(child -> HomeRes.ChildDto.builder()
 				.userId(child.getId())
 				.name(child.getName())
-				.balance(balanceProvider.getUserTotalBalance(child))
 				.gender(child.getGender())
+				.balance(childBalances.getOrDefault(child.getId(), 0L))
 				.build())
 			.toList();
 
@@ -68,6 +80,9 @@ public class HomeServiceImpl implements HomeService {
 
 		long totalBalance = balanceProvider.getUserTotalBalance(user);
 
+		// 자녀 1명의 계좌 타입별 잔액을 한 번에 배치 조회
+		Map<AccountType, Long> balances = balanceProvider.getBalancesByType(user);
+
 		return HomeRes.builder()
 			.user(HomeRes.UserDto.builder()
 				.userId(user.getId())
@@ -75,9 +90,9 @@ public class HomeServiceImpl implements HomeService {
 				.role(user.getRole())
 				.email(user.getEmail())
 				.totalBalance(totalBalance)
-				.depositBalance(balanceProvider.getUserBalanceByType(user, AccountType.ALLOWANCE))
-				.investmentBalance(balanceProvider.getUserBalanceByType(user, AccountType.INVEST))
-				.savingBalance(balanceProvider.getUserBalanceByType(user, AccountType.GOAL))
+				.depositBalance(balances.getOrDefault(AccountType.ALLOWANCE, 0L))
+				.investmentBalance(balances.getOrDefault(AccountType.INVEST, 0L))
+				.savingBalance(balances.getOrDefault(AccountType.GOAL, 0L))
 				.build())
 			.build();
 	}
