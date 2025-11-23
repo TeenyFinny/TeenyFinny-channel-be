@@ -35,20 +35,36 @@ public class GlobalExceptionHandler {
 	/**
 	 * CustomBaseException 처리.
 	 * 컨트롤러 또는 요청 처리 과정에서 발생한 커스텀 예외를 변환합니다.
+	 * ErrorAuthCode인 경우 AuthErrorResponse를, 그 외에는 BaseErrorResponse를 반환합니다.
 	 */
 	@ExceptionHandler(CustomBaseException.class)
 	public ResponseEntity<BaseResponse<?>> handleCustomException(CustomBaseException e) {
 		log.error("CustomException: {}", e.getMessage());
+		
+		// ErrorAuthCode인 경우 AuthErrorResponse 반환
+		if (e.getErrorCode() instanceof ErrorAuthCode) {
+			return ApiResponseUtil.failure((ErrorAuthCode) e.getErrorCode());
+		}
+		
+		// 그 외에는 BaseErrorResponse 반환
 		return ApiResponseUtil.failure(e.getErrorCode());
 	}
 
 	/**
 	 * BusinessException 처리.
 	 * 서비스·도메인 계층의 비즈니스 규칙 위반 예외를 처리합니다.
+	 * ErrorAuthCode인 경우 AuthErrorResponse를, 그 외에는 BaseErrorResponse를 반환합니다.
 	 */
 	@ExceptionHandler(BusinessException.class)
 	public ResponseEntity<BaseResponse<?>> handleBusinessException(BusinessException e) {
 		log.error("BusinessException: {}", e.getMessage());
+		
+		// ErrorAuthCode인 경우 AuthErrorResponse 반환
+		if (e.getErrorCode() instanceof ErrorAuthCode) {
+			return ApiResponseUtil.failure((ErrorAuthCode) e.getErrorCode());
+		}
+		
+		// 그 외에는 BaseErrorResponse 반환
 		return ApiResponseUtil.failure(e.getErrorCode());
 	}
 
