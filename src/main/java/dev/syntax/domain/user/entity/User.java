@@ -3,7 +3,11 @@ package dev.syntax.domain.user.entity;
 import dev.syntax.domain.user.enums.Role;
 import dev.syntax.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +60,9 @@ public class User extends BaseTimeEntity {
 
     @Column(name = "provider_id", length = 10)
     private String providerId;
+
+    @Column(name = "core_user_id")
+    private Long coreUserId;
 
     @Builder.Default
     @OneToMany(mappedBy = "parent")
