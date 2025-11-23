@@ -1,10 +1,9 @@
 package dev.syntax.global.response.error;
 
-import org.springframework.http.HttpStatus;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 
 /**
  * 인증/인가(Auth) 관련 오류 코드를 관리하는 열거형입니다.
@@ -34,6 +33,8 @@ public enum ErrorAuthCode implements ErrorBaseCodeForErrorCode {
 	 * 401 UNAUTHORIZED - 인증 실패
 	 */
 	UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증되지 않은 사용자입니다.", "AUTH01"),
+	FAMILY_OTP_MISMATCH(HttpStatus.UNAUTHORIZED, "OTP 코드를 확인해주세요.", "FAM01"),
+	FAMILY_OTP_TIMEOUT(HttpStatus.UNAUTHORIZED, "OTP 코드가 만료되었습니다.", "FAM02"),
 
 	/**
 	 * 403 FORBIDDEN - 권한 부족
