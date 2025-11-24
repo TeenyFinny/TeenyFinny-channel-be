@@ -3,11 +3,11 @@ package dev.syntax.domain.quiz.service;
 import dev.syntax.domain.quiz.dto.QuizProgressRes;
 import dev.syntax.domain.quiz.entity.QuizProgress;
 import dev.syntax.domain.quiz.repository.QuizProgressRepository;
-import dev.syntax.domain.quiz.service.impl.QuizServiceImpl;
 import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.domain.user.entity.User;
 import dev.syntax.domain.user.enums.Role;
 
+import dev.syntax.global.exception.BusinessException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -82,8 +82,8 @@ class QuizServiceTest {
 
         try {
             service.getQuizProgress(context);
-        } catch (IllegalArgumentException e) {
-            assertEquals("사용자 진행도가 존재하지 않습니다.", e.getMessage());
+        } catch (BusinessException e) {
+            assertEquals("대상을 찾을 수 없습니다.", e.getMessage());
         }
     }
 }
