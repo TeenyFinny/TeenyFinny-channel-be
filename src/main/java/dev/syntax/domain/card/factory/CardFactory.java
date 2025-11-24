@@ -51,11 +51,18 @@ public class CardFactory {
      * 중복되지 않는 유니크한 카드 번호를 생성합니다.
      */
     private String generateUniqueCardNumber() {
-        String number;
-        do {
-            number = generateCardNumber();
-        } while (cardRepository.existsByNumber(number));
-        return number;
+        final int MAX_RETRIES = 10;
+
+        for (int i = 0; i < MAX_RETRIES; i++) {
+            String number = generateCardNumber();
+            if (!cardRepository.existsByNumber(number)) {
+                return number;
+            }
+        }
+
+        throw new IllegalStateException(
+                "최대 시도 횟수(" + MAX_RETRIES + "회) 후에도 고유한 카드 번호를 생성하는 데 실패했습니다."
+        );
     }
 
     /**
