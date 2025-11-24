@@ -50,7 +50,7 @@ public class CardController {
      * GET /account/card
      */
     @GetMapping("/card")
-    public ResponseEntity<BaseResponse<?>> getMyCard(UserContext ctx) {
+    public ResponseEntity<BaseResponse<?>> getMyCard(@CurrentUser UserContext ctx) {
         CardInfoRes res = cardInquiryService.getCardInfo(ctx.getId(), ctx);
         return ApiResponseUtil.success(SuccessCode.OK, res);
     }
@@ -62,7 +62,7 @@ public class CardController {
     @GetMapping("/{childId}/card")
     public ResponseEntity<BaseResponse<?>> getChildCard(
             @PathVariable Long childId,
-            UserContext ctx
+            @CurrentUser UserContext ctx
     ) {
         CardInfoRes res = cardInquiryService.getCardInfo(childId, ctx);
         return ApiResponseUtil.success(SuccessCode.OK, res);
