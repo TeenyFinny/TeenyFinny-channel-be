@@ -29,14 +29,6 @@ public class GoalServiceImpl implements GoalService {
             throw new BusinessException(ErrorBaseCode.GOAL_ACCESS_FORBIDDEN);
         }
 
-        if (req.getTargetAmount().compareTo(req.getMonthlyAmount()) < 0) {
-            throw new BusinessException(ErrorBaseCode.GOAL_INVALID_AMOUNT);
-        }
-
-        if (req.getPayDay() < 1 || req.getPayDay() > 31) {
-            throw new BusinessException(ErrorBaseCode.GOAL_INVALID_PAYDAY);
-        }
-
         Goal goal = Goal.builder()
                 .user(user)
                 .name(req.getName())
