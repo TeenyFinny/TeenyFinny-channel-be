@@ -1,7 +1,6 @@
 package dev.syntax.domain.goal.service;
 
-import dev.syntax.domain.goal.dto.GoalCreateReq;
-import dev.syntax.domain.goal.dto.GoalCreateRes;
+import dev.syntax.domain.goal.dto.*;
 import dev.syntax.domain.goal.entity.Goal;
 import dev.syntax.domain.goal.enums.GoalStatus;
 import dev.syntax.domain.goal.repository.GoalRepository;
@@ -28,7 +27,7 @@ public class GoalServiceImpl implements GoalService {
     @Override
     @Transactional
     public GoalCreateRes createGoal(UserContext userContext, GoalCreateReq req) {
-        User user = userRepository.findById(userContext.getUser().getId())
+        User user = userRepository.findById(userContext.getId())
                 .orElseThrow(() -> new BusinessException(ErrorBaseCode.USER_NOT_FOUND));
 
         if (!user.getRole().equals(Role.CHILD)) {
@@ -62,4 +61,54 @@ public class GoalServiceImpl implements GoalService {
 
         return new GoalCreateRes(goal);
     }
+
+    @Override
+    @Transactional
+    public GoalUpdateRes updateGoal(UserContext userContext, Long goalId, GoalUpdateReq req) {
+        User user = userRepository.findById(userContext.getId())
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.USER_NOT_FOUND));
+
+        Goal goal = goalRepository.findById(goalId)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_NOT_FOUND));
+
+        if (!goal.getUser().equals(user)) {
+            throw new BusinessException(ErrorBaseCode.GOAL_ACCESS_FORBIDDEN);
+        }
+
+        if (goal.getStatus() != GoalStatus.ONGOING) {
+            throw new BusinessException(ErrorBaseCode.GOAL_NOT_ONGOING);
+        }
+
+        Integer newPayDay = req.getPayDay();
+
+        if (newPayDay == null || newPayDay < 1 || newPayDay > 31) {
+            throw new BusinessException(ErrorBaseCode.GOAL_INVALID_PAYDAY);
+        }
+
+        goal.updatePayDay(newPayDay);
+
+        return new GoalUpdateRes(goal);
+    }
+
+    @Override
+    public GoalDetailRes getGoalForUpdate(UserContext userContext, Long goalId) {
+
+        User user = userRepository.findById(userContext.getId())
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.USER_NOT_FOUND));
+
+        Goal goal = goalRepository.findById(goalId)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_NOT_FOUND));
+
+        if (!goal.getUser().equals(user)) {
+            throw new BusinessException(ErrorBaseCode.GOAL_ACCESS_FORBIDDEN);
+        }
+
+        if (goal.getStatus() != GoalStatus.ONGOING) {
+            throw new BusinessException(ErrorBaseCode.GOAL_NOT_ONGOING);
+        }
+
+        return new GoalDetailRes(goal);
+    }
+
+
 }

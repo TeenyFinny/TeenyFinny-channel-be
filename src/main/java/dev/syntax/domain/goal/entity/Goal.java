@@ -42,4 +42,8 @@ public class Goal extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
     private GoalStatus status = GoalStatus.PENDING;
+
+    public void updatePayDay(Integer newPayDay) {
+        this.payDay = newPayDay;
+    }
 }
