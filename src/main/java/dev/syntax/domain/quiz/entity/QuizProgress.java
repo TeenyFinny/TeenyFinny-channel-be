@@ -1,5 +1,6 @@
 package dev.syntax.domain.quiz.entity;
 
+import dev.syntax.domain.quiz.dto.QuizProgressUpdateReq;
 import dev.syntax.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
 
@@ -54,4 +55,28 @@ public class QuizProgress extends BaseTimeEntity {
     @Builder.Default
     @Column(name = "first_quiz_id_today")
     private int firstQuizIdToday = 0;
+
+    public void update(QuizProgressUpdateReq req) {
+        if (req.getTodaySolved() != null) {
+            this.todaySolved = req.getTodaySolved();
+        }
+        if (req.getQuizDate() != null) {
+            this.quizDate = req.getQuizDate();
+        }
+        if (req.getCourseCompleted() != null) {
+            this.courseCompleted = req.getCourseCompleted();
+        }
+        if (req.getMonthlyReward() != null) {
+            this.monthlyReward = req.getMonthlyReward();
+        }
+        if (req.getCoupon() != null) {
+            this.coupon = req.getCoupon();
+        }
+        if (req.getRequestCompleted() != null) {
+            this.requestCompleted = req.getRequestCompleted();
+        }
+        if (req.getFirstQuizIdToday() != null) {
+            this.firstQuizIdToday = req.getFirstQuizIdToday();
+        }
+    }
 }
