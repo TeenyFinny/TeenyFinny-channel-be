@@ -22,9 +22,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class QuizServiceTest {
 
-    private final QuizProgressRepository repository = Mockito.mock(QuizProgressRepository.class);
-    private final QuizInfoRepository repository2 = Mockito.mock(QuizInfoRepository.class);
-    private final QuizService service = new QuizServiceImpl(repository,repository2);
+    private final QuizProgressRepository quizProgressRepositoryMock = Mockito.mock(QuizProgressRepository.class);
+    private final QuizInfoRepository quizInfoRepositoryMock = Mockito.mock(QuizInfoRepository.class);
+    private final QuizService service = new QuizServiceImpl(quizProgressRepositoryMock, quizInfoRepositoryMock);
 
     @Test
     @DisplayName("사용자 퀴즈 진행도 조회 성공")
@@ -53,7 +53,7 @@ class QuizServiceTest {
                 .requestCompleted(false)
                 .build();
 
-        Mockito.when(repository.findByUserId(1L)).thenReturn(Optional.of(progress));
+        Mockito.when( quizProgressRepositoryMock.findByUserId(1L)).thenReturn(Optional.of(progress));
 
         // 3) Service 호출
         QuizProgressRes res = service.getQuizProgress(context);
@@ -82,7 +82,7 @@ class QuizServiceTest {
 
         UserContext context = new UserContext(user);
 
-        Mockito.when(repository.findByUserId(99L)).thenReturn(Optional.empty());
+        Mockito.when( quizProgressRepositoryMock.findByUserId(99L)).thenReturn(Optional.empty());
 
         try {
             service.getQuizProgress(context);
@@ -112,7 +112,7 @@ class QuizServiceTest {
                 .explanation("share는 주식을 세는 단위가 맞습니다.")
                 .build();
 
-        Mockito.when(repository2.findById(1L))
+        Mockito.when( quizInfoRepositoryMock.findById(1L))
                 .thenReturn(Optional.of(quizInfo));
 
         // when
@@ -137,7 +137,7 @@ class QuizServiceTest {
                 .parents(Collections.emptyList())
                 .build();
 
-        Mockito.when(repository2.findById(999L))
+        Mockito.when( quizInfoRepositoryMock.findById(999L))
                 .thenReturn(Optional.empty());
 
         try {
