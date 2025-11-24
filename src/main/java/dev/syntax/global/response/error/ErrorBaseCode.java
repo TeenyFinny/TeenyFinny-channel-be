@@ -49,7 +49,7 @@ public enum ErrorBaseCode implements ErrorCode {
 	GOAL_ALREADY_PENDING(HttpStatus.BAD_REQUEST, "이미 승인 대기 중인 목표가 있어요."),
 	GOAL_ALREADY_ONGOING(HttpStatus.BAD_REQUEST, "이미 진행 중인 목표가 있어요."),
 	GOAL_NOT_ONGOING(HttpStatus.BAD_REQUEST, "진행 중인 목표만 수정할 수 있어요."),
-
+	GOAL_NOT_COMPLETED(HttpStatus.BAD_REQUEST, "아직 목표에 도달하지 않았어요."),
 
 	/**
 	 * 401 UNAUTHORIZED - 리소스 접근 권한

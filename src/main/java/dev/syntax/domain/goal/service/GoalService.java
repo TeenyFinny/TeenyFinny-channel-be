@@ -18,4 +18,6 @@ public interface GoalService {
     GoalDeleteRes requestCancel(UserContext userContext, Long goalId);
 
     GoalDeleteRes confirmCancel(UserContext userContext, Long goalId);
+
+    GoalDeleteRes requestComplete(UserContext userContext, Long goalId);
 }

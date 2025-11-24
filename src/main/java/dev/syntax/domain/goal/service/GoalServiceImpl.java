@@ -236,7 +236,7 @@ public class GoalServiceImpl implements GoalService {
         Goal goal = getGoalOrThrow(goalId);
 
         if (!child.getRole().equals(Role.CHILD)) {
-            throw new BusinessException(ErrorBaseCode.GOAL_ACCESS_FORBIDDEN);
+            throw new BusinessException(ErrorBaseCode.FORBIDDEN);
         }
 
         validateGoalOwner(child, goal);
@@ -247,7 +247,7 @@ public class GoalServiceImpl implements GoalService {
 
         notificationService.sendGoalCancelRequestNotice(parent, child.getName());
 
-        return new GoalDeleteRes(goal.getId(), "중도 해지 요청이 부모에게 전달되었습니다.");
+        return new GoalDeleteRes(goalId, "중도 해지 요청이 부모에게 전달되었습니다.");
     }
 
     @Override
@@ -271,6 +271,36 @@ public class GoalServiceImpl implements GoalService {
         // TODO: CoreBanking 쪽 계좌 상태를 SUSPENDED로 변경
         // coreBankingClient.suspendGoalAccount(goalId);
 
-        return new GoalDeleteRes(goal.getId(), "목표 계좌가 중도 해지되었습니다.");
+        return new GoalDeleteRes(goalId, "목표 계좌가 중도 해지되었습니다.");
+    }
+
+    @Override
+    @Transactional
+    public GoalDeleteRes requestComplete(UserContext userContext, Long goalId) {
+        User child = getUserOrThrow(userContext);
+        if (!child.getRole().equals(Role.CHILD)) {
+            throw new BusinessException(ErrorBaseCode.FORBIDDEN);
+        }
+
+        Goal goal = getGoalOrThrow(goalId);
+
+        validateGoalOwner(child, goal);
+        validateGoalIsOngoing(goal);
+
+        // TODO: 추후 실제 core 서버와 연동
+        GoalAccountInfoDto info = coreBankingClient.getGoalTransactionInfo(goalId);
+        BigDecimal current = info.getCurrentAmount();
+        BigDecimal target = goal.getTargetAmount();
+
+        if (current.compareTo(target) < 0) {
+            throw new BusinessException(ErrorBaseCode.GOAL_NOT_COMPLETED);
+        }
+
+        User parent = userRepository.findById(userContext.getParentId())
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_PARENT_NOT_FOUND));
+
+        notificationService.sendGoalCompleteRequestNotice(parent, child.getName());
+
+        return new GoalDeleteRes(goalId, "목표 달성 알림이 부모에게 전달되었습니다.");
     }
 }

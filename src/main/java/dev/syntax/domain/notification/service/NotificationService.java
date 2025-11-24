@@ -19,4 +19,6 @@ public interface NotificationService {
     void sendGoalRequestNotice(User parent, String childName);
 
     void sendGoalCancelRequestNotice(User parent, String childName);
+
+    void sendGoalCompleteRequestNotice(User parent, String childName);
 }

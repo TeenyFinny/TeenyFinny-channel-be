@@ -19,7 +19,7 @@ public class CoreBankingClient {
 
         // ⭐ Mock 데이터로 임시 반환
         return new GoalAccountInfoDto(
-                new BigDecimal("18000"),       // currentAmount
+                new BigDecimal("30000"),       // currentAmount
                 List.of(
                         new BigDecimal("3000"),
                         new BigDecimal("3000"),
