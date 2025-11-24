@@ -26,30 +26,21 @@ public class NotificationOutput {
         this.content = notification.getContent();
         this.type = notification.getType();
         this.isRead = notification.getIsRead();
-        this.time = formatNotificationTime(notification.getCreatedAt());
-        notification.setRead(true);
-        this.isRead = notification.getIsRead();
+        this.time = formatTime(notification.getCreatedAt());
     }
 
-    private String formatNotificationTime(LocalDateTime createdAt) {
+    private String formatTime(LocalDateTime createdAt) {
         LocalDate today = LocalDate.now();
         LocalDate date = createdAt.toLocalDate();
 
-        long daysBetween = ChronoUnit.DAYS.between(date, today);
+        long days = ChronoUnit.DAYS.between(date, today);
 
-        // 오늘
-        if (daysBetween == 0) {
-            return createdAt.format(DateTimeFormatter.ofPattern("a h:mm")
-                    .withLocale(Locale.KOREA));
+        if (days == 0) {
+            return createdAt.format(DateTimeFormatter.ofPattern("a h:mm").withLocale(Locale.KOREA));
         }
-
-        // 어제
-        if (daysBetween == 1) {
-            return "어제 " + createdAt.format(DateTimeFormatter.ofPattern("a h:mm")
-                    .withLocale(Locale.KOREA));
+        if (days == 1) {
+            return "어제 " + createdAt.format(DateTimeFormatter.ofPattern("a h:mm").withLocale(Locale.KOREA));
         }
-
-        // n일 전
-        return daysBetween + "일 전";
+        return days + "일 전";
     }
 }
