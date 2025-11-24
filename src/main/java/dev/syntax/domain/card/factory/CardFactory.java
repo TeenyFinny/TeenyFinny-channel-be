@@ -13,6 +13,13 @@ import dev.syntax.domain.card.repository.CardRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+/**
+ * 카드 생성 로직을 담당하는 Factory 클래스.
+ * <p>
+ * 카드 번호, CVC, 유효기간 등 카드 발급에 필요한 데이터를 생성하고
+ * Card 엔티티를 조립합니다.
+ * </p>
+ */
 @Component
 @RequiredArgsConstructor
 public class CardFactory {
@@ -21,6 +28,13 @@ public class CardFactory {
     private final PasswordEncoder passwordEncoder;
     private static final SecureRandom secureRandom = new SecureRandom();
 
+    /**
+     * 새로운 카드를 생성합니다.
+     *
+     * @param account 연결할 계좌 엔티티
+     * @param req     카드 생성 요청 정보 (비밀번호, 영문명 등)
+     * @return 생성된 Card 엔티티 (저장되지 않은 상태)
+     */
     public Card create(Account account, CardCreateReq req) {
 
         return Card.builder()
@@ -29,10 +43,13 @@ public class CardFactory {
                 .cvc(generateCVC())
                 .expiredAt(generateExpiredAt())
                 .password(passwordEncoder.encode(req.getPassword()))
-                .name(null)  // 초기에는 이름 없음
+                .name(req.getEnglishName())  // 영문 이름 표기
                 .build();
     }
 
+    /**
+     * 중복되지 않는 유니크한 카드 번호를 생성합니다.
+     */
     private String generateUniqueCardNumber() {
         String number;
         do {
@@ -41,6 +58,9 @@ public class CardFactory {
         return number;
     }
 
+    /**
+     * 16자리 카드 번호 랜덤 생성 (VISA 스타일: 4로 시작).
+     */
     private String generateCardNumber() {
         StringBuilder sb = new StringBuilder("4");
         while (sb.length() < 16) {
@@ -49,11 +69,17 @@ public class CardFactory {
         return sb.toString();
     }
 
+    /**
+     * 3자리 CVC 번호 랜덤 생성 (100 ~ 999).
+     */
     private String generateCVC() {
         int cvc = secureRandom.nextInt(900) + 100;
         return String.valueOf(cvc);
     }
 
+    /**
+     * 유효기간 생성 (현재로부터 5년 후, MM/yy 포맷).
+     */
     private String generateExpiredAt() {
         LocalDate date = LocalDate.now().plusYears(5);
         return date.format(DateTimeFormatter.ofPattern("MM/yy"));
