@@ -48,21 +48,18 @@ public class AccountBalanceServiceImpl implements AccountBalanceService {
 
         BigDecimal allowanceBalance = (allowanceAcc != null)
                 ? mockBalance(allowanceAcc.getId(), AccountType.ALLOWANCE)
-                : null;
+                : BigDecimal.ZERO;
 
         BigDecimal investBalance = (investAcc != null)
                 ? mockBalance(investAcc.getId(), AccountType.INVEST)
-                : null;
+                : BigDecimal.ZERO;
 
         BigDecimal savingBalance = (savingAcc != null)
                 ? mockBalance(savingAcc.getId(), AccountType.GOAL)
-                : null;
+                : BigDecimal.ZERO;
 
         // ===== 3. 총합 계산 =====
-        BigDecimal total = BigDecimal.ZERO;
-        if (allowanceBalance != null) total = total.add(allowanceBalance);
-        if (investBalance != null) total = total.add(investBalance);
-        if (savingBalance != null) total = total.add(savingBalance);
+        BigDecimal total = allowanceBalance.add(investBalance).add(savingBalance);
 
         // ===== 4. 카드 보유 여부 체크 =====
         boolean hasCard = false;
@@ -104,18 +101,20 @@ public class AccountBalanceServiceImpl implements AccountBalanceService {
      * PARENT → 자신의 자녀 조회 가능
      */
     private void validateAccess(UserContext ctx, Long targetUserId) {
+        Long currentUserId = ctx.getId();
 
-        if (ctx.getRole().equals(Role.CHILD.name())) {
-            if (!ctx.getId().equals(targetUserId)) {
-                throw new BusinessException(ErrorBaseCode.UNAUTHORIZED);
-            }
+        // 본인 정보는 항상 접근 가능
+        if (currentUserId.equals(targetUserId)) {
+            return;
         }
 
-        if (ctx.getRole().equals(Role.PARENT.name())) {
-            if (!ctx.getId().equals(targetUserId) && !ctx.getChildren().contains(targetUserId)) {
-                throw new BusinessException(ErrorBaseCode.UNAUTHORIZED);
-            }
+        // 부모는 자녀 정보에 접근 가능
+        if (ctx.getRole().equals(Role.PARENT.name()) && ctx.getChildren().contains(targetUserId)) {
+            return;
         }
+
+        // 그 외의 경우는 권한 없음
+        throw new BusinessException(ErrorBaseCode.UNAUTHORIZED);
     }
 
     /**
