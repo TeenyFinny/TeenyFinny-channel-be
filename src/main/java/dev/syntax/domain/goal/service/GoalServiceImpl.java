@@ -253,17 +253,17 @@ public class GoalServiceImpl implements GoalService {
         User user = getUserOrThrow(userContext);
         Goal goal = getGoalOrThrow(goalId);
 
-        if (!child.getRole().equals(Role.CHILD)) {
+        if (!user.getRole().equals(Role.CHILD)) {
             throw new BusinessException(ErrorBaseCode.GOAL_REQUEST_FORBIDDEN);
         }
 
-        validateGoalOwner(child, goal);
+        validateGoalOwner(user, goal);
         validateGoalIsOngoing(goal);
 
         User parent = userRepository.findById(userContext.getParentId())
                 .orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_PARENT_NOT_FOUND));
 
-        notificationService.sendGoalCancelRequestNotice(parent, child.getName());
+        notificationService.sendGoalCancelRequestNotice(parent, user.getName());
 
         return new GoalDeleteRes(goalId, "중도 해지 요청이 부모에게 전달되었습니다.");
     }
