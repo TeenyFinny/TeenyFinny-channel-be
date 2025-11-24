@@ -38,7 +38,7 @@ public class GoalServiceImpl implements GoalService {
     /** 해당 goal이 로그인한 사용자 소유인지 확인 */
     private void validateGoalOwner(User user, Goal goal) {
         if (!goal.getUser().equals(user)) {
-            throw new BusinessException(ErrorBaseCode.GOAL_ACCESS_FORBIDDEN);
+            throw new BusinessException(ErrorBaseCode.FORBIDDEN);
         }
     }
 
