@@ -41,6 +41,7 @@ public class QuizServiceImpl implements QuizService {
                 .build();
     }
 
+    @Transactional
     @Override
     public QuizProgressRes createQuizProgress(UserContext context) {
         Long userId = context.getId();
