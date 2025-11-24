@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import org.springframework.stereotype.Service;
 
+import dev.syntax.domain.account.dto.AccountBalanceRes;
 import dev.syntax.domain.account.dto.AccountSummaryRes;
 import dev.syntax.domain.account.entity.Account;
 import dev.syntax.domain.account.enums.AccountType;
@@ -19,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AccountSummaryServiceImpl implements AccountSummaryService {
+public class AccountBalanceServiceImpl implements AccounBalanceService {
 
     private final AccountRepository accountRepository;
     private final CardRepository cardRepository;
@@ -76,6 +77,25 @@ public class AccountSummaryServiceImpl implements AccountSummaryService {
                 savingBalance,
                 new AccountSummaryRes.CardInfo(hasCard)
         );
+    }
+
+    /**
+     * 특정 계좌 타입의 잔액 조회.
+     */
+    @Override
+    public AccountBalanceRes getBalance(UserContext ctx, Long targetUserId, AccountType type) {
+        // 1. 권한 체크
+        validateAccess(ctx, targetUserId);
+
+        // 2. 계좌 조회
+        Account account = accountRepository.findByUserIdAndType(targetUserId, type).orElse(null);
+
+        // 3. 잔액 Mocking
+        BigDecimal balance = (account != null)
+                ? mockBalance(account.getId(), type)
+                : BigDecimal.ZERO;
+
+        return new AccountBalanceRes(balance);
     }
 
     /**

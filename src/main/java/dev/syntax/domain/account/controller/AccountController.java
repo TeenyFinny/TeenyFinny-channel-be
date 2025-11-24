@@ -9,13 +9,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import dev.syntax.domain.account.dto.AccountHistoryReq;
 import dev.syntax.domain.account.dto.AccountSummaryRes;
+import dev.syntax.domain.account.enums.AccountType;
 import dev.syntax.domain.account.service.AccountHistoryDetailService;
 import dev.syntax.domain.account.service.AccountHistoryService;
-import dev.syntax.domain.account.service.AccountSummaryService;
+import dev.syntax.domain.account.service.AccounBalanceService;
 import dev.syntax.global.auth.annotation.CurrentUser;
 import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.global.response.ApiResponseUtil;
@@ -43,7 +45,34 @@ public class AccountController {
 
         private final AccountHistoryService accountHistoryService;
         private final AccountHistoryDetailService accountHistoryDetailService;
-        private final AccountSummaryService accountSummaryService;
+        private final AccounBalanceService accountSummaryService;
+
+        /**
+         * 📌 [본인] 특정 계좌 잔액 조회
+         * 예: GET /account/balance?type=ALLOWANCE
+         */
+        @GetMapping("/balance")
+        public ResponseEntity<BaseResponse<?>> getMyBalance(
+                        @CurrentUser UserContext user,
+                        @RequestParam AccountType type) {
+
+                return ApiResponseUtil.success(SuccessCode.OK,
+                                accountSummaryService.getBalance(user, user.getId(), type));
+        }
+
+        /**
+         * 📌 [부모 -> 자녀] 특정 계좌 잔액 조회
+         * 예: GET /account/{childId}/balance?type=ALLOWANCE
+         */
+        @GetMapping("/{childId}/balance")
+        public ResponseEntity<BaseResponse<?>> getChildBalance(
+                        @CurrentUser UserContext user,
+                        @PathVariable Long childId,
+                        @RequestParam AccountType type) {
+
+                return ApiResponseUtil.success(SuccessCode.OK,
+                                accountSummaryService.getBalance(user, childId, type));
+        }
 
         /**
          * 📌 본인 계좌 요약 조회 (자녀/부모 공통)
@@ -147,16 +176,16 @@ public class AccountController {
          * @return 해당 거래의 상세 정보가 담긴 성공 응답
          *
          * @throws dev.syntax.global.exception.BusinessException
-         *                                                       <ul>
-         *                                                       <li>TX_INVALID_TRANSACTION_ID
-         *                                                       – 잘못된 거래 ID</li>
-         *                                                       <li>TX_NOT_FOUND – 거래가
-         *                                                       존재하지 않을 경우</li>
-         *                                                       <li>TX_ACCOUNT_NOT_FOUND
-         *                                                       – 거래가 속한 계좌 없음</li>
-         *                                                       <li>TX_NO_PERMISSION –
-         *                                                       접근 권한 없음</li>
-         *                                                       </ul>
+         * <ul>
+         * <li>TX_INVALID_TRANSACTION_ID
+         * – 잘못된 거래 ID</li>
+         * <li>TX_NOT_FOUND – 거래가
+         * 존재하지 않을 경우</li>
+         * <li>TX_ACCOUNT_NOT_FOUND
+         * – 거래가 속한 계좌 없음</li>
+         * <li>TX_NO_PERMISSION –
+         * 접근 권한 없음</li>
+         * </ul>
          *
          * @see AccountHistoryDetailService#getDetail(Long, UserContext)
          */

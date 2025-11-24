@@ -1,6 +1,7 @@
 package dev.syntax.domain.account.service;
 
 import dev.syntax.domain.account.dto.AccountSummaryRes;
+import dev.syntax.domain.account.dto.AccountBalanceRes;
 import dev.syntax.domain.account.entity.Account;
 import dev.syntax.domain.account.enums.AccountType;
 import dev.syntax.domain.account.repository.AccountRepository;
@@ -29,10 +30,10 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
-class AccountSummaryServiceTest {
+class AccountBalanceServiceTest {
 
     @InjectMocks
-    private AccountSummaryServiceImpl accountSummaryService;
+    private AccountBalanceServiceImpl accountSummaryService;
 
     @Mock
     private AccountRepository accountRepository;
@@ -126,6 +127,24 @@ class AccountSummaryServiceTest {
             assertThat(result).isNotNull();
             assertThat(result.getAllowance()).isNotNull();
         }
+        @Test
+        @DisplayName("특정 계좌 타입의 잔액을 조회한다.")
+        void getBalance_Success() {
+            // given
+            Long childId = 10L;
+            UserContext ctx = createMockUserContext(childId, Role.CHILD, null);
+            Account allowanceAccount = createMockAccount(100L, childId, AccountType.ALLOWANCE);
+
+            given(accountRepository.findByUserIdAndType(childId, AccountType.ALLOWANCE))
+                    .willReturn(Optional.of(allowanceAccount));
+
+            // when
+            AccountBalanceRes res = accountSummaryService.getBalance(ctx, childId, AccountType.ALLOWANCE);
+
+            // then
+            assertThat(res).isNotNull();
+            assertThat(res.getBalance()).isGreaterThan(BigDecimal.ZERO);
+        }
     }
 
     @Nested
@@ -160,6 +179,21 @@ class AccountSummaryServiceTest {
 
             // when & then
             assertThatThrownBy(() -> accountSummaryService.getSummary(ctx, strangerChildId))
+                    .isInstanceOf(BusinessException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(ErrorBaseCode.UNAUTHORIZED);
+        }
+
+        @Test
+        @DisplayName("권한 없는 사용자가 잔액 조회를 시도하면 예외가 발생한다.")
+        void getBalance_Unauthorized_Fail() {
+            // given
+            Long myId = 10L;
+            Long otherId = 99L;
+            UserContext ctx = createMockUserContext(myId, Role.CHILD, null);
+
+            // when & then
+            assertThatThrownBy(() -> accountSummaryService.getBalance(ctx, otherId, AccountType.ALLOWANCE))
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorCode")
                     .isEqualTo(ErrorBaseCode.UNAUTHORIZED);
