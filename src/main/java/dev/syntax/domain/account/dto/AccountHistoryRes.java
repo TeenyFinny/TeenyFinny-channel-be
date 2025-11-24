@@ -9,7 +9,7 @@ package dev.syntax.domain.account.dto;
  * 코어 서버에서 내려온 거래내역을 서비스 서버에서 매핑하여,
  * UI에 표시하기 적합한 형태(문자열, 콤마 처리, 날짜 포맷 등)로 가공한 최종 응답이다.
  *
- * @property {String} id
+ * @property {Long} id
  *   거래 ID. 고유 식별자.
  *
  * @property {String} type
@@ -37,7 +37,7 @@ package dev.syntax.domain.account.dto;
  *   예: "2025-01-15 13:22"
  */
 public record AccountHistoryRes(
-        String id,
+        Long id,
         String type,
         String merchant,
         String amount,

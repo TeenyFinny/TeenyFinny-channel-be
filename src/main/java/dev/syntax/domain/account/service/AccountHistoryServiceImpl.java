@@ -85,21 +85,21 @@ public class AccountHistoryServiceImpl implements AccountHistoryService {
 
         return List.of(
                 new AccountHistoryRes(
-                        "T202501150001",
+                        202501150001L,
                         "deposit",
                         "이체",
                         "50,000",
                         "150,000",
                         "2025-01-15 13:22"),
                 new AccountHistoryRes(
-                        "T202501150002",
+                        202501150002L,
                         "withdrawal",
                         "편의점",
                         "1,500",
                         "148,500",
                         "2025-01-15 14:10"),
                 new AccountHistoryRes(
-                        "T202501160001",
+                        202501160001L,
                         "withdrawal",
                         "스타벅스",
                         "5,300",
