@@ -22,7 +22,7 @@ public class Card extends BaseEntity {
     @JoinColumn(name = "account_id", nullable = false)
     private Account account;
 
-    @Column(name = "name", nullable = false, length = 100)
+    @Column(name = "name", nullable = true, length = 100)
     private String name;
 
     @Column(name = "number", nullable = false, length = 20)
