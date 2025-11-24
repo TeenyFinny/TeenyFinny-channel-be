@@ -17,7 +17,7 @@ import dev.syntax.domain.account.dto.AccountSummaryRes;
 import dev.syntax.domain.account.enums.AccountType;
 import dev.syntax.domain.account.service.AccountHistoryDetailService;
 import dev.syntax.domain.account.service.AccountHistoryService;
-import dev.syntax.domain.account.service.AccounBalanceService;
+import dev.syntax.domain.account.service.AccountBalanceService;
 import dev.syntax.global.auth.annotation.CurrentUser;
 import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.global.response.ApiResponseUtil;
@@ -45,7 +45,7 @@ public class AccountController {
 
         private final AccountHistoryService accountHistoryService;
         private final AccountHistoryDetailService accountHistoryDetailService;
-        private final AccounBalanceService accountSummaryService;
+        private final AccountBalanceService accountSummaryService;
 
         /**
          * 📌 [본인] 특정 계좌 잔액 조회
