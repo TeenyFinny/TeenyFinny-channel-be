@@ -2,6 +2,7 @@ package dev.syntax.domain.card.repository;
 
 import dev.syntax.domain.card.entity.Card;
 import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.Optional;
 
 /**
  * Card 엔티티에 대한 데이터 접근을 담당하는 Repository.
@@ -24,4 +25,12 @@ public interface CardRepository extends JpaRepository<Card, Long> {
      * @return 카드 번호 존재 여부 (true: 이미 존재함, false: 사용 가능)
      */
     boolean existsByNumber(String number);
+
+    /**
+     * 계좌 ID로 카드를 조회합니다.
+     *
+     * @param accountId 계좌 ID
+     * @return 카드 Optional
+     */
+    Optional<Card> findByAccountId(Long accountId);
 }
