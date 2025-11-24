@@ -250,7 +250,7 @@ public class GoalServiceImpl implements GoalService {
     @Override
     @Transactional
     public GoalDeleteRes requestCancel(UserContext userContext, Long goalId) {
-        User child = getUserOrThrow(userContext);
+        User user = getUserOrThrow(userContext);
         Goal goal = getGoalOrThrow(goalId);
 
         if (!child.getRole().equals(Role.CHILD)) {
