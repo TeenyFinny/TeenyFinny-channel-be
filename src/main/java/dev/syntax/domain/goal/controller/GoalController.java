@@ -28,7 +28,7 @@ public class GoalController {
     }
 
     @GetMapping("/{goalId}/edit")
-    public GoalDetailRes getGoalForUpdate(
+    public GoalInfoRes getGoalForUpdate(
             @CurrentUser UserContext userContext,
             @PathVariable Long goalId
     ) {
@@ -47,5 +47,11 @@ public class GoalController {
                                       @PathVariable Long goalId,
                                       @RequestBody GoalApproveReq req) {
         return goalService.approveGoal(userContext, goalId, req.isApprove());
+    }
+
+    @GetMapping("/{goalId}")
+    public GoalDetailRes getGoalDetail(@CurrentUser UserContext userContext,
+                                       @PathVariable Long goalId) {
+        return goalService.getGoalDetail(userContext, goalId);
     }
 }

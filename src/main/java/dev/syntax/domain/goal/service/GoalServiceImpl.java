@@ -1,5 +1,7 @@
 package dev.syntax.domain.goal.service;
 
+import dev.syntax.domain.core.CoreBankingClient;
+import dev.syntax.domain.core.dto.GoalAccountInfoDto;
 import dev.syntax.domain.goal.dto.*;
 import dev.syntax.domain.goal.entity.Goal;
 import dev.syntax.domain.goal.enums.GoalStatus;
@@ -15,6 +17,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 @Service
 @RequiredArgsConstructor
 public class GoalServiceImpl implements GoalService {
@@ -22,6 +27,7 @@ public class GoalServiceImpl implements GoalService {
     private final UserRepository userRepository;
     private final GoalRepository goalRepository;
     private final NotificationService notificationService;
+    private final CoreBankingClient coreBankingClient;
 
     // 공통 메서드
     /** UserContext 기반 사용자 조회 */
@@ -37,7 +43,7 @@ public class GoalServiceImpl implements GoalService {
 
     /** 해당 goal이 로그인한 사용자 소유인지 확인 */
     private void validateGoalOwner(User user, Goal goal) {
-        if (!goal.getUser().equals(user)) {
+        if (!goal.getUser().getId().equals(user.getId())) {
             throw new BusinessException(ErrorBaseCode.FORBIDDEN);
         }
     }
@@ -116,7 +122,7 @@ public class GoalServiceImpl implements GoalService {
     }
 
     @Override
-    public GoalDetailRes getGoalForUpdate(UserContext userContext, Long goalId) {
+    public GoalInfoRes getGoalForUpdate(UserContext userContext, Long goalId) {
 
         User user = getUserOrThrow(userContext);
         Goal goal = getGoalOrThrow(goalId);
@@ -124,7 +130,7 @@ public class GoalServiceImpl implements GoalService {
         validateGoalOwner(user, goal);
         validateGoalIsOngoing(goal);
 
-        return new GoalDetailRes(goal);
+        return new GoalInfoRes(goal);
     }
 
     @Override
@@ -155,5 +161,58 @@ public class GoalServiceImpl implements GoalService {
         }
 
         return new GoalApproveRes(goal);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public GoalDetailRes getGoalDetail(UserContext userContext, Long goalId) {
+
+        User user = getUserOrThrow(userContext);
+        Goal goal = getGoalOrThrow(goalId);
+
+        if (user.getRole() == Role.CHILD) {
+            if (!goal.getUser().getId().equals(user.getId())) {
+                throw new BusinessException(ErrorBaseCode.FORBIDDEN);
+            }
+        }
+
+        if (user.getRole() == Role.PARENT) {
+            if (!userContext.getChildren().contains(goal.getUser().getId())) {
+                throw new BusinessException(ErrorBaseCode.GOAL_CHILD_NOT_MATCH);
+            }
+        }
+
+        validateGoalIsOngoing(goal);
+
+        GoalAccountInfoDto coreInfo = coreBankingClient.getGoalTransactionInfo(goalId);
+
+        if (goal.getMonthlyAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessException(ErrorBaseCode.GOAL_INVALID_AMOUNT);
+        }
+        int period = goal.getTargetAmount()
+                .divide(goal.getMonthlyAmount(), RoundingMode.CEILING)
+                .intValue();
+
+        int progress = 0;
+        if (goal.getTargetAmount().compareTo(BigDecimal.ZERO) > 0) {
+            progress = coreInfo.getCurrentAmount()
+                    .multiply(BigDecimal.valueOf(100))
+                    .divide(goal.getTargetAmount(), 0, RoundingMode.HALF_UP)  // ★ 반올림해서 정수 변환
+                    .intValue();
+        }
+
+
+        return new GoalDetailRes(
+                goal.getId(),
+                goal.getUser().getId(),
+                goal.getName(),
+                goal.getTargetAmount(),
+                coreInfo.getCurrentAmount(),
+                period,
+                progress,
+                goal.getUser().getName(),
+                coreInfo.getDepositAmounts(),
+                coreInfo.getDepositTimes()
+        );
     }
 }
