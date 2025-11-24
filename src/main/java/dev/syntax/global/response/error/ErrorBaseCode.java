@@ -40,6 +40,10 @@ public enum ErrorBaseCode implements ErrorCode {
 	 * 400 BAD_REQUEST - 잘못된 요청
 	 */
 	BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
+	TX_INVALID_PERIOD(HttpStatus.BAD_REQUEST,
+        "요청한 조회 기간이 유효하지 않습니다. 과거 또는 현재 월까지만 조회할 수 있습니다."),
+	TX_INVALID_TRANSACTION_ID(HttpStatus.BAD_REQUEST,
+        "요청한 거래 ID 형식이 올바르지 않습니다."),
 
 	/**
 	 * 401 UNAUTHORIZED - 리소스 접근 권한
@@ -50,6 +54,7 @@ public enum ErrorBaseCode implements ErrorCode {
 	 * 403 FORBIDDEN - 리소스 접근 금지
 	 */
 	FORBIDDEN(HttpStatus.FORBIDDEN, "리소스 접근이 거부되었습니다."),
+	TX_NO_PERMISSION(HttpStatus.FORBIDDEN, "해당 계좌에 대한 접근 권한이 없습니다."),
 
 	/**
 	 * 404 NOT FOUND - 찾을 수 없음
@@ -57,6 +62,8 @@ public enum ErrorBaseCode implements ErrorCode {
 	NOT_FOUND_ENTITY(HttpStatus.NOT_FOUND, "대상을 찾을 수 없습니다."),
 	USER_NOT_FOUND(HttpStatus.NOT_FOUND, "대상을 찾을 수 없습니다."),
     QUIZ_PROGRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "대상을 찾을 수 없습니다."),
+	TX_ACCOUNT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 계좌를 찾을 수 없습니다."),
+	TX_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 거래내역을 찾을 수 없습니다."),
 
 	/**
 	 * 405 METHOD NOT ALLOWED - 허용되지 않은 메서드
