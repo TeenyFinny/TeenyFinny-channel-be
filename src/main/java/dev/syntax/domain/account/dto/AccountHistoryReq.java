@@ -27,13 +27,17 @@ import jakarta.validation.constraints.Max;
  * 
  * <pre>
  * GET /account/history?accountType=ALLOWANCE&year=2025&month=10
- * GET /children/12/account/history?accountType=GOAL&year=2025&month=11
+ * GET /account/{childId}/history?accountType=GOAL&year=2025&month=11
  * </pre>
  */
 public record AccountHistoryReq(
-                @NotNull(message = "계좌 유형(accountType)은 필수입니다.") AccountType accountType,
+        @NotNull(message = "계좌 유형(accountType)은 필수입니다.") 
+        AccountType accountType,
 
-                @Min(value = 2025, message = "년도(year)는 2025년 이상이어야 합니다.") int year,
+        @Min(value = 2025, message = "년도(year)는 2025년 이상이어야 합니다.") 
+        int year,
 
-                @Min(value = 1, message = "월(month)는 1월 이상이어야 합니다.") @Max(value = 12, message = "월(month)는 12월 이하이어야 합니다.") int month) {
+        @Min(value = 1, message = "월(month)는 1월 이상이어야 합니다.") 
+        @Max(value = 12, message = "월(month)는 12월 이하이어야 합니다.") 
+        int month) {
 }

@@ -22,10 +22,12 @@ public interface AccountHistoryService {
     /**
      * 계좌 거래내역 조회.
      *
-     * @param childId 부모가 자녀 계좌를 조회할 때 사용하는 자녀의 userId.
-     *                자녀 본인은 null 전달.
-     * @param req     거래내역 조회 조건 DTO
-     * @param ctx     JWT 인증 기반 사용자 컨텍스트(UserContext)
+     * * @param userId 조회 대상 사용자의 ID.
+     * 부모가 자녀 계좌를 조회할 때 자녀의 ID를 전달하고,
+     * 사용자 본인이 조회할 때는 자신의 ID를 전달합니다.
+     * 
+     * @param req 거래내역 조회 조건 DTO
+     * @param ctx JWT 인증 기반 사용자 컨텍스트(UserContext)
      * @return 거래내역 리스트
      */
     List<AccountHistoryRes> getHistory(Long userId, AccountHistoryReq req, UserContext ctx);
