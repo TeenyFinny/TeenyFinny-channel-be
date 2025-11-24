@@ -1,5 +1,6 @@
 package dev.syntax.domain.quiz.service;
 
+import dev.syntax.domain.quiz.dto.QuizInfoRes;
 import dev.syntax.domain.quiz.dto.QuizProgressRes;
 import dev.syntax.global.auth.dto.UserContext;
 
@@ -15,4 +16,6 @@ public interface QuizService {
      * @return 퀴즈 진행도 정보
      */
     QuizProgressRes getQuizProgress(UserContext context);
+
+    QuizInfoRes getQuizInfo(Long quizId, UserContext userContext);
 }

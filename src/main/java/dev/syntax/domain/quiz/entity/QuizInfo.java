@@ -1,42 +1,37 @@
 package dev.syntax.domain.quiz.entity;
 
-import dev.syntax.global.common.BaseEntity;
+import dev.syntax.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
-
+/**
+ * 퀴즈 정보 엔티티
+ */
 @Entity
 @Table(name = "quiz_info")
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class QuizInfo extends BaseEntity {
+public class QuizInfo extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "quiz_id")
-    private Long id;
+    private Long id;   // quiz_id
 
-    // 퀴즈 정보
-    @Column(name = "info", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "title", nullable = false)
+    private String title;
+
+    @Column(name = "info", nullable = false)
     private String info;
 
-    // 질문
-    @Column(name = "question", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "question", nullable = false)
     private String question;
 
-    // 정답
-    @Column(name = "answer", nullable = false, length = 100)
+    @Column(name = "answer", nullable = false)
     private String answer;
 
-    // 해설
-    @Column(name = "explanation", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "explanation", nullable = false)
     private String explanation;
-
-    // 교육과정 포함 여부
-    @Builder.Default
-    @Column(name = "course", nullable = false)
-    private Boolean course = true;
 }

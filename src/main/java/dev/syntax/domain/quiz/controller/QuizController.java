@@ -1,8 +1,10 @@
 package dev.syntax.domain.quiz.controller;
 
+import dev.syntax.domain.quiz.dto.QuizInfoRes;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import dev.syntax.domain.quiz.dto.QuizProgressRes;
@@ -38,4 +40,18 @@ public class QuizController {
         log.info("퀴즈 진행도 조회 성공: userId = {}", context.getId());
         return ApiResponseUtil.success(SuccessCode.OK, response);
     }
+
+    @GetMapping("/info")
+    public ResponseEntity<BaseResponse<?>> getQuizInfo(
+            @RequestParam("quiz_id") Long quizId,
+            @CurrentUser UserContext context
+    ) {
+        // 서비스 호출
+        QuizInfoRes response = quizService.getQuizInfo(quizId, context);
+
+        log.info("퀴즈 정보 조회 성공: userId = {}, quizId = {}", context.getId(), quizId);
+
+        return ApiResponseUtil.success(SuccessCode.OK, response);
+    }
+
 }
