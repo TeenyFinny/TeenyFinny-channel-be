@@ -1,5 +1,8 @@
 package dev.syntax.domain.quiz.service;
 
+import dev.syntax.domain.quiz.dto.QuizInfoRes;
+import dev.syntax.domain.quiz.entity.QuizInfo;
+import dev.syntax.domain.quiz.repository.QuizInfoRepository;
 import dev.syntax.global.response.error.ErrorBaseCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +37,22 @@ public class QuizServiceImpl implements QuizService {
                 .todaySolved(progress.getTodaySolved())
                 .coupon(progress.getCoupon())
                 .requestCompleted(progress.isRequestCompleted())
+                .build();
+    }
+
+    private final QuizInfoRepository quizInfoRepository;
+
+    @Override
+    public QuizInfoRes getQuizInfo(Long quizId) {
+        QuizInfo quiz = quizInfoRepository.findById(quizId)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.QUIZ_INFO_NOT_FOUND));
+
+        return QuizInfoRes.builder()
+                .title(quiz.getTitle())
+                .info(quiz.getInfo())
+                .question(quiz.getQuestion())
+                .answer(quiz.getAnswer())
+                .explanation(quiz.getExplanation())
                 .build();
     }
 }
