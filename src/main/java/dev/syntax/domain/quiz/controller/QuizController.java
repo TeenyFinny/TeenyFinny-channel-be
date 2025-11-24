@@ -11,10 +11,7 @@ import dev.syntax.global.response.SuccessCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * QuizController
@@ -51,6 +48,19 @@ public class QuizController {
         QuizProgressRes response = quizService.getQuizProgress(context);
         log.info("퀴즈 진행도 조회 성공: userId = {}", context.getId());
         return ApiResponseUtil.success(SuccessCode.OK, response);
+    }
+
+    /**
+     * 사용자 기준 퀴즈 진행도를 새로 생성합니다.
+     *
+     * @param context 인증된 사용자 컨텍스트
+     * @return 생성된 퀴즈 진행도 정보
+     */
+    @PostMapping("/progresses")
+    public ResponseEntity<BaseResponse<?>> createQuizProgress(@CurrentUser UserContext context) {
+        QuizProgressRes response = quizService.createQuizProgress(context);
+        log.info("퀴즈 진행도 생성 성공: userId = {}", context.getId());
+        return ApiResponseUtil.success(SuccessCode.CREATED, response);
     }
 
     /**

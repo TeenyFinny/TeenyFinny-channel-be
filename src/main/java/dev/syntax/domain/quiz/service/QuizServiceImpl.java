@@ -40,6 +40,39 @@ public class QuizServiceImpl implements QuizService {
                 .build();
     }
 
+    @Override
+    public QuizProgressRes createQuizProgress(UserContext context) {
+        Long userId = context.getId();
+
+        quizProgressRepository.findByUserId(userId).ifPresent(p -> {
+            throw new BusinessException(ErrorBaseCode.CONFLICT);
+        });
+
+        QuizProgress progress = QuizProgress.builder()
+                .userId(userId)
+                .streakDays(0)
+                .courseCompleted(false)
+                .quizDate(0)
+                .monthlyReward(false)
+                .todaySolved(0)
+                .coupon(0)
+                .requestCompleted(false)
+                .build();
+
+        QuizProgress saved = quizProgressRepository.save(progress);
+        return QuizProgressRes.builder()
+                .progressId(saved.getId())
+                .streakDays(saved.getStreakDays())
+                .courseCompleted(saved.isCourseCompleted())
+                .quizDate(saved.getQuizDate())
+                .monthlyReward(saved.isMonthlyReward())
+                .todaySolved(saved.getTodaySolved())
+                .coupon(saved.getCoupon())
+                .requestCompleted(saved.isRequestCompleted())
+                .build();
+    }
+
+
     private final QuizInfoRepository quizInfoRepository;
 
     @Override
