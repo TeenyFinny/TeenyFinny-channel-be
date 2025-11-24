@@ -43,7 +43,7 @@ public class QuizServiceImpl implements QuizService {
     private final QuizInfoRepository quizInfoRepository;
 
     @Override
-    public QuizInfoRes getQuizInfo(Long quizId, UserContext context) {
+    public QuizInfoRes getQuizInfo(Long quizId) {
         QuizInfo quiz = quizInfoRepository.findById(quizId)
                 .orElseThrow(() -> new BusinessException(ErrorBaseCode.QUIZ_INFO_NOT_FOUND));
 

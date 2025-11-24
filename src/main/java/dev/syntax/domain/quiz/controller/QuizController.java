@@ -63,16 +63,14 @@ public class QuizController {
      * 추후 권한/진행도 체크 등 로직에 활용할 수 있습니다.</p>
      *
      * @param quizId 조회할 퀴즈의 ID
-     * @param context 인증된 사용자 컨텍스트
      * @return {@link BaseResponse}에 래핑된 {@link QuizInfoRes} 객체
      */
     @GetMapping("/info")
     public ResponseEntity<BaseResponse<?>> getQuizInfo(
-            @RequestParam("quiz_id") Long quizId,
-            @CurrentUser UserContext context
+            @RequestParam("quiz_id") Long quizId
     ) {
-        QuizInfoRes response = quizService.getQuizInfo(quizId, context);
-        log.info("퀴즈 정보 조회 성공: userId = {}, quizId = {}", context.getId(), quizId);
+        QuizInfoRes response = quizService.getQuizInfo(quizId);
+        log.info("퀴즈 정보 조회 성공: quizId = {}", quizId);
         return ApiResponseUtil.success(SuccessCode.OK, response);
     }
 

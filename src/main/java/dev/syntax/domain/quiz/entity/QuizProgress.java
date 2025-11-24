@@ -11,7 +11,6 @@ import lombok.*;
 @Entity
 @Table(name = "quiz_progress")
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -19,7 +18,8 @@ public class QuizProgress extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // progress_id
+    @Column(name = "progress_id")
+    private Long id;
 
     @Column(name = "user_id", nullable = false)
     private Long userId;

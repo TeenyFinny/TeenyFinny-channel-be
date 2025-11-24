@@ -10,7 +10,6 @@ import lombok.*;
 @Entity
 @Table(name = "quiz_info")
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -18,7 +17,8 @@ public class QuizInfo extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;   // quiz_id
+    @Column(name = "quiz_id")
+    private Long id;
 
     @Column(name = "title", nullable = false)
     private String title;

@@ -17,5 +17,5 @@ public interface QuizService {
      */
     QuizProgressRes getQuizProgress(UserContext context);
 
-    QuizInfoRes getQuizInfo(Long quizId, UserContext userContext);
+    QuizInfoRes getQuizInfo(Long quizId);
 }

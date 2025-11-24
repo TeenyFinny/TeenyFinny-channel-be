@@ -103,8 +103,6 @@ class QuizServiceTest {
                 .parents(Collections.emptyList())
                 .build();
 
-        UserContext context = new UserContext(user);
-
         QuizInfo quizInfo = QuizInfo.builder()
                 .id(1L)
                 .title("주식이 뭐에요?")
@@ -118,7 +116,7 @@ class QuizServiceTest {
                 .thenReturn(Optional.of(quizInfo));
 
         // when
-        QuizInfoRes res = service.getQuizInfo(1L, context);
+        QuizInfoRes res = service.getQuizInfo(1L);
 
         // then
         assertEquals("주식이 뭐에요?", res.title());
@@ -139,13 +137,11 @@ class QuizServiceTest {
                 .parents(Collections.emptyList())
                 .build();
 
-        UserContext context = new UserContext(user);
-
         Mockito.when(repository2.findById(999L))
                 .thenReturn(Optional.empty());
 
         try {
-            service.getQuizInfo(999L, context);
+            service.getQuizInfo(999L);
         } catch (BusinessException e) {
             assertEquals("대상을 찾을 수 없습니다.", e.getMessage());
         }
