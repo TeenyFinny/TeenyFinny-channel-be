@@ -69,9 +69,6 @@ public class QuizController {
      * <p>퀴즈 ID를 기반으로 DB에서 퀴즈 정보를 조회하고,
      * {@link BaseResponse} 형태로 반환합니다.</p>
      *
-     * <p>현재는 {@link UserContext}를 파라미터로 받아 사용자의 인증 정보를 참고할 수 있으며,
-     * 추후 권한/진행도 체크 등 로직에 활용할 수 있습니다.</p>
-     *
      * @param quizId 조회할 퀴즈의 ID
      * @return {@link BaseResponse}에 래핑된 {@link QuizInfoRes} 객체
      */

@@ -50,4 +50,8 @@ public class QuizProgress extends BaseTimeEntity {
     @Builder.Default
     @Column(name = "request_completed", nullable = false)
     private boolean requestCompleted = false;
+
+    @Builder.Default
+    @Column(name = "first_quiz_id_today")
+    private int firstQuizIdToday = 0;
 }

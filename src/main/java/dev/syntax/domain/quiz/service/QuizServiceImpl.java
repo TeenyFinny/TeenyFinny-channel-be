@@ -37,6 +37,7 @@ public class QuizServiceImpl implements QuizService {
                 .todaySolved(progress.getTodaySolved())
                 .coupon(progress.getCoupon())
                 .requestCompleted(progress.isRequestCompleted())
+                .firstQuizIdToday(progress.getFirstQuizIdToday())
                 .build();
     }
 
@@ -57,6 +58,7 @@ public class QuizServiceImpl implements QuizService {
                 .todaySolved(0)
                 .coupon(0)
                 .requestCompleted(false)
+                .firstQuizIdToday(0)
                 .build();
 
         QuizProgress saved = quizProgressRepository.save(progress);
@@ -69,6 +71,7 @@ public class QuizServiceImpl implements QuizService {
                 .todaySolved(saved.getTodaySolved())
                 .coupon(saved.getCoupon())
                 .requestCompleted(saved.isRequestCompleted())
+                .firstQuizIdToday(saved.getFirstQuizIdToday())
                 .build();
     }
 
