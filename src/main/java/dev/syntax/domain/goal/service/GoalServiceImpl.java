@@ -5,6 +5,7 @@ import dev.syntax.domain.goal.dto.GoalCreateRes;
 import dev.syntax.domain.goal.entity.Goal;
 import dev.syntax.domain.goal.repository.GoalRepository;
 import dev.syntax.domain.user.entity.User;
+import dev.syntax.domain.user.enums.Role;
 import dev.syntax.domain.user.repository.UserRepository;
 import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorBaseCode;
@@ -24,7 +25,7 @@ public class GoalServiceImpl implements GoalService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorBaseCode.USER_NOT_FOUND));
 
-        if (!user.getRole().name().equals("CHILD")) {
+        if (!user.getRole().equals(Role.CHILD)) {
             throw new BusinessException(ErrorBaseCode.GOAL_ACCESS_FORBIDDEN);
         }
 
