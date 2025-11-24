@@ -33,7 +33,7 @@ public class CardController {
     
     /**
      * 📌 카드 발급 API
-     * POST /allowance/cards
+     * POST /allowance/card
      */
     @PostMapping("/allowance/card")
     public ResponseEntity<BaseResponse<?>> createCard(

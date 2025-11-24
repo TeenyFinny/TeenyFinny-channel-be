@@ -1,7 +1,6 @@
 package dev.syntax.domain.card.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,7 +33,6 @@ public class CardCreateServiceImpl implements CardCreateService {
     private final AccountRepository accountRepository;
     private final CardRepository cardRepository;
     private final CardFactory cardFactory;
-    private final CardUtils cardUtils;
 
     /**
      * 카드 생성 비즈니스 로직.
@@ -68,8 +66,8 @@ public class CardCreateServiceImpl implements CardCreateService {
         Card card = cardFactory.create(account, req);
         cardRepository.save(card);
 
-        return new CardInfoRes(card.getId(), cardUtils.formatCardNumber(card.getNumber()), card.getName(), card.getCvc(),
-                card.getExpiredAt());
+        return new CardInfoRes(card.getId(), CardUtils.formatCardNumber(card.getNumber()), card.getName(), card.getCvc(),
+                CardUtils.formatExpiredAt(card.getExpiredAt()));
     }
 
     private void validateAccess(UserContext ctx, Long childId) {

@@ -26,7 +26,6 @@ public class CardInquiryServiceImpl implements CardInquiryService {
 
     private final AccountRepository accountRepository;
     private final CardRepository cardRepository;
-    private final CardUtils cardUtils;
 
     /**
      * 카드 정보 조회.
@@ -54,10 +53,10 @@ public class CardInquiryServiceImpl implements CardInquiryService {
         //  4. DTO 변환
         return new CardInfoRes(
                 card.getId(),
-                cardUtils.formatCardNumber(card.getNumber()),
+                CardUtils.formatCardNumber(card.getNumber()),
                 card.getName(),
                 card.getCvc(),
-                card.getExpiredAt()
+                CardUtils.formatExpiredAt(card.getExpiredAt())
         );
     }
 
