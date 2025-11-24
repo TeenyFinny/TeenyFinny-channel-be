@@ -12,7 +12,6 @@ import lombok.*;
 @Entity
 @Table(name = "quiz_progress")
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
