@@ -2,6 +2,7 @@ package dev.syntax.domain.quiz.service;
 
 import dev.syntax.domain.quiz.dto.QuizInfoRes;
 import dev.syntax.domain.quiz.dto.QuizProgressRes;
+import dev.syntax.domain.quiz.dto.QuizProgressUpdateReq;
 import dev.syntax.global.auth.dto.UserContext;
 
 /**
@@ -17,6 +18,7 @@ public interface QuizService {
      */
     QuizProgressRes getQuizProgress(UserContext context);
     QuizProgressRes createQuizProgress(UserContext context);
+    QuizProgressRes updateQuizProgress(UserContext context, QuizProgressUpdateReq req);
 
     QuizInfoRes getQuizInfo(Long quizId);
 }

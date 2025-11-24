@@ -2,6 +2,7 @@ package dev.syntax.domain.quiz.controller;
 
 import dev.syntax.domain.quiz.dto.QuizInfoRes;
 import dev.syntax.domain.quiz.dto.QuizProgressRes;
+import dev.syntax.domain.quiz.dto.QuizProgressUpdateReq;
 import dev.syntax.domain.quiz.service.QuizService;
 import dev.syntax.global.auth.annotation.CurrentUser;
 import dev.syntax.global.auth.dto.UserContext;
@@ -21,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
  * <p>다음 기능을 제공합니다:</p>
  * <ul>
  *     <li>사용자 기준 퀴즈 진행도 조회</li>
+ *     <li>사용자 기준 퀴즈 진행도 생성</li>
+ *     <li>사용자 기준 퀴즈 진행도 업데이트</li>
  *     <li>특정 퀴즈 정보 조회</li>
  * </ul>
  *
@@ -37,16 +40,13 @@ public class QuizController {
     /**
      * 사용자 기준 퀴즈 진행도를 조회합니다.
      *
-     * <p>인증된 사용자 정보를 기반으로 DB에서 퀴즈 진행도를 조회하고,
-     * {@link BaseResponse} 형태로 반환합니다.</p>
-     *
      * @param context 인증된 사용자 컨텍스트
      * @return {@link BaseResponse}에 래핑된 {@link QuizProgressRes} 객체
      */
     @GetMapping("/progresses")
     public ResponseEntity<BaseResponse<?>> getQuizProgress(@CurrentUser UserContext context) {
         QuizProgressRes response = quizService.getQuizProgress(context);
-        log.info("퀴즈 진행도 조회 성공: userId = {}", context.getId());
+        log.info("퀴즈 진행도 조회 성공: userId={}", context.getId());
         return ApiResponseUtil.success(SuccessCode.OK, response);
     }
 
@@ -54,30 +54,47 @@ public class QuizController {
      * 사용자 기준 퀴즈 진행도를 새로 생성합니다.
      *
      * @param context 인증된 사용자 컨텍스트
-     * @return 생성된 퀴즈 진행도 정보
+     * @return 생성된 {@link QuizProgressRes} 객체를 래핑한 {@link BaseResponse}
      */
     @PostMapping("/progresses")
     public ResponseEntity<BaseResponse<?>> createQuizProgress(@CurrentUser UserContext context) {
         QuizProgressRes response = quizService.createQuizProgress(context);
-        log.info("퀴즈 진행도 생성 성공: userId = {}", context.getId());
+        log.info("퀴즈 진행도 생성 성공: userId={}", context.getId());
         return ApiResponseUtil.success(SuccessCode.CREATED, response);
+    }
+
+    /**
+     * 사용자 기준 퀴즈 진행도를 업데이트합니다.
+     *
+     * <p>요청에서 null이 아닌 필드만 업데이트되며, 인증된 사용자 정보를 기준으로
+     * 퀴즈 진행도를 조회 후 수정합니다.</p>
+     *
+     * @param request 업데이트할 필드를 담은 {@link QuizProgressUpdateReq} 객체
+     * @param context 인증된 사용자 컨텍스트
+     * @return 수정된 {@link QuizProgressRes} 객체를 래핑한 {@link BaseResponse}
+     */
+    @PatchMapping("/progresses")
+    public ResponseEntity<BaseResponse<?>> updateQuizProgress(
+            @RequestBody QuizProgressUpdateReq request,
+            @CurrentUser UserContext context
+    ) {
+        QuizProgressRes response = quizService.updateQuizProgress(context, request);
+        log.info("퀴즈 진행도 업데이트 성공: userId={}", context.getId());
+        return ApiResponseUtil.success(SuccessCode.OK, response);
     }
 
     /**
      * 특정 퀴즈 정보를 조회합니다.
      *
-     * <p>퀴즈 ID를 기반으로 DB에서 퀴즈 정보를 조회하고,
-     * {@link BaseResponse} 형태로 반환합니다.</p>
-     *
-     * @param quizId 조회할 퀴즈의 ID
-     * @return {@link BaseResponse}에 래핑된 {@link QuizInfoRes} 객체
+     * @param quizId 조회할 퀴즈 ID
+     * @return {@link QuizInfoRes} 객체를 래핑한 {@link BaseResponse}
      */
     @GetMapping("/info")
     public ResponseEntity<BaseResponse<?>> getQuizInfo(
             @RequestParam("quiz_id") Long quizId
     ) {
         QuizInfoRes response = quizService.getQuizInfo(quizId);
-        log.info("퀴즈 정보 조회 성공: quizId = {}", quizId);
+        log.info("퀴즈 정보 조회 성공: quizId={}", quizId);
         return ApiResponseUtil.success(SuccessCode.OK, response);
     }
 

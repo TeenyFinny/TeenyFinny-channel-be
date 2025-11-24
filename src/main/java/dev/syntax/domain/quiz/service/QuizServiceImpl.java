@@ -1,6 +1,7 @@
 package dev.syntax.domain.quiz.service;
 
 import dev.syntax.domain.quiz.dto.QuizInfoRes;
+import dev.syntax.domain.quiz.dto.QuizProgressUpdateReq;
 import dev.syntax.domain.quiz.entity.QuizInfo;
 import dev.syntax.domain.quiz.repository.QuizInfoRepository;
 import dev.syntax.global.response.error.ErrorBaseCode;
@@ -22,6 +23,14 @@ public class QuizServiceImpl implements QuizService {
 
     private final QuizProgressRepository quizProgressRepository;
 
+
+    /**
+     * 인증된 사용자 기준으로 퀴즈 진행도를 조회합니다.
+     *
+     * @param context 인증된 사용자 컨텍스트
+     * @return 조회된 퀴즈 진행도를 담은 {@link QuizProgressRes} DTO
+     * @throws BusinessException 진행도가 존재하지 않는 경우 {@link ErrorBaseCode#QUIZ_PROGRESS_NOT_FOUND} 발생
+     */
     @Override
     public QuizProgressRes getQuizProgress(UserContext context) {
         Long userId = context.getId();
@@ -41,6 +50,17 @@ public class QuizServiceImpl implements QuizService {
                 .build();
     }
 
+
+    /**
+     * 인증된 사용자 기준으로 새로운 퀴즈 진행도를 생성합니다.
+     * <p>
+     * 이미 진행도가 존재하면 {@link ErrorBaseCode#CONFLICT} 예외를 발생시킵니다.
+     * </p>
+     *
+     * @param context 인증된 사용자 컨텍스트
+     * @return 생성된 퀴즈 진행도를 담은 {@link QuizProgressRes} DTO
+     * @throws BusinessException 진행도가 이미 존재하는 경우 {@link ErrorBaseCode#CONFLICT} 발생
+     */
     @Transactional
     @Override
     public QuizProgressRes createQuizProgress(UserContext context) {
@@ -77,8 +97,75 @@ public class QuizServiceImpl implements QuizService {
     }
 
 
+    /**
+     * 인증된 사용자 기준으로 퀴즈 진행도를 일부 필드만 업데이트합니다.
+     * <p>
+     * 요청에서 null이 아닌 필드만 업데이트되며, 존재하지 않는 경우 {@link ErrorBaseCode#QUIZ_PROGRESS_NOT_FOUND} 예외 발생
+     * </p>
+     *
+     * @param context 인증된 사용자 컨텍스트
+     * @param req     업데이트할 필드를 담은 {@link QuizProgressUpdateReq} DTO
+     * @return 업데이트된 퀴즈 진행도를 담은 {@link QuizProgressRes} DTO
+     * @throws BusinessException 진행도가 존재하지 않는 경우 {@link ErrorBaseCode#QUIZ_PROGRESS_NOT_FOUND} 발생
+     */
+    @Transactional
+    @Override
+    public QuizProgressRes updateQuizProgress(UserContext context, QuizProgressUpdateReq req) {
+
+        Long userId = context.getId();
+
+        QuizProgress progress = quizProgressRepository.findByUserId(userId)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.QUIZ_PROGRESS_NOT_FOUND));
+
+        // 요청받은 필드만 업데이트 (null 이 아닌 경우)
+        if (req.getTodaySolved() != null) {
+            progress.setTodaySolved(req.getTodaySolved());
+        }
+        if (req.getQuizDate() != null) {
+            progress.setQuizDate(req.getQuizDate());
+        }
+        if (req.getCourseCompleted() != null) {
+            progress.setCourseCompleted(req.getCourseCompleted());
+        }
+        if (req.getMonthlyReward() != null) {
+            progress.setMonthlyReward(req.getMonthlyReward());
+        }
+        if (req.getCoupon() != null) {
+            progress.setCoupon(req.getCoupon());
+        }
+        if (req.getRequestCompleted() != null) {
+            progress.setRequestCompleted(req.getRequestCompleted());
+        }
+        if (req.getFirstQuizIdToday() != null) {
+            progress.setFirstQuizIdToday(req.getFirstQuizIdToday());
+        }
+
+        QuizProgress saved = quizProgressRepository.save(progress);
+
+        // 응답: 수정된 값만 보여주기 위해 DTO를 그대로 사용
+        return QuizProgressRes.builder()
+                .progressId(saved.getId())
+                .streakDays(saved.getStreakDays())
+                .courseCompleted(saved.isCourseCompleted())
+                .quizDate(saved.getQuizDate())
+                .monthlyReward(saved.isMonthlyReward())
+                .todaySolved(saved.getTodaySolved())
+                .coupon(saved.getCoupon())
+                .requestCompleted(saved.isRequestCompleted())
+                .firstQuizIdToday(saved.getFirstQuizIdToday())
+                .build();
+    }
+
+
     private final QuizInfoRepository quizInfoRepository;
 
+    /**
+     * 특정 퀴즈 ID에 대한 퀴즈 정보를 조회합니다.
+     *
+     * @param quizId 조회할 퀴즈 ID
+     * @return 퀴즈 정보를 담은 {@link QuizInfoRes} DTO
+     * @throws BusinessException 존재하지 않는 퀴즈 ID인 경우 {@link ErrorBaseCode#QUIZ_INFO_NOT_FOUND} 발생
+     */
     @Override
     public QuizInfoRes getQuizInfo(Long quizId) {
         QuizInfo quiz = quizInfoRepository.findById(quizId)
