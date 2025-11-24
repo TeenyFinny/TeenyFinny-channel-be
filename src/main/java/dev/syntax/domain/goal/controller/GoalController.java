@@ -23,6 +23,6 @@ public class GoalController {
     public GoalCreateRes createGoal(@CurrentUser UserContext userContext,
                                     @RequestBody GoalCreateReq req
     ) {
-        return goalService.createGoal(userContext.getId(), req);
+        return goalService.createGoal(userContext, req);
     }
 }

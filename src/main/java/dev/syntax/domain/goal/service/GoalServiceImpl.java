@@ -3,12 +3,14 @@ package dev.syntax.domain.goal.service;
 import dev.syntax.domain.goal.dto.GoalCreateReq;
 import dev.syntax.domain.goal.dto.GoalCreateRes;
 import dev.syntax.domain.goal.entity.Goal;
+import dev.syntax.domain.goal.enums.GoalStatus;
 import dev.syntax.domain.goal.repository.GoalRepository;
 import dev.syntax.domain.notification.service.NotificationService;
 import dev.syntax.domain.user.entity.User;
 import dev.syntax.domain.user.enums.Role;
 import dev.syntax.domain.user.repository.UserRelationshipRepository;
 import dev.syntax.domain.user.repository.UserRepository;
+import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorBaseCode;
 import lombok.RequiredArgsConstructor;
@@ -25,12 +27,22 @@ public class GoalServiceImpl implements GoalService {
 
     @Override
     @Transactional
-    public GoalCreateRes createGoal(Long userId, GoalCreateReq req) {
-        User user = userRepository.findById(userId)
+    public GoalCreateRes createGoal(UserContext userContext, GoalCreateReq req) {
+        User user = userRepository.findById(userContext.getUser().getId())
                 .orElseThrow(() -> new BusinessException(ErrorBaseCode.USER_NOT_FOUND));
 
         if (!user.getRole().equals(Role.CHILD)) {
             throw new BusinessException(ErrorBaseCode.GOAL_ACCESS_FORBIDDEN);
+        }
+
+        // PENDING(승인 대기) 목표 있는지 검사
+        if (goalRepository.existsByUserAndStatus(user, GoalStatus.PENDING)) {
+            throw new BusinessException(ErrorBaseCode.GOAL_ALREADY_PENDING);
+        }
+
+        // ONGOING(진행중) 목표 있는지 검사
+        if (goalRepository.existsByUserAndStatus(user, GoalStatus.ONGOING)) {
+            throw new BusinessException(ErrorBaseCode.GOAL_ALREADY_ONGOING);
         }
 
         Goal goal = Goal.builder()
@@ -43,9 +55,8 @@ public class GoalServiceImpl implements GoalService {
 
         goalRepository.save(goal);
 
-        User parent = userRelationshipRepository.findByChild(user)
-                .orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_PARENT_NOT_FOUND))
-                .getParent();
+        User parent = userRepository.findById(userContext.getParentId())
+                        .orElseThrow(()-> new BusinessException(ErrorBaseCode.GOAL_PARENT_NOT_FOUND));
 
         notificationService.sendGoalRequestNotice(parent, user.getName());
 

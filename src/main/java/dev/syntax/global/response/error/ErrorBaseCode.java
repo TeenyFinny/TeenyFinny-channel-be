@@ -42,6 +42,8 @@ public enum ErrorBaseCode implements ErrorCode {
 	BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
 	GOAL_INVALID_AMOUNT(HttpStatus.BAD_REQUEST, "목표 금액/납입 금액이 유효하지 않습니다."),
 	GOAL_INVALID_PAYDAY(HttpStatus.BAD_REQUEST, "납입일이 유효하지 않습니다."),
+	GOAL_ALREADY_PENDING(HttpStatus.BAD_REQUEST, "이미 승인 대기 중인 목표가 있어요."),
+	GOAL_ALREADY_ONGOING(HttpStatus.BAD_REQUEST, "이미 진행 중인 목표가 있어요."),
 
 	/**
 	 * 401 UNAUTHORIZED - 리소스 접근 권한
