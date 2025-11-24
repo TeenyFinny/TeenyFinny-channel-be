@@ -1,17 +1,16 @@
 package dev.syntax.global.auth.dto;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
+import dev.syntax.domain.user.entity.User;
+import dev.syntax.domain.user.entity.UserRelationship;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import dev.syntax.domain.user.entity.User;
-import dev.syntax.domain.user.entity.UserRelationship;
-import lombok.Getter;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * UserContext
@@ -58,6 +57,7 @@ public class UserContext implements UserDetails {
 	private final String email;
 	private final String password;   // bcrypt 해시
 	private final String role;
+	private final Long coreUserId;
 
 	private final Long familyId;
 	private final Long parentId;
@@ -71,6 +71,7 @@ public class UserContext implements UserDetails {
 		this.email = user.getEmail();
 		this.password = user.getPassword();
 		this.role = user.getRole().name();
+		this.coreUserId = user.getCoreUserId();
 
 		this.children = user.getChildren() != null
 			? user.getChildren().stream()
