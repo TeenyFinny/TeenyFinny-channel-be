@@ -4,8 +4,10 @@ import dev.syntax.domain.goal.dto.GoalCreateReq;
 import dev.syntax.domain.goal.dto.GoalCreateRes;
 import dev.syntax.domain.goal.entity.Goal;
 import dev.syntax.domain.goal.repository.GoalRepository;
+import dev.syntax.domain.notification.service.NotificationService;
 import dev.syntax.domain.user.entity.User;
 import dev.syntax.domain.user.enums.Role;
+import dev.syntax.domain.user.repository.UserRelationshipRepository;
 import dev.syntax.domain.user.repository.UserRepository;
 import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorBaseCode;
@@ -18,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class GoalServiceImpl implements GoalService {
     private final UserRepository userRepository;
     private final GoalRepository goalRepository;
+    private final UserRelationshipRepository userRelationshipRepository;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional
@@ -38,6 +42,12 @@ public class GoalServiceImpl implements GoalService {
                 .build();
 
         goalRepository.save(goal);
+
+        User parent = userRelationshipRepository.findByChild(user)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.USER_NOT_FOUND))
+                .getParent();
+
+        notificationService.sendGoalRequestNotice(parent, user.getName());
 
         return new GoalCreateRes(goal);
     }
