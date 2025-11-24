@@ -8,4 +8,5 @@ public interface CardRepository extends JpaRepository<Card,Long> {
      * 특정 계좌(accountId)에 카드가 존재하는지 여부 확인
      */
     boolean existsByAccountId(Long accountId);
+    boolean existsByNumber(String number);
 }
