@@ -10,6 +10,7 @@ import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorBaseCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +19,7 @@ public class GoalServiceImpl implements GoalService {
     private final GoalRepository goalRepository;
 
     @Override
+    @Transactional
     public GoalCreateRes createGoal(Long userId, GoalCreateReq req) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorBaseCode.USER_NOT_FOUND));
