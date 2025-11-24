@@ -105,7 +105,7 @@ public class GoalServiceImpl implements GoalService {
         User user = getUserOrThrow(userContext);
 
         if (!user.getRole().equals(Role.CHILD)) {
-            throw new BusinessException(ErrorBaseCode.GOAL_CREATE_FORBIDDEN);
+            throw new BusinessException(ErrorBaseCode.GOAL_REQUEST_FORBIDDEN);
         }
 
         if (req.getTargetAmount().compareTo(req.getMonthlyAmount()) < 0) {
@@ -174,7 +174,7 @@ public class GoalServiceImpl implements GoalService {
         User user = getUserOrThrow(userContext);
 
         if (!user.getRole().equals(Role.PARENT)) {
-            throw new BusinessException(ErrorBaseCode.GOAL_CREATE_FORBIDDEN);
+            throw new BusinessException(ErrorBaseCode.GOAL_REQUEST_FORBIDDEN);
         }
 
         Goal goal = getGoalOrThrow(goalId);
@@ -254,7 +254,7 @@ public class GoalServiceImpl implements GoalService {
         Goal goal = getGoalOrThrow(goalId);
 
         if (!child.getRole().equals(Role.CHILD)) {
-            throw new BusinessException(ErrorBaseCode.FORBIDDEN);
+            throw new BusinessException(ErrorBaseCode.GOAL_REQUEST_FORBIDDEN);
         }
 
         validateGoalOwner(child, goal);
@@ -294,7 +294,7 @@ public class GoalServiceImpl implements GoalService {
     public GoalDeleteRes requestComplete(UserContext userContext, Long goalId) {
         User child = getUserOrThrow(userContext);
         if (!child.getRole().equals(Role.CHILD)) {
-            throw new BusinessException(ErrorBaseCode.FORBIDDEN);
+            throw new BusinessException(ErrorBaseCode.GOAL_REQUEST_FORBIDDEN);
         }
 
         Goal goal = getGoalOrThrow(goalId);

@@ -61,7 +61,7 @@ public enum ErrorBaseCode implements ErrorCode {
 	 */
 	FORBIDDEN(HttpStatus.FORBIDDEN, "리소스 접근이 거부되었습니다."),
 	TX_NO_PERMISSION(HttpStatus.FORBIDDEN, "해당 계좌에 대한 접근 권한이 없습니다."),
-	GOAL_CREATE_FORBIDDEN(HttpStatus.FORBIDDEN, "부모는 목표를 생성할 수 없습니다."),
+	GOAL_REQUEST_FORBIDDEN(HttpStatus.FORBIDDEN, "부모는 목표에 관해 요청할 수 없습니다."),
 	GOAL_CHILD_NOT_MATCH(HttpStatus.FORBIDDEN, "해당 목표는 당신의 자녀가 생성한 목표가 아닙니다."),
 GOAL_ACCESS_FORBIDDEN(HttpStatus.FORBIDDEN, "목표 확정 및 취소는 부모만 가능합니다."),
 
