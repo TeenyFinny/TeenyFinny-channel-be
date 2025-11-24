@@ -12,7 +12,7 @@ import dev.syntax.global.auth.dto.UserContext;
  * 종합적으로 조회하는 기능을 제공합니다.
  * </p>
  */
-public interface AccounBalanceService {
+public interface AccountBalanceService {
 
     /**
      * 계좌 요약 정보 조회.
