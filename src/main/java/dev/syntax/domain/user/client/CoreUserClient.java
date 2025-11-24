@@ -52,6 +52,7 @@ public class CoreUserClient {
                 CoreParentInitRes.class
         );
     }
+
     /**
      * Core 서버에 자녀 사용자의 뱅킹 계정을 생성합니다.
      * <p>
@@ -62,7 +63,7 @@ public class CoreUserClient {
      * @param req Core 사용자 초기화 요청 DTO (사용자명, 생년월일 등 포함)
      * @return 자녀 계정 생성 응답 (Core User ID 포함)
      */
-    public CoreChildInitRes createChildAccount(CoreUserInitReq req) {
+    public CoreChildInitRes createChildUser(CoreUserInitReq req) {
         return coreRestTemplate.postForObject(
                 properties.getBaseUrl() + SIGNUP_URL,
                 req,
