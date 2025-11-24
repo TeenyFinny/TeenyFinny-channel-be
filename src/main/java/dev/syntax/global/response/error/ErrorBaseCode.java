@@ -44,6 +44,10 @@ public enum ErrorBaseCode implements ErrorCode {
         "요청한 조회 기간이 유효하지 않습니다. 과거 또는 현재 월까지만 조회할 수 있습니다."),
 	TX_INVALID_TRANSACTION_ID(HttpStatus.BAD_REQUEST,
         "요청한 거래 ID 형식이 올바르지 않습니다."),
+	GOAL_INVALID_AMOUNT(HttpStatus.BAD_REQUEST, "목표 금액/납입 금액이 유효하지 않습니다."),
+	GOAL_INVALID_PAYDAY(HttpStatus.BAD_REQUEST, "납입일이 유효하지 않습니다."),
+	GOAL_ALREADY_PENDING(HttpStatus.BAD_REQUEST, "이미 승인 대기 중인 목표가 있어요."),
+	GOAL_ALREADY_ONGOING(HttpStatus.BAD_REQUEST, "이미 진행 중인 목표가 있어요."),
 
 	/**
 	 * 401 UNAUTHORIZED - 리소스 접근 권한
@@ -55,14 +59,18 @@ public enum ErrorBaseCode implements ErrorCode {
 	 */
 	FORBIDDEN(HttpStatus.FORBIDDEN, "리소스 접근이 거부되었습니다."),
 	TX_NO_PERMISSION(HttpStatus.FORBIDDEN, "해당 계좌에 대한 접근 권한이 없습니다."),
+	GOAL_ACCESS_FORBIDDEN(HttpStatus.FORBIDDEN, "부모는 목표를 생성할 수 없습니다."),
 
 	/**
 	 * 404 NOT FOUND - 찾을 수 없음
 	 */
 	NOT_FOUND_ENTITY(HttpStatus.NOT_FOUND, "대상을 찾을 수 없습니다."),
 	USER_NOT_FOUND(HttpStatus.NOT_FOUND, "대상을 찾을 수 없습니다."),
-    QUIZ_PROGRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "대상을 찾을 수 없습니다."),
-	TX_ACCOUNT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 계좌를 찾을 수 없습니다."),
+  QUIZ_PROGRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "대상을 찾을 수 없습니다."),
+	QUIZ_INFO_NOT_FOUND(HttpStatus.NOT_FOUND, "대상을 찾을 수 없습니다."),
+	GOAL_NOT_FOUND(HttpStatus.NOT_FOUND, "목표 정보를 찾을 수 없습니다."),
+	GOAL_PARENT_NOT_FOUND(HttpStatus.NOT_FOUND, "가족 등록을 먼저 진행해 주세요."),
+  TX_ACCOUNT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 계좌를 찾을 수 없습니다."),
 	TX_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 거래내역을 찾을 수 없습니다."),
 
 	/**
