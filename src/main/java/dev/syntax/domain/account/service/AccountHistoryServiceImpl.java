@@ -45,7 +45,7 @@ public class AccountHistoryServiceImpl implements AccountHistoryService {
         LocalDateTime start = LocalDate.of(req.year(), req.month(), 1).atStartOfDay();
         LocalDateTime end = LocalDate.of(req.year(), req.month(), 1)
                 .withDayOfMonth(LocalDate.of(req.year(), req.month(), 1).lengthOfMonth())
-                .atTime(LocalTime.MAX);
+                .atTime(LocalTime.of(23, 59, 59));
 
         log.info("거래내역 조회 → 계좌번호: {}, 기간: {} ~ {}",
                 account.getAccountNo(), start, end);
@@ -79,7 +79,7 @@ public class AccountHistoryServiceImpl implements AccountHistoryService {
      * 코어 서버 mock 응답.
      * 실제 구현에서는 RestTemplate/WebClient로 코어 호출.
      */
-    private List<AccountHistoryRes> mockCoreHistory(String accountNo,
+    public List<AccountHistoryRes> mockCoreHistory(String accountNo,
             LocalDateTime start,
             LocalDateTime end) {
 
