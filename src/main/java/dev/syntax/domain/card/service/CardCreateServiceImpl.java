@@ -13,6 +13,7 @@ import dev.syntax.domain.card.dto.CardInfoRes;
 import dev.syntax.domain.card.entity.Card;
 import dev.syntax.domain.card.factory.CardFactory;
 import dev.syntax.domain.card.repository.CardRepository;
+import dev.syntax.domain.card.util.CardUtils;
 import dev.syntax.domain.user.enums.Role;
 import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.global.exception.BusinessException;
@@ -33,15 +34,16 @@ public class CardCreateServiceImpl implements CardCreateService {
     private final AccountRepository accountRepository;
     private final CardRepository cardRepository;
     private final CardFactory cardFactory;
+    private final CardUtils cardUtils;
 
     /**
      * 카드 생성 비즈니스 로직.
      * <ol>
-     *     <li>부모 권한 검증 (자녀 본인 생성 불가)</li>
-     *     <li>자녀의 용돈 계좌(ALLOWANCE) 존재 확인</li>
-     *     <li>이미 발급된 카드가 있는지 중복 확인</li>
-     *     <li>CardFactory를 통한 카드 엔티티 생성 (번호, CVC, 만료일 등)</li>
-     *     <li>DB 저장 및 결과 반환</li>
+     * <li>부모 권한 검증 (자녀 본인 생성 불가)</li>
+     * <li>자녀의 용돈 계좌(ALLOWANCE) 존재 확인</li>
+     * <li>이미 발급된 카드가 있는지 중복 확인</li>
+     * <li>CardFactory를 통한 카드 엔티티 생성 (번호, CVC, 만료일 등)</li>
+     * <li>DB 저장 및 결과 반환</li>
      * </ol>
      */
     @Override
@@ -49,7 +51,7 @@ public class CardCreateServiceImpl implements CardCreateService {
 
         Long childId = req.getChildId();
 
-        //  1. 부모 권한 검증
+        // 1. 부모 권한 검증
         validateAccess(ctx, childId);
 
         // 2. 용돈 계좌(ALLOWANCE) 존재 확인
@@ -57,16 +59,17 @@ public class CardCreateServiceImpl implements CardCreateService {
                 .findByUserIdAndType(childId, AccountType.ALLOWANCE)
                 .orElseThrow(() -> new BusinessException(ErrorBaseCode.ACCOUNT_NOT_FOUND));
 
-        //  3. 이미 카드가 존재하면 에러
+        // 3. 이미 카드가 존재하면 에러
         if (cardRepository.existsByAccountId(account.getId())) {
             throw new BusinessException(ErrorBaseCode.CARD_ALREADY_EXISTS);
         }
 
-        // 🔢 4. 카드 자동 생성 (Factory 사용)
+        // 4. 카드 자동 생성 (Factory 사용)
         Card card = cardFactory.create(account, req);
         cardRepository.save(card);
 
-        return new CardInfoRes(card.getId(), card.getNumber(), card.getName(), card.getCvc(), card.getExpiredAt());
+        return new CardInfoRes(card.getId(), cardUtils.formatCardNumber(card.getNumber()), card.getName(), card.getCvc(),
+                card.getExpiredAt());
     }
 
     private void validateAccess(UserContext ctx, Long childId) {

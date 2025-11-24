@@ -10,6 +10,7 @@ import dev.syntax.domain.account.repository.AccountRepository;
 import dev.syntax.domain.card.dto.CardInfoRes;
 import dev.syntax.domain.card.entity.Card;
 import dev.syntax.domain.card.repository.CardRepository;
+import dev.syntax.domain.card.util.CardUtils;
 import dev.syntax.domain.user.enums.Role;
 import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.global.exception.BusinessException;
@@ -25,6 +26,7 @@ public class CardInquiryServiceImpl implements CardInquiryService {
 
     private final AccountRepository accountRepository;
     private final CardRepository cardRepository;
+    private final CardUtils cardUtils;
 
     /**
      * 카드 정보 조회.
@@ -52,7 +54,7 @@ public class CardInquiryServiceImpl implements CardInquiryService {
         //  4. DTO 변환
         return new CardInfoRes(
                 card.getId(),
-                card.getNumber(),
+                cardUtils.formatCardNumber(card.getNumber()),
                 card.getName(),
                 card.getCvc(),
                 card.getExpiredAt()

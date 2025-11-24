@@ -16,7 +16,7 @@ public class CardInfoRes {
     private Long cardId;
 
     /**
-     * 카드 번호 (16자리).
+     * 카드 번호 (16자리). xxxx xxxx xxxx xxxx
      */
     private String cardNumber;
 
