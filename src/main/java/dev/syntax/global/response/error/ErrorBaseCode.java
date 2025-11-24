@@ -62,6 +62,7 @@ public enum ErrorBaseCode implements ErrorCode {
   	QUIZ_PROGRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "대상을 찾을 수 없습니다."),
 	QUIZ_INFO_NOT_FOUND(HttpStatus.NOT_FOUND, "대상을 찾을 수 없습니다."),
 	GOAL_NOT_FOUND(HttpStatus.NOT_FOUND, "목표 정보를 찾을 수 없습니다."),
+	GOAL_PARENT_NOT_FOUND(HttpStatus.NOT_FOUND, "가족 등록을 먼저 진행해 주세요."),
 
 	/**
 	 * 405 METHOD NOT ALLOWED - 허용되지 않은 메서드

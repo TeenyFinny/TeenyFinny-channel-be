@@ -44,7 +44,7 @@ public class GoalServiceImpl implements GoalService {
         goalRepository.save(goal);
 
         User parent = userRelationshipRepository.findByChild(user)
-                .orElseThrow(() -> new BusinessException(ErrorBaseCode.USER_NOT_FOUND))
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_PARENT_NOT_FOUND))
                 .getParent();
 
         notificationService.sendGoalRequestNotice(parent, user.getName());
