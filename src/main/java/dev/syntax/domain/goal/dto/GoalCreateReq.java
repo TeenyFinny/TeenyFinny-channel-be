@@ -20,7 +20,5 @@ public class GoalCreateReq {
     private BigDecimal monthlyAmount;
 
     @NotNull(message = "납입일은 비워둘 수 없습니다.")
-    @Min(value = 1, message = "납입일은 1일 이상이어야 합니다.")
-    @Max(value = 31, message = "납입일은 31일 이하이어야 합니다.")
     private Integer payDay;
 }
