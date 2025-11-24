@@ -179,9 +179,7 @@ public class GoalServiceImpl implements GoalService {
             }
         }
 
-        if (goal.getStatus() != GoalStatus.ONGOING) {
-            throw new BusinessException(ErrorBaseCode.GOAL_NOT_ONGOING);
-        }
+        validateGoalIsOngoing(goal);
 
         GoalAccountInfoDto coreInfo = coreBankingClient.getGoalTransactionInfo(goalId);
 
