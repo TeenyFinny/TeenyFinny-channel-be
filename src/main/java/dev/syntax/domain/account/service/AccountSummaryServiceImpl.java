@@ -1,0 +1,123 @@
+package dev.syntax.domain.account.service;
+
+import java.math.BigDecimal;
+
+import org.springframework.stereotype.Service;
+
+import dev.syntax.domain.account.dto.AccountSummaryRes;
+import dev.syntax.domain.account.entity.Account;
+import dev.syntax.domain.account.enums.AccountType;
+import dev.syntax.domain.account.repository.AccountRepository;
+import dev.syntax.domain.card.repository.CardRepository;
+import dev.syntax.domain.user.enums.Role;
+import dev.syntax.global.auth.dto.UserContext;
+import dev.syntax.global.exception.BusinessException;
+import dev.syntax.global.response.error.ErrorBaseCode;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class AccountSummaryServiceImpl implements AccountSummaryService {
+
+    private final AccountRepository accountRepository;
+    private final CardRepository cardRepository;
+    
+    /**
+     * 사용자 또는 자녀의 전체 계좌 요약 조회.
+     * Core 연동 전이므로 서비스에서 계좌 존재 여부만 확인하고
+     * 잔액은 Mock 데이터로 채움.
+     */
+    @Override
+    public AccountSummaryRes getSummary(UserContext ctx, Long targetUserId) {
+
+        log.info("[AccountSummary] 요청 userId={}, targetUserId={}", ctx.getId(), targetUserId);
+
+        // 🔐 접근 권한 체크: 부모는 자신의 자녀만 조회 가능
+        validateAccess(ctx, targetUserId);
+
+        // ===== 1. 계좌 존재 여부 확인 =====
+        Account allowanceAcc = accountRepository.findByUserIdAndType(targetUserId, AccountType.ALLOWANCE).orElse(null);
+        Account investAcc = accountRepository.findByUserIdAndType(targetUserId, AccountType.INVEST).orElse(null);
+        Account savingAcc = accountRepository.findByUserIdAndType(targetUserId, AccountType.GOAL).orElse(null);
+
+        // ===== 2. Mock 잔액 생성 =====  
+        // (원래는 Core API에서 가져와야 하지만 지금은 테스트 데이터로 대체)
+
+        BigDecimal allowanceBalance = (allowanceAcc != null)
+                ? mockBalance(allowanceAcc.getId(), AccountType.ALLOWANCE)
+                : null;
+
+        BigDecimal investBalance = (investAcc != null)
+                ? mockBalance(investAcc.getId(), AccountType.INVEST)
+                : null;
+
+        BigDecimal savingBalance = (savingAcc != null)
+                ? mockBalance(savingAcc.getId(), AccountType.GOAL)
+                : null;
+
+        // ===== 3. 총합 계산 =====
+        BigDecimal total = BigDecimal.ZERO;
+        if (allowanceBalance != null) total = total.add(allowanceBalance);
+        if (investBalance != null) total = total.add(investBalance);
+        if (savingBalance != null) total = total.add(savingBalance);
+
+        // ===== 4. 카드 보유 여부 체크 =====
+        boolean hasCard = false;
+        if (allowanceAcc != null) {
+            hasCard = cardRepository.existsByAccountId(allowanceAcc.getId());
+        }
+
+        return new AccountSummaryRes(
+                total,
+                allowanceBalance,
+                investBalance,
+                savingBalance,
+                new AccountSummaryRes.CardInfo(hasCard)
+        );
+    }
+
+    /**
+     * 🔐 접근 권한 검증
+     * CHILD → 자기 자신만 조회 가능
+     * PARENT → 자신의 자녀 조회 가능
+     */
+    private void validateAccess(UserContext ctx, Long targetUserId) {
+
+        if (ctx.getRole().equals(Role.CHILD.name())) {
+            if (!ctx.getId().equals(targetUserId)) {
+                throw new BusinessException(ErrorBaseCode.UNAUTHORIZED);
+            }
+        }
+
+        if (ctx.getRole().equals(Role.PARENT.name())) {
+            if (!ctx.getId().equals(targetUserId) && !ctx.getChildren().contains(targetUserId)) {
+                throw new BusinessException(ErrorBaseCode.UNAUTHORIZED);
+            }
+        }
+    }
+
+    /**
+     * 🧪 Mock 잔액 생성 로직
+     * Core 연동 전 테스트용
+     */
+    private BigDecimal mockBalance(Long accountId, AccountType type) {
+
+        // 계좌 ID 기반으로 잔액을 임의로 생성하는 방식 (테스트용)
+        long base = accountId % 50000;   // 0~50000 사이 Random 값 흉내
+
+        switch (type) {
+            case ALLOWANCE:
+                return BigDecimal.valueOf(10000 + base); // 최소 1만원
+            case INVEST:
+                return BigDecimal.valueOf(50000 + base);
+            case GOAL:
+                return BigDecimal.valueOf(20000 + base);
+            default:
+                return BigDecimal.ZERO;
+        }
+    }
+}
+    
+
