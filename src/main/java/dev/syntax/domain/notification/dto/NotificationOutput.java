@@ -2,7 +2,8 @@ package dev.syntax.domain.notification.dto;
 
 import dev.syntax.domain.notification.entity.Notification;
 import dev.syntax.domain.notification.enums.NotificationType;
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -10,7 +11,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 
-@Data
+@Getter
+@AllArgsConstructor
 public class NotificationOutput {
 
     private Long id;

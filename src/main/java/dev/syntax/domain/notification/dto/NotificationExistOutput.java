@@ -1,10 +1,11 @@
 package dev.syntax.domain.notification.dto;
 
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-@Data
+@Getter
 public class NotificationExistOutput {
-    private Boolean hasNotice;
+    private final Boolean hasNotice;
 
     public NotificationExistOutput(Boolean hasNotice) {
         this.hasNotice = hasNotice;

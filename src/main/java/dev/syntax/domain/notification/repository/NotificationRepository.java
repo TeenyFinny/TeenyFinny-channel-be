@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
     @Transactional(readOnly = true)
-    Boolean existByTargetUserAndIsRead(User user, Boolean isRead);
+    Boolean existsByTargetUserAndIsRead(User user, Boolean isRead);
 
     List<Notification> findByTargetUser(User targetUser);
 }
