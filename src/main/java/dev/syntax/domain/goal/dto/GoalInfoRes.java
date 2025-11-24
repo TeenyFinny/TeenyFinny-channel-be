@@ -6,7 +6,7 @@ import lombok.Getter;
 import java.math.BigDecimal;
 
 @Getter
-public class GoalDetailRes {
+public class GoalInfoRes {
 
     private Long id;
     private String name;
@@ -14,7 +14,7 @@ public class GoalDetailRes {
     private BigDecimal monthlyAmount;
     private Integer payDay;
 
-    public GoalDetailRes(Goal goal) {
+    public GoalInfoRes(Goal goal) {
         this.id = goal.getId();
         this.name = goal.getName();
         this.targetAmount = goal.getTargetAmount();

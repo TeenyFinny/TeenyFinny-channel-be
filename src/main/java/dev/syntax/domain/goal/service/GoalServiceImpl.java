@@ -116,7 +116,7 @@ public class GoalServiceImpl implements GoalService {
     }
 
     @Override
-    public GoalDetailRes getGoalForUpdate(UserContext userContext, Long goalId) {
+    public GoalInfoRes getGoalForUpdate(UserContext userContext, Long goalId) {
 
         User user = getUserOrThrow(userContext);
         Goal goal = getGoalOrThrow(goalId);
@@ -124,7 +124,7 @@ public class GoalServiceImpl implements GoalService {
         validateGoalOwner(user, goal);
         validateGoalIsOngoing(goal);
 
-        return new GoalDetailRes(goal);
+        return new GoalInfoRes(goal);
     }
 
     @Override

@@ -28,7 +28,7 @@ public class GoalController {
     }
 
     @GetMapping("/{goalId}/edit")
-    public GoalDetailRes getGoalForUpdate(
+    public GoalInfoRes getGoalForUpdate(
             @CurrentUser UserContext userContext,
             @PathVariable Long goalId
     ) {
