@@ -16,6 +16,7 @@ public interface QuizService {
      * @return 퀴즈 진행도 정보
      */
     QuizProgressRes getQuizProgress(UserContext context);
+    QuizProgressRes createQuizProgress(UserContext context);
 
     QuizInfoRes getQuizInfo(Long quizId);
 }

@@ -14,5 +14,6 @@ public record QuizProgressRes(
         boolean monthlyReward,
         int todaySolved,
         int coupon,
-        boolean requestCompleted
+        boolean requestCompleted,
+        int firstQuizIdToday
 ) {}

@@ -51,6 +51,7 @@ class QuizServiceTest {
                 .todaySolved(1)
                 .coupon(0)
                 .requestCompleted(false)
+                .firstQuizIdToday(0)
                 .build();
 
         Mockito.when( quizProgressRepositoryMock.findByUserId(1L)).thenReturn(Optional.of(progress));
@@ -67,6 +68,7 @@ class QuizServiceTest {
         assertEquals(1, res.todaySolved());
         assertEquals(0, res.coupon());
         assertEquals(false, res.requestCompleted());
+        assertEquals(0, res.firstQuizIdToday());
     }
 
     @Test
@@ -144,6 +146,81 @@ class QuizServiceTest {
             service.getQuizInfo(999L);
         } catch (BusinessException e) {
             assertEquals("대상을 찾을 수 없습니다.", e.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("사용자 퀴즈 진행도 생성 성공")
+    void createQuizProgress_success() {
+        User user = User.builder()
+                .id(1L)
+                .email("test@test.com")
+                .role(Role.CHILD)
+                .children(Collections.emptyList())
+                .parents(Collections.emptyList())
+                .build();
+
+        UserContext context = new UserContext(user);
+
+        // progress가 존재하지 않는 경우
+        Mockito.when(quizProgressRepositoryMock.findByUserId(1L))
+                .thenReturn(Optional.empty());
+
+        QuizProgress savedProgress = QuizProgress.builder()
+                .id(12L)
+                .userId(1L)
+                .streakDays(0)
+                .courseCompleted(false)
+                .quizDate(0)
+                .monthlyReward(false)
+                .todaySolved(0)
+                .coupon(0)
+                .requestCompleted(false)
+                .firstQuizIdToday(0)
+                .build();
+
+        Mockito.when(quizProgressRepositoryMock.save(Mockito.any(QuizProgress.class)))
+                .thenReturn(savedProgress);
+
+        QuizProgressRes res = service.createQuizProgress(context);
+
+        assertEquals(12L, res.progressId());
+        assertEquals(0, res.streakDays());
+        assertEquals(false, res.courseCompleted());
+        assertEquals(0, res.quizDate());
+        assertEquals(false, res.monthlyReward());
+        assertEquals(0, res.todaySolved());
+        assertEquals(0, res.coupon());
+        assertEquals(false, res.requestCompleted());
+        assertEquals(0, res.firstQuizIdToday());
+    }
+
+    @Test
+    @DisplayName("사용자 퀴즈 진행도 생성 실패 - 이미 존재하는 진행도")
+    void createQuizProgress_alreadyExists() {
+        User user = User.builder()
+                .id(1L)
+                .email("test@test.com")
+                .role(Role.CHILD)
+                .children(Collections.emptyList())
+                .parents(Collections.emptyList())
+                .build();
+
+        UserContext context = new UserContext(user);
+
+        QuizProgress existingProgress = QuizProgress.builder()
+                .id(12L)
+                .userId(1L)
+                .build();
+
+        // 이미 progress가 존재하는 경우
+        Mockito.when(quizProgressRepositoryMock.findByUserId(1L))
+                .thenReturn(Optional.of(existingProgress));
+
+        try {
+            service.createQuizProgress(context);
+        } catch (BusinessException e) {
+            assertEquals("이미 존재하는 리소스입니다.", e.getMessage());
         }
     }
 }
