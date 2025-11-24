@@ -98,28 +98,7 @@ public class QuizServiceImpl implements QuizService {
                 .orElseThrow(() -> new BusinessException(ErrorBaseCode.QUIZ_PROGRESS_NOT_FOUND));
 
         // 요청받은 필드만 업데이트 (null 이 아닌 경우)
-        if (req.getTodaySolved() != null) {
-            progress.setTodaySolved(req.getTodaySolved());
-        }
-        if (req.getQuizDate() != null) {
-            progress.setQuizDate(req.getQuizDate());
-        }
-        if (req.getCourseCompleted() != null) {
-            progress.setCourseCompleted(req.getCourseCompleted());
-        }
-        if (req.getMonthlyReward() != null) {
-            progress.setMonthlyReward(req.getMonthlyReward());
-        }
-        if (req.getCoupon() != null) {
-            progress.setCoupon(req.getCoupon());
-        }
-        if (req.getRequestCompleted() != null) {
-            progress.setRequestCompleted(req.getRequestCompleted());
-        }
-        if (req.getFirstQuizIdToday() != null) {
-            progress.setFirstQuizIdToday(req.getFirstQuizIdToday());
-        }
-
+        progress.update(req);
         QuizProgress saved = quizProgressRepository.save(progress);
 
         // 응답: 수정된 값만 보여주기 위해 DTO를 그대로 사용
