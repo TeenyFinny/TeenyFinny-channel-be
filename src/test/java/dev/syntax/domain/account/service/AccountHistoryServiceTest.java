@@ -68,8 +68,8 @@ class AccountHistoryServiceTest {
         LocalDateTime end = LocalDateTime.of(2025, 1, 31, 23, 59, 59);
 
         List<AccountHistoryRes> mockData = List.of(
-                new AccountHistoryRes("T1", "deposit", "이체", "50,000", "150,000", "2025-01-10 12:00"),
-                new AccountHistoryRes("T2", "withdrawal", "편의점", "1,500", "148,500", "2025-01-15 14:00")
+                new AccountHistoryRes(1L, "deposit", "이체", "50,000", "150,000", "2025-01-10 12:00"),
+                new AccountHistoryRes(2L, "withdrawal", "편의점", "1,500", "148,500", "2025-01-15 14:00")
         );
 
         Mockito.doReturn(mockData)
@@ -81,7 +81,7 @@ class AccountHistoryServiceTest {
 
         // then
         assertThat(result).hasSize(2);
-        assertThat(result.get(0).id()).isEqualTo("T1");
+        assertThat(result.get(0).id()).isEqualTo(1L);
         assertThat(result.get(0).amount()).isEqualTo("50,000");
     }
 

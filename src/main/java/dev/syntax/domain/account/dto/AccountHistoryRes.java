@@ -37,7 +37,7 @@ package dev.syntax.domain.account.dto;
  *   예: "2025-01-15 13:22"
  */
 public record AccountHistoryRes(
-        String id,
+        Long id,
         String type,
         String merchant,
         String amount,
