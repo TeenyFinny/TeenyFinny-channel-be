@@ -37,17 +37,7 @@ public class QuizServiceImpl implements QuizService {
         QuizProgress progress = quizProgressRepository.findByUserId(userId)
                 .orElseThrow(() -> new BusinessException(ErrorBaseCode.QUIZ_PROGRESS_NOT_FOUND));
 
-        return QuizProgressRes.builder()
-                .progressId(progress.getId())
-                .streakDays(progress.getStreakDays())
-                .courseCompleted(progress.isCourseCompleted())
-                .quizDate(progress.getQuizDate())
-                .monthlyReward(progress.isMonthlyReward())
-                .todaySolved(progress.getTodaySolved())
-                .coupon(progress.getCoupon())
-                .requestCompleted(progress.isRequestCompleted())
-                .firstQuizIdToday(progress.getFirstQuizIdToday())
-                .build();
+        return toDto(progress);
     }
 
 
@@ -83,17 +73,7 @@ public class QuizServiceImpl implements QuizService {
                 .build();
 
         QuizProgress saved = quizProgressRepository.save(progress);
-        return QuizProgressRes.builder()
-                .progressId(saved.getId())
-                .streakDays(saved.getStreakDays())
-                .courseCompleted(saved.isCourseCompleted())
-                .quizDate(saved.getQuizDate())
-                .monthlyReward(saved.isMonthlyReward())
-                .todaySolved(saved.getTodaySolved())
-                .coupon(saved.getCoupon())
-                .requestCompleted(saved.isRequestCompleted())
-                .firstQuizIdToday(saved.getFirstQuizIdToday())
-                .build();
+        return toDto(saved);
     }
 
 
@@ -143,17 +123,7 @@ public class QuizServiceImpl implements QuizService {
         QuizProgress saved = quizProgressRepository.save(progress);
 
         // 응답: 수정된 값만 보여주기 위해 DTO를 그대로 사용
-        return QuizProgressRes.builder()
-                .progressId(saved.getId())
-                .streakDays(saved.getStreakDays())
-                .courseCompleted(saved.isCourseCompleted())
-                .quizDate(saved.getQuizDate())
-                .monthlyReward(saved.isMonthlyReward())
-                .todaySolved(saved.getTodaySolved())
-                .coupon(saved.getCoupon())
-                .requestCompleted(saved.isRequestCompleted())
-                .firstQuizIdToday(saved.getFirstQuizIdToday())
-                .build();
+        return toDto(saved);
     }
 
 
@@ -177,6 +147,21 @@ public class QuizServiceImpl implements QuizService {
                 .question(quiz.getQuestion())
                 .answer(quiz.getAnswer())
                 .explanation(quiz.getExplanation())
+                .build();
+    }
+
+
+    private QuizProgressRes toDto(QuizProgress progress) {
+        return QuizProgressRes.builder()
+                .progressId(progress.getId())
+                .streakDays(progress.getStreakDays())
+                .courseCompleted(progress.isCourseCompleted())
+                .quizDate(progress.getQuizDate())
+                .monthlyReward(progress.isMonthlyReward())
+                .todaySolved(progress.getTodaySolved())
+                .coupon(progress.getCoupon())
+                .requestCompleted(progress.isRequestCompleted())
+                .firstQuizIdToday(progress.getFirstQuizIdToday())
                 .build();
     }
 }
