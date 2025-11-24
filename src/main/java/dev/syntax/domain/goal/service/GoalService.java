@@ -12,4 +12,6 @@ public interface GoalService {
     GoalInfoRes getGoalForUpdate(UserContext userContext, Long goalId);
 
     GoalApproveRes approveGoal(UserContext userContext, Long goalId, boolean approve);
+
+    GoalDetailRes getGoalDetail(UserContext userContext, Long goalId);
 }

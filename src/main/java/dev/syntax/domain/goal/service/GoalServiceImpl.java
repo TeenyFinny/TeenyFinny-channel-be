@@ -1,5 +1,7 @@
 package dev.syntax.domain.goal.service;
 
+import dev.syntax.domain.core.CoreBankingClient;
+import dev.syntax.domain.core.dto.GoalAccountInfoDto;
 import dev.syntax.domain.goal.dto.*;
 import dev.syntax.domain.goal.entity.Goal;
 import dev.syntax.domain.goal.enums.GoalStatus;
@@ -22,6 +24,7 @@ public class GoalServiceImpl implements GoalService {
     private final UserRepository userRepository;
     private final GoalRepository goalRepository;
     private final NotificationService notificationService;
+    private final CoreBankingClient coreBankingClient;
 
     // 공통 메서드
     /** UserContext 기반 사용자 조회 */
@@ -155,5 +158,53 @@ public class GoalServiceImpl implements GoalService {
         }
 
         return new GoalApproveRes(goal);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public GoalDetailRes getGoalDetail(UserContext userContext, Long goalId) {
+
+        User user = getUserOrThrow(userContext);
+        Goal goal = getGoalOrThrow(goalId);
+
+        if (user.getRole() == Role.CHILD) {
+            if (!goal.getUser().getId().equals(user.getId())) {
+                throw new BusinessException(ErrorBaseCode.FORBIDDEN);
+            }
+        }
+
+        if (user.getRole() == Role.PARENT) {
+            if (!userContext.getChildren().contains(goal.getUser().getId())) {
+                throw new BusinessException(ErrorBaseCode.GOAL_CHILD_NOT_MATCH);
+            }
+        }
+
+        if (goal.getStatus() != GoalStatus.ONGOING) {
+            throw new BusinessException(ErrorBaseCode.GOAL_NOT_ONGOING);
+        }
+
+        GoalAccountInfoDto coreInfo = coreBankingClient.getGoalTransactionInfo(goalId);
+
+        int period = goal.getTargetAmount()
+                .divide(goal.getMonthlyAmount())
+                .intValue();
+
+        int progress = coreInfo.getCurrentAmount()
+                .multiply(new java.math.BigDecimal(100))
+                .divide(goal.getTargetAmount())
+                .intValue();
+
+        return new GoalDetailRes(
+                goal.getId(),
+                goal.getUser().getId(),
+                goal.getName(),
+                goal.getTargetAmount(),
+                coreInfo.getCurrentAmount(),
+                period,
+                progress,
+                goal.getUser().getName(),
+                coreInfo.getDepositAmounts(),
+                coreInfo.getDepositTimes()
+        );
     }
 }

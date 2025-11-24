@@ -48,4 +48,10 @@ public class GoalController {
                                       @RequestBody GoalApproveReq req) {
         return goalService.approveGoal(userContext, goalId, req.isApprove());
     }
+
+    @GetMapping("/{goalId}")
+    public GoalDetailRes getGoalDetail(@CurrentUser UserContext userContext,
+                                       @PathVariable Long goalId) {
+        return goalService.getGoalDetail(userContext, goalId);
+    }
 }
