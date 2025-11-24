@@ -21,7 +21,7 @@ public class Notification extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private User targetUser;
 
     @Column(nullable = false, length = 100)
     private String title;
@@ -36,4 +36,8 @@ public class Notification extends BaseEntity {
     @Builder.Default
     @Column(name = "is_read", nullable = false)
     private Boolean isRead = false;
+
+    public void markAsRead() {
+        this.isRead = true;
+    }
 }
