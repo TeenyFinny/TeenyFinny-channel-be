@@ -14,6 +14,7 @@ import dev.syntax.domain.user.enums.Role;
 import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorBaseCode;
+import dev.syntax.global.service.Utils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -68,10 +69,10 @@ public class AccountBalanceServiceImpl implements AccountBalanceService {
         }
 
         return new AccountSummaryRes(
-                total,
-                allowanceBalance,
-                investBalance,
-                savingBalance,
+                format(total),
+                format(allowanceBalance),
+                format(investBalance),
+                format(savingBalance),
                 new AccountSummaryRes.CardInfo(hasCard)
         );
     }
@@ -92,7 +93,14 @@ public class AccountBalanceServiceImpl implements AccountBalanceService {
                 ? mockBalance(account.getId(), type)
                 : BigDecimal.ZERO;
 
-        return new AccountBalanceRes(balance);
+        return new AccountBalanceRes(format(balance));
+    }
+
+        /**
+     * BigDecimal → "12,000" 문자열 변환
+     */
+    private String format(BigDecimal amount) {
+        return Utils.NumberFormattingService(amount.intValue());
     }
 
     /**

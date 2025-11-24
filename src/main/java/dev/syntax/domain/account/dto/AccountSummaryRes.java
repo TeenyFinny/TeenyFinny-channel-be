@@ -18,22 +18,22 @@ public class AccountSummaryRes {
     /**
      * 총 자산 금액 (모든 계좌 잔액의 합).
      */
-    private BigDecimal total;
+    private String total;
 
     /**
      * 용돈 계좌(ALLOWANCE) 잔액.
      */
-    private BigDecimal allowance;
+    private String allowance;
 
     /**
      * 투자 계좌(INVEST) 잔액.
      */
-    private BigDecimal invest;
+    private String invest;
 
     /**
      * 저축 계좌(SAVING) 잔액.
      */
-    private BigDecimal saving;
+    private String saving;
 
     /**
      * 카드 정보 (보유 여부 등).

@@ -18,13 +18,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
@@ -47,9 +45,9 @@ class AccountBalanceServiceTest {
     private UserContext createMockUserContext(Long id, Role role, List<Long> children) {
         UserContext ctx = mock(UserContext.class);
         given(ctx.getId()).willReturn(id);
-        given(ctx.getRole()).willReturn(role.name());
+        lenient().when(ctx.getRole()).thenReturn(role.name());
         if (role == Role.PARENT) {
-            given(ctx.getChildren()).willReturn(children);
+            lenient().when(ctx.getChildren()).thenReturn(children);
         }
         return ctx;
     }
@@ -95,11 +93,11 @@ class AccountBalanceServiceTest {
             // then
             assertThat(result).isNotNull();
             assertThat(result.getAllowance()).isNotNull(); // Mock 잔액 존재 확인
-            assertThat(result.getSaving()).isNull();       // 저축 계좌 없음 -> Null
+            assertThat(result.getSaving()).isEqualTo("0");       // 저축 계좌 없음 -> Null
             assertThat(result.getCard().isHasCard()).isTrue();      // 카드 있음
             
             // 총 잔액은 용돈 + 투자 (저축 제외)
-            assertThat(result.getTotal()).isGreaterThan(BigDecimal.ZERO);
+            assertThat(result.getTotal()).isGreaterThan("0");
         }
 
         @Test
@@ -143,7 +141,7 @@ class AccountBalanceServiceTest {
 
             // then
             assertThat(res).isNotNull();
-            assertThat(res.getBalance()).isGreaterThan(BigDecimal.ZERO);
+            assertThat(res.getBalance()).isEqualTo("10,100");
         }
     }
 
