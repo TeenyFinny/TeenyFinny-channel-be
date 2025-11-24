@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AccountBalanceServiceImpl implements AccounBalanceService {
+public class AccountBalanceServiceImpl implements AccountBalanceService {
 
     private final AccountRepository accountRepository;
     private final CardRepository cardRepository;
