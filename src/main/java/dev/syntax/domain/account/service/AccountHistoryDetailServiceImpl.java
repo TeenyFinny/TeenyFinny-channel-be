@@ -18,16 +18,18 @@ import org.springframework.stereotype.Service;
  * 현재는 코어 연동 전 단계이므로 Mock 데이터를 기반으로 동작하며,
  * 인증/인가 검증 로직은 실제 서비스와 동일하게 유지됩니다.
  *
- * <p><b>주요 기능:</b></p>
+ * <p>
+ * <b>주요 기능:</b>
+ * </p>
  * <ul>
- *     <li>거래 ID 유효성 검증</li>
- *     <li>Mock Core 데이터 조회 (향후 Core 연동 시 제거 예정)</li>
- *     <li>거래가 속한 계좌ID 추출 및 조회 권한 검증</li>
- *     <li>자녀/부모 권한별 접근 제한 처리</li>
+ * <li>거래 ID 유효성 검증</li>
+ * <li>Mock Core 데이터 조회 (향후 Core 연동 시 제거 예정)</li>
+ * <li>거래가 속한 계좌ID 추출 및 조회 권한 검증</li>
+ * <li>자녀/부모 권한별 접근 제한 처리</li>
  * </ul>
  *
  * <p>
- * ⚠️ <b>주의:</b> 현재는 Core API 연동 전이므로 거래 엔티티가 DB에 존재하지 않고,  
+ * ⚠️ <b>주의:</b> 현재는 Core API 연동 전이므로 거래 엔티티가 DB에 존재하지 않고,
  * transactionId → accountId 매핑도 Mock 규칙을 사용합니다.
  * 실제 Core 연동 시 <code>Transaction</code> 엔티티에서 직접 accountId를 조회하도록 변경됩니다.
  * </p>
@@ -45,21 +47,25 @@ public class AccountHistoryDetailServiceImpl implements AccountHistoryDetailServ
      * 주어진 거래 ID에 해당하는 상세 정보를 조회하고,
      * 현재 로그인한 사용자(UserContext)가 접근 가능한 거래인지 권한을 검증합니다.
      *
-     * <p><b>검증 절차:</b></p>
+     * <p>
+     * <b>검증 절차:</b>
+     * </p>
      * <ol>
-     *     <li>거래 ID가 Null 또는 0 이하인지 유효성 검증</li>
-     *     <li>Mock 데이터에서 거래 상세 정보 조회</li>
-     *     <li>Mock 규칙에 따라 해당 거래가 속한 계좌 ID 추출</li>
-     *     <li>계좌의 실제 소유자 정보 조회</li>
-     *     <li>자녀/부모 권한에 따라 접근 가능한지 검증</li>
+     * <li>거래 ID가 Null 또는 0 이하인지 유효성 검증</li>
+     * <li>Mock 데이터에서 거래 상세 정보 조회</li>
+     * <li>Mock 규칙에 따라 해당 거래가 속한 계좌 ID 추출</li>
+     * <li>계좌의 실제 소유자 정보 조회</li>
+     * <li>자녀/부모 권한에 따라 접근 가능한지 검증</li>
      * </ol>
      *
-     * <p><b>예외:</b></p>
+     * <p>
+     * <b>예외:</b>
+     * </p>
      * <ul>
-     *     <li>{@link ErrorBaseCode#TX_INVALID_TRANSACTION_ID} - 잘못된 거래 ID</li>
-     *     <li>{@link ErrorBaseCode#TX_NOT_FOUND} - Mock 데이터에 존재하지 않는 거래</li>
-     *     <li>{@link ErrorBaseCode#TX_ACCOUNT_NOT_FOUND} - 해당 계좌 없음</li>
-     *     <li>{@link ErrorBaseCode#TX_NO_PERMISSION} - 접근 권한 없음</li>
+     * <li>{@link ErrorBaseCode#TX_INVALID_TRANSACTION_ID} - 잘못된 거래 ID</li>
+     * <li>{@link ErrorBaseCode#TX_NOT_FOUND} - Mock 데이터에 존재하지 않는 거래</li>
+     * <li>{@link ErrorBaseCode#TX_ACCOUNT_NOT_FOUND} - 해당 계좌 없음</li>
+     * <li>{@link ErrorBaseCode#TX_NO_PERMISSION} - 접근 권한 없음</li>
      * </ul>
      *
      * @param transactionId 조회할 거래 ID
@@ -112,8 +118,8 @@ public class AccountHistoryDetailServiceImpl implements AccountHistoryDetailServ
      * <h3>📌 해당 계좌를 조회할 권한이 있는지 검증</h3>
      *
      * <ul>
-     *     <li>자녀(CHILD): 본인 계좌만 조회 가능</li>
-     *     <li>부모(PARENT): 자신의 계좌 + 연결된 자녀의 계좌 조회 가능</li>
+     * <li>자녀(CHILD): 본인 계좌만 조회 가능</li>
+     * <li>부모(PARENT): 자신의 계좌 + 연결된 자녀의 계좌 조회 가능</li>
      * </ul>
      *
      * @param accountId 실제 조회할 계좌 ID
@@ -127,16 +133,17 @@ public class AccountHistoryDetailServiceImpl implements AccountHistoryDetailServ
 
         Long ownerId = account.getUser().getId(); // 계좌 소유자 ID
 
-        // 자녀일 경우: 본인 계좌만 가능
-        if (ctx.getRole().equals(Role.CHILD.name())) {
+        String userRole = ctx.getRole();
+        if (Role.CHILD.name().equals(userRole)) {
             if (!ctx.getId().equals(ownerId)) {
                 throw new BusinessException(ErrorBaseCode.TX_NO_PERMISSION);
             }
-            return;
-        }
-
-        // 부모일 경우: 본인 + children 목록에 있는 자녀 계좌만 가능
-        if (!ctx.getId().equals(ownerId) && !ctx.getChildren().contains(ownerId)) {
+        } else if (Role.PARENT.name().equals(userRole)) {
+            if (!ctx.getId().equals(ownerId) && !ctx.getChildren().contains(ownerId)) {
+                throw new BusinessException(ErrorBaseCode.TX_NO_PERMISSION);
+            }
+        } else {
+            // 알려지지 않은 역할은 접근을 거부합니다.
             throw new BusinessException(ErrorBaseCode.TX_NO_PERMISSION);
         }
     }
@@ -155,28 +162,17 @@ public class AccountHistoryDetailServiceImpl implements AccountHistoryDetailServ
      * @return Mock 상세 정보 (없으면 null)
      */
     private AccountHistoryDetailRes mockCoreDetail(Long transactionId) {
+        final java.util.Map<Long, AccountHistoryDetailRes> MOCK_DATA = java.util.Map.of(
+                202501150001L, new AccountHistoryDetailRes(
+                        "이체", "50,000", "2025-01-15 13:22",
+                        "일시불", "이체", "50,000", "150,000"),
+                202501150002L, new AccountHistoryDetailRes(
+                        "편의점", "1,500", "2025-01-15 14:10",
+                        "일시불", "식비", "1,500", "148,500"),
+                202501160001L, new AccountHistoryDetailRes(
+                        "스타벅스", "5,300", "2025-01-16 10:23",
+                        "할부", "카페/간식", "5,300", "143,200"));
 
-        if (transactionId.equals(202501150001L)) {
-            return new AccountHistoryDetailRes(
-                    "이체", "50,000", "2025-01-15 13:22",
-                    "일시불", "이체", "50,000", "150,000"
-            );
-        }
-
-        if (transactionId.equals(202501150002L)) {
-            return new AccountHistoryDetailRes(
-                    "편의점", "1,500", "2025-01-15 14:10",
-                    "일시불", "식비", "1,500", "148,500"
-            );
-        }
-
-        if (transactionId.equals(202501160001L)) {
-            return new AccountHistoryDetailRes(
-                    "스타벅스", "5,300", "2025-01-16 10:23",
-                    "할부", "카페/간식", "5,300", "143,200"
-            );
-        }
-
-        return null;
+        return MOCK_DATA.get(transactionId);
     }
 }
