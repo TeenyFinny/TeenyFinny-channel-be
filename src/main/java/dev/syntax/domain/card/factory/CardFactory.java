@@ -1,5 +1,6 @@
 package dev.syntax.domain.card.factory;
 
+import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -18,6 +19,7 @@ public class CardFactory {
 
     private final CardRepository cardRepository;
     private final PasswordEncoder passwordEncoder;
+    private static final SecureRandom secureRandom = new SecureRandom();
 
     public Card create(Account account, CardCreateReq req) {
 
@@ -42,13 +44,13 @@ public class CardFactory {
     private String generateCardNumber() {
         StringBuilder sb = new StringBuilder("4");
         while (sb.length() < 16) {
-            sb.append((int)(Math.random() * 10));
+            sb.append(secureRandom.nextInt(10));
         }
         return sb.toString();
     }
 
     private String generateCVC() {
-        int cvc = (int)(Math.random() * 900) + 100;
+        int cvc = secureRandom.nextInt(900) + 100;
         return String.valueOf(cvc);
     }
 
