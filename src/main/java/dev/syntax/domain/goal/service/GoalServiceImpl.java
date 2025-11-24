@@ -97,6 +97,14 @@ public class GoalServiceImpl implements GoalService {
         }
     }
 
+    /**
+     * 부모 entity 가져오기
+     */
+    private User getParent(UserContext userContext) {
+        return userRepository.findById(userContext.getParentId())
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_PARENT_NOT_FOUND));
+    }
+
     // 서비스 로직
     @Override
     @Transactional
@@ -132,8 +140,7 @@ public class GoalServiceImpl implements GoalService {
 
         goalRepository.save(goal);
 
-        User parent = userRepository.findById(userContext.getParentId())
-                .orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_PARENT_NOT_FOUND));
+        User parent = getParent(userContext);
 
         notificationService.sendGoalRequestNotice(parent, user.getName());
 
@@ -260,8 +267,7 @@ public class GoalServiceImpl implements GoalService {
         validateGoalOwner(user, goal);
         validateGoalIsOngoing(goal);
 
-        User parent = userRepository.findById(userContext.getParentId())
-                .orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_PARENT_NOT_FOUND));
+        User parent = getParent(userContext);
 
         notificationService.sendGoalCancelRequestNotice(parent, user.getName());
 
@@ -305,8 +311,7 @@ public class GoalServiceImpl implements GoalService {
         // TODO: 추후 실제 core 서버와 연동
         validateGoalIsCompleted(goalId, goal);
 
-        User parent = userRepository.findById(userContext.getParentId())
-                .orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_PARENT_NOT_FOUND));
+        User parent = getParent(userContext);
 
         notificationService.sendGoalCompleteRequestNotice(parent, child.getName());
 
