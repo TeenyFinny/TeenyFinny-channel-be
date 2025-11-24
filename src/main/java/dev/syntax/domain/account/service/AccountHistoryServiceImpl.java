@@ -3,7 +3,6 @@ package dev.syntax.domain.account.service;
 import dev.syntax.domain.account.dto.AccountHistoryReq;
 import dev.syntax.domain.account.dto.AccountHistoryRes;
 import dev.syntax.domain.account.entity.Account;
-import dev.syntax.domain.account.enums.AccountType;
 import dev.syntax.domain.account.repository.AccountRepository;
 import dev.syntax.domain.user.enums.Role;
 import dev.syntax.global.auth.dto.UserContext;
@@ -55,15 +54,11 @@ public class AccountHistoryServiceImpl implements AccountHistoryService {
         List<AccountHistoryRes> mock = mockCoreHistory(account.getAccountNo(), start, end);
 
         return mock;
-        // core 서버 호출
-        // 계좌번호, req.month, year 20201001, 20201031 전달해줘야됨
-        // 코어에서 조회를 통해 거래구분, 거래 아이디, 거래후 잔액, 거래처명, 카테고리, 거래일자, 거래금액을 가져옴
-        // 호출받은 데이터를 가공해서 리턴
     }
 
     private void validateUserAccess(Long targetUserId, UserContext ctx) {
 
-        if (ctx.getRole().equals(Role.CHILD)) {
+        if (Role.CHILD.name().equals(ctx.getRole())) {
             if (!ctx.getId().equals(targetUserId)) {
                 throw new BusinessException(ErrorBaseCode.UNAUTHORIZED);
             }
