@@ -25,7 +25,7 @@ public class AccountBalanceServiceImpl implements AccountBalanceService {
 
     private final AccountRepository accountRepository;
     private final CardRepository cardRepository;
-    
+
     /**
      * 사용자 또는 자녀의 전체 계좌 요약 조회.
      * Core 연동 전이므로 서비스에서 계좌 존재 여부만 확인하고
@@ -36,43 +36,46 @@ public class AccountBalanceServiceImpl implements AccountBalanceService {
 
         log.info("[AccountSummary] 요청 userId={}, targetUserId={}", ctx.getId(), targetUserId);
 
-        // 🔐 접근 권한 체크: 부모는 자신의 자녀만 조회 가능
+        // 🔐 접근 권한 체크
         validateAccess(ctx, targetUserId);
 
         // ===== 1. 계좌 존재 여부 확인 =====
-        Account allowanceAcc = accountRepository.findByUserIdAndType(targetUserId, AccountType.ALLOWANCE).orElse(null);
-        Account investAcc = accountRepository.findByUserIdAndType(targetUserId, AccountType.INVEST).orElse(null);
-        Account savingAcc = accountRepository.findByUserIdAndType(targetUserId, AccountType.GOAL).orElse(null);
+        Account allowanceAcc = accountRepository
+                .findByUserIdAndType(targetUserId, AccountType.ALLOWANCE)
+                .orElse(null);
 
-        // ===== 2. Mock 잔액 생성 =====  
-        // (원래는 Core API에서 가져와야 하지만 지금은 테스트 데이터로 대체)
+        Account investAcc = accountRepository
+                .findByUserIdAndType(targetUserId, AccountType.INVEST)
+                .orElse(null);
 
-        BigDecimal allowanceBalance = (allowanceAcc != null)
+        Account savingAcc = accountRepository
+                .findByUserIdAndType(targetUserId, AccountType.GOAL)
+                .orElse(null);
+
+        // ===== 2. Mock 잔액 생성 =====
+        BigDecimal allowance = (allowanceAcc != null)
                 ? mockBalance(allowanceAcc.getId(), AccountType.ALLOWANCE)
                 : BigDecimal.ZERO;
 
-        BigDecimal investBalance = (investAcc != null)
+        BigDecimal invest = (investAcc != null)
                 ? mockBalance(investAcc.getId(), AccountType.INVEST)
                 : BigDecimal.ZERO;
 
-        BigDecimal savingBalance = (savingAcc != null)
+        BigDecimal saving = (savingAcc != null)
                 ? mockBalance(savingAcc.getId(), AccountType.GOAL)
                 : BigDecimal.ZERO;
 
-        // ===== 3. 총합 계산 =====
-        BigDecimal total = allowanceBalance.add(investBalance).add(savingBalance);
+        BigDecimal total = allowance.add(invest).add(saving);
 
-        // ===== 4. 카드 보유 여부 체크 =====
-        boolean hasCard = false;
-        if (allowanceAcc != null) {
-            hasCard = cardRepository.existsByAccountId(allowanceAcc.getId());
-        }
+        // ===== 3. 카드 보유 여부 =====
+        boolean hasCard = allowanceAcc != null &&
+                cardRepository.existsByAccountId(allowanceAcc.getId());
 
         return new AccountSummaryRes(
                 format(total),
-                format(allowanceBalance),
-                format(investBalance),
-                format(savingBalance),
+                format(allowance),
+                format(invest),
+                format(saving),
                 new AccountSummaryRes.CardInfo(hasCard)
         );
     }
@@ -82,13 +85,13 @@ public class AccountBalanceServiceImpl implements AccountBalanceService {
      */
     @Override
     public AccountBalanceRes getBalance(UserContext ctx, Long targetUserId, AccountType type) {
-        // 1. 권한 체크
+
         validateAccess(ctx, targetUserId);
 
-        // 2. 계좌 조회
-        Account account = accountRepository.findByUserIdAndType(targetUserId, type).orElse(null);
+        Account account = accountRepository
+                .findByUserIdAndType(targetUserId, type)
+                .orElse(null);
 
-        // 3. 잔액 Mocking
         BigDecimal balance = (account != null)
                 ? mockBalance(account.getId(), type)
                 : BigDecimal.ZERO;
@@ -96,7 +99,7 @@ public class AccountBalanceServiceImpl implements AccountBalanceService {
         return new AccountBalanceRes(format(balance));
     }
 
-        /**
+    /**
      * BigDecimal → "12,000" 문자열 변환
      */
     private String format(BigDecimal amount) {
@@ -105,38 +108,31 @@ public class AccountBalanceServiceImpl implements AccountBalanceService {
 
     /**
      * 🔐 접근 권한 검증
-     * CHILD → 자기 자신만 조회 가능
-     * PARENT → 자신의 자녀 조회 가능
      */
     private void validateAccess(UserContext ctx, Long targetUserId) {
+
         Long currentUserId = ctx.getId();
 
-        // 본인 정보는 항상 접근 가능
-        if (currentUserId.equals(targetUserId)) {
-            return;
-        }
+        // 본인 → 허용
+        if (currentUserId.equals(targetUserId)) return;
 
-        // 부모는 자녀 정보에 접근 가능
-        if (ctx.getRole().equals(Role.PARENT.name()) && ctx.getChildren().contains(targetUserId)) {
-            return;
-        }
+        // 부모 → 자녀 허용
+        if (ctx.getRole().equals(Role.PARENT.name())
+                && ctx.getChildren().contains(targetUserId)) return;
 
-        // 그 외의 경우는 권한 없음
         throw new BusinessException(ErrorBaseCode.UNAUTHORIZED);
     }
 
     /**
-     * 🧪 Mock 잔액 생성 로직
-     * Core 연동 전 테스트용
+     * 🧪 Mock 잔액 생성 (테스트용)
      */
     private BigDecimal mockBalance(Long accountId, AccountType type) {
 
-        // 계좌 ID 기반으로 잔액을 임의로 생성하는 방식 (테스트용)
-        long base = accountId % 50000;   // 0~50000 사이 Random 값 흉내
+        long base = accountId % 50000;
 
         switch (type) {
             case ALLOWANCE:
-                return BigDecimal.valueOf(10000 + base); // 최소 1만원
+                return BigDecimal.valueOf(10000 + base);
             case INVEST:
                 return BigDecimal.valueOf(50000 + base);
             case GOAL:
@@ -146,5 +142,3 @@ public class AccountBalanceServiceImpl implements AccountBalanceService {
         }
     }
 }
-    
-
