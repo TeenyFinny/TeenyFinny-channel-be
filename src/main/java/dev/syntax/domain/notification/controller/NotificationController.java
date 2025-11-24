@@ -35,13 +35,7 @@ public class NotificationController {
         notificationService.markAsRead(userContext.getUser(), id);
     }
 
-    // 4) 샘플 알림 생성
-    @PostMapping("/notices/sample")
-    public void createSample(@CurrentUser UserContext userContext) {
-        notificationService.createSampleNotice(userContext.getUser());
-    }
-
-//    // 5) 알림 삭제
+//    // 4) 알림 삭제
 //    @DeleteMapping("/notices/{id}")
 //    public void noticeRemove(@PathVariable Long id) {
 //        notificationService.removeNotice(id);
