@@ -9,6 +9,7 @@ import dev.syntax.domain.goal.repository.GoalRepository;
 import dev.syntax.domain.notification.service.NotificationService;
 import dev.syntax.domain.user.entity.User;
 import dev.syntax.domain.user.enums.Role;
+import dev.syntax.domain.user.repository.UserRelationshipRepository;
 import dev.syntax.domain.user.repository.UserRepository;
 import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.global.exception.BusinessException;
@@ -28,6 +29,7 @@ public class GoalServiceImpl implements GoalService {
     private final GoalRepository goalRepository;
     private final NotificationService notificationService;
     private final CoreBankingClient coreBankingClient;
+    private final UserRelationshipRepository userRelationshipRepository;
 
     // 공통 메서드
 
@@ -246,5 +248,29 @@ public class GoalServiceImpl implements GoalService {
         notificationService.sendGoalCancelRequestNotice(parent, child.getName());
 
         return new GoalDeleteRes(goal.getId(), "중도 해지 요청이 부모에게 전달되었습니다.");
+    }
+
+    @Override
+    @Transactional
+    public GoalDeleteRes confirmCancel(UserContext userContext, Long goalId) {
+        User parent = getUserOrThrow(userContext);
+        if (!parent.getRole().equals(Role.PARENT)) {
+            throw new BusinessException(ErrorBaseCode.GOAL_ACCESS_FORBIDDEN);
+        }
+
+        Goal goal = getGoalOrThrow(goalId);
+
+        if (!userContext.getChildren().contains(goal.getUser().getId())) {
+            throw new BusinessException(ErrorBaseCode.GOAL_CHILD_NOT_MATCH);
+        }
+
+        validateGoalIsOngoing(goal);
+
+        goal.updateStatus(GoalStatus.CANCELLED);
+
+        // TODO: CoreBanking 쪽 계좌 상태를 SUSPENDED로 변경
+        // coreBankingClient.suspendGoalAccount(goalId);
+
+        return new GoalDeleteRes(goal.getId(), "목표 계좌가 중도 해지되었습니다.");
     }
 }

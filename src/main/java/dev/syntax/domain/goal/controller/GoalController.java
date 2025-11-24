@@ -55,4 +55,9 @@ public class GoalController {
         return goalService.requestCancel(userContext, goalId);
     }
 
+    @PostMapping("/{goalId}/confirm-cancel")
+    public GoalDeleteRes confirmCancel(@CurrentUser UserContext userContext,
+                                       @PathVariable Long goalId) {
+        return goalService.confirmCancel(userContext, goalId);
+    }
 }
