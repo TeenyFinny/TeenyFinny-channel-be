@@ -17,6 +17,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 @Service
 @RequiredArgsConstructor
 public class GoalServiceImpl implements GoalService {
@@ -183,14 +186,21 @@ public class GoalServiceImpl implements GoalService {
 
         GoalAccountInfoDto coreInfo = coreBankingClient.getGoalTransactionInfo(goalId);
 
+        if (goal.getMonthlyAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessException(ErrorBaseCode.GOAL_INVALID_AMOUNT);
+        }
         int period = goal.getTargetAmount()
-                .divide(goal.getMonthlyAmount())
+                .divide(goal.getMonthlyAmount(), RoundingMode.CEILING)
                 .intValue();
 
-        int progress = coreInfo.getCurrentAmount()
-                .multiply(new java.math.BigDecimal(100))
-                .divide(goal.getTargetAmount())
-                .intValue();
+        int progress = 0;
+        if (goal.getTargetAmount().compareTo(BigDecimal.ZERO) > 0) {
+            progress = coreInfo.getCurrentAmount()
+                    .multiply(BigDecimal.valueOf(100))
+                    .divide(goal.getTargetAmount(), 0, RoundingMode.HALF_UP)  // ★ 반올림해서 정수 변환
+                    .intValue();
+        }
+
 
         return new GoalDetailRes(
                 goal.getId(),
