@@ -1,10 +1,6 @@
 package dev.syntax.domain.goal.service;
 
-import dev.syntax.domain.goal.dto.GoalCreateReq;
-import dev.syntax.domain.goal.dto.GoalCreateRes;
-import dev.syntax.domain.goal.dto.GoalDetailRes;
-import dev.syntax.domain.goal.dto.GoalUpdateReq;
-import dev.syntax.domain.goal.dto.GoalUpdateRes;
+import dev.syntax.domain.goal.dto.*;
 import dev.syntax.domain.goal.entity.Goal;
 import dev.syntax.domain.goal.enums.GoalStatus;
 import dev.syntax.domain.goal.repository.GoalRepository;
@@ -30,8 +26,7 @@ public class GoalServiceImpl implements GoalService {
     // 공통 메서드
     /** UserContext 기반 사용자 조회 */
     private User getUserOrThrow(UserContext userContext) {
-        return userRepository.findById(userContext.getId())
-                .orElseThrow(() -> new BusinessException(ErrorBaseCode.USER_NOT_FOUND));
+        return userContext.getUser();
     }
 
     /** goalId로 Goal 조회 */
@@ -43,7 +38,7 @@ public class GoalServiceImpl implements GoalService {
     /** 해당 goal이 로그인한 사용자 소유인지 확인 */
     private void validateGoalOwner(User user, Goal goal) {
         if (!goal.getUser().equals(user)) {
-            throw new BusinessException(ErrorBaseCode.GOAL_ACCESS_FORBIDDEN);
+            throw new BusinessException(ErrorBaseCode.FORBIDDEN);
         }
     }
 
@@ -61,6 +56,7 @@ public class GoalServiceImpl implements GoalService {
         }
     }
 
+    // 서비스 로직
     @Override
     @Transactional
     public GoalCreateRes createGoal(UserContext userContext, GoalCreateReq req) {
@@ -129,5 +125,35 @@ public class GoalServiceImpl implements GoalService {
         validateGoalIsOngoing(goal);
 
         return new GoalDetailRes(goal);
+    }
+
+    @Override
+    @Transactional
+    public GoalApproveRes approveGoal(UserContext userContext, Long goalId, boolean approve) {
+        User user = getUserOrThrow(userContext);
+
+        if (!user.getRole().equals(Role.PARENT)) {
+            throw new BusinessException(ErrorBaseCode.GOAL_ACCESS_FORBIDDEN);
+        }
+
+        Goal goal = getGoalOrThrow(goalId);
+
+        if (goal.getStatus() != GoalStatus.PENDING) {
+            throw new BusinessException(ErrorBaseCode.GOAL_ALREADY_DECIDED);
+        }
+
+        // TODO: userContext 확인 후 수정
+        if (!userContext.getChildren().contains(goal.getUser().getId())) {
+
+            throw new BusinessException(ErrorBaseCode.GOAL_CHILD_NOT_MATCH);
+        }
+
+        if (approve) {
+            goal.updateStatus(GoalStatus.ONGOING);
+        } else {
+            goal.updateStatus(GoalStatus.REJECTED);
+        }
+
+        return new GoalApproveRes(goal);
     }
 }

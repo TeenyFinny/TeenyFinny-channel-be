@@ -1,10 +1,6 @@
 package dev.syntax.domain.goal.controller;
 
-import dev.syntax.domain.goal.dto.GoalCreateReq;
-import dev.syntax.domain.goal.dto.GoalCreateRes;
-import dev.syntax.domain.goal.dto.GoalDetailRes;
-import dev.syntax.domain.goal.dto.GoalUpdateReq;
-import dev.syntax.domain.goal.dto.GoalUpdateRes;
+import dev.syntax.domain.goal.dto.*;
 import dev.syntax.domain.goal.service.GoalService;
 import dev.syntax.global.auth.annotation.CurrentUser;
 import dev.syntax.global.auth.dto.UserContext;
@@ -46,4 +42,10 @@ public class GoalController {
         return goalService.updateGoal(userContext, goalId, req);
     }
 
+    @PatchMapping("/{goalId}/approve")
+    public GoalApproveRes approveGoal(@CurrentUser UserContext userContext,
+                                      @PathVariable Long goalId,
+                                      @RequestBody GoalApproveReq req) {
+        return goalService.approveGoal(userContext, goalId, req.isApprove());
+    }
 }
