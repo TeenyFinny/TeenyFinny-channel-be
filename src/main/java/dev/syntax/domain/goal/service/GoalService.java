@@ -20,4 +20,6 @@ public interface GoalService {
     GoalDeleteRes confirmCancel(UserContext userContext, Long goalId);
 
     GoalDeleteRes requestComplete(UserContext userContext, Long goalId);
+
+    GoalDeleteRes confirmComplete(UserContext userContext, Long goalId);
 }

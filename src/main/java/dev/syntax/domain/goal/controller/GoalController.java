@@ -66,4 +66,10 @@ public class GoalController {
                                          @PathVariable Long goalId) {
         return goalService.requestComplete(userContext, goalId);
     }
+
+    @PostMapping("/{goalId}/confirm-complete")
+    public GoalDeleteRes confirmComplete(@CurrentUser UserContext userContext,
+                                         @PathVariable Long goalId) {
+        return goalService.confirmComplete(userContext, goalId);
+    }
 }

@@ -75,6 +75,28 @@ public class GoalServiceImpl implements GoalService {
         }
     }
 
+    /**
+     * 가족 관계 검증
+     */
+    private void validateParentHasChild(UserContext userContext, Goal goal) {
+        if (!userContext.getChildren().contains(goal.getUser().getId())) {
+            throw new BusinessException(ErrorBaseCode.GOAL_CHILD_NOT_MATCH);
+        }
+    }
+
+    /**
+     * 목표 달성 검증
+     */
+    private void validateGoalIsCompleted(Long goalId, Goal goal) {
+        GoalAccountInfoDto info = coreBankingClient.getGoalTransactionInfo(goalId);
+        BigDecimal current = info.getCurrentAmount();
+        BigDecimal target = goal.getTargetAmount();
+
+        if (current.compareTo(target) < 0) {
+            throw new BusinessException(ErrorBaseCode.GOAL_NOT_COMPLETED);
+        }
+    }
+
     // 서비스 로직
     @Override
     @Transactional
@@ -161,11 +183,7 @@ public class GoalServiceImpl implements GoalService {
             throw new BusinessException(ErrorBaseCode.GOAL_ALREADY_DECIDED);
         }
 
-        // TODO: userContext 확인 후 수정
-        if (!userContext.getChildren().contains(goal.getUser().getId())) {
-
-            throw new BusinessException(ErrorBaseCode.GOAL_CHILD_NOT_MATCH);
-        }
+        validateParentHasChild(userContext, goal);
 
         if (approve) {
             goal.updateStatus(GoalStatus.ONGOING);
@@ -260,10 +278,7 @@ public class GoalServiceImpl implements GoalService {
 
         Goal goal = getGoalOrThrow(goalId);
 
-        if (!userContext.getChildren().contains(goal.getUser().getId())) {
-            throw new BusinessException(ErrorBaseCode.GOAL_CHILD_NOT_MATCH);
-        }
-
+        validateParentHasChild(userContext, goal);
         validateGoalIsOngoing(goal);
 
         goal.updateStatus(GoalStatus.CANCELLED);
@@ -288,13 +303,7 @@ public class GoalServiceImpl implements GoalService {
         validateGoalIsOngoing(goal);
 
         // TODO: 추후 실제 core 서버와 연동
-        GoalAccountInfoDto info = coreBankingClient.getGoalTransactionInfo(goalId);
-        BigDecimal current = info.getCurrentAmount();
-        BigDecimal target = goal.getTargetAmount();
-
-        if (current.compareTo(target) < 0) {
-            throw new BusinessException(ErrorBaseCode.GOAL_NOT_COMPLETED);
-        }
+        validateGoalIsCompleted(goalId, goal);
 
         User parent = userRepository.findById(userContext.getParentId())
                 .orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_PARENT_NOT_FOUND));
@@ -303,4 +312,27 @@ public class GoalServiceImpl implements GoalService {
 
         return new GoalDeleteRes(goalId, "목표 달성 알림이 부모에게 전달되었습니다.");
     }
+
+    @Override
+    @Transactional
+    public GoalDeleteRes confirmComplete(UserContext userContext, Long goalId) {
+        User parent = getUserOrThrow(userContext);
+        if (!parent.getRole().equals(Role.PARENT)) {
+            throw new BusinessException(ErrorBaseCode.GOAL_ACCESS_FORBIDDEN);
+        }
+
+        Goal goal = getGoalOrThrow(goalId);
+
+        validateParentHasChild(userContext, goal);
+        validateGoalIsOngoing(goal);
+        validateGoalIsCompleted(goalId, goal);
+
+        goal.updateStatus(GoalStatus.COMPLETED);
+
+        // TODO: CoreBanking 쪽 계좌 상태를 CLOSED로 변경
+        // coreBankingClient.closeGoalAccount(goalId);
+
+        return new GoalDeleteRes(goal.getId(), "목표가 달성 완료되었습니다!");
+    }
+
 }
