@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import dev.syntax.domain.account.dto.AccountHistoryReq;
+import dev.syntax.domain.account.service.AccountHistoryDetailService;
 import dev.syntax.domain.account.service.AccountHistoryService;
 import dev.syntax.global.auth.annotation.CurrentUser;
 import dev.syntax.global.auth.dto.UserContext;
@@ -35,6 +36,7 @@ import dev.syntax.global.response.SuccessCode;
 public class AccountHistoryController {
 
     private final AccountHistoryService accountHistoryService;
+    private final AccountHistoryDetailService accountHistoryDetailService;
 
     /**
      * 본인 계좌 거래내역 조회.
@@ -71,9 +73,24 @@ public class AccountHistoryController {
     public ResponseEntity<BaseResponse<?>> getChildHistory(
             @CurrentUser UserContext user,
             @PathVariable Long childId,
-            @ModelAttribute AccountHistoryReq req) {    
-        return ApiResponseUtil.success(
-                SuccessCode.OK,
+            @ModelAttribute AccountHistoryReq req) {
+        return ApiResponseUtil.success(SuccessCode.OK,
                 accountHistoryService.getHistory(childId, req, user));
     }
+
+    /**
+     * 단일 거래 상세 조회.
+     *
+     * @param transactionId 거래 아이디
+     * @return 상세 내역 응답
+     */
+    @GetMapping("/history/{transactionId}")
+    public ResponseEntity<BaseResponse<?>> getDetail(
+        @CurrentUser UserContext user,
+        @PathVariable Long transactionId) {
+
+    return ApiResponseUtil.success(SuccessCode.OK,
+            accountHistoryDetailService.getDetail(transactionId, user));
+}
+
 }
