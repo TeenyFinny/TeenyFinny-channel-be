@@ -69,12 +69,15 @@ public enum ErrorBaseCode implements ErrorCode {
 	 */
 	NOT_FOUND_ENTITY(HttpStatus.NOT_FOUND, "대상을 찾을 수 없습니다."),
 	USER_NOT_FOUND(HttpStatus.NOT_FOUND, "대상을 찾을 수 없습니다."),
-  QUIZ_PROGRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "대상을 찾을 수 없습니다."),
+  	QUIZ_PROGRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "대상을 찾을 수 없습니다."),
 	QUIZ_INFO_NOT_FOUND(HttpStatus.NOT_FOUND, "대상을 찾을 수 없습니다."),
 	GOAL_NOT_FOUND(HttpStatus.NOT_FOUND, "목표 정보를 찾을 수 없습니다."),
 	GOAL_PARENT_NOT_FOUND(HttpStatus.NOT_FOUND, "가족 등록을 먼저 진행해 주세요."),
-  TX_ACCOUNT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 계좌를 찾을 수 없습니다."),
+  	TX_ACCOUNT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 계좌를 찾을 수 없습니다."),
 	TX_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 거래내역을 찾을 수 없습니다."),
+	ACCOUNT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 계좌를 찾을 수 없습니다."),
+	CARD_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 카드를 찾을 수 없습니다."),
+	
 
 	/**
 	 * 405 METHOD NOT ALLOWED - 허용되지 않은 메서드
@@ -86,6 +89,7 @@ public enum ErrorBaseCode implements ErrorCode {
 	 */
 	CONFLICT(HttpStatus.CONFLICT, "이미 존재하는 리소스입니다."),
 	GOAL_ALREADY_DECIDED(HttpStatus.CONFLICT, "이미 승인 또는 거절된 목표입니다."),
+	CARD_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 카드입니다."),
 
 	/**
 	 * 410 GONE
