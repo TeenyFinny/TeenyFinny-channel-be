@@ -62,6 +62,7 @@ public enum ErrorBaseCode implements ErrorCode {
 	FORBIDDEN(HttpStatus.FORBIDDEN, "리소스 접근이 거부되었습니다."),
 	TX_NO_PERMISSION(HttpStatus.FORBIDDEN, "해당 계좌에 대한 접근 권한이 없습니다."),
 	GOAL_ACCESS_FORBIDDEN(HttpStatus.FORBIDDEN, "부모는 목표를 생성할 수 없습니다."),
+	GOAL_CHILD_NOT_MATCH(HttpStatus.FORBIDDEN, "해당 목표는 당신의 자녀가 생성한 목표가 아닙니다."),
 
 	/**
 	 * 404 NOT FOUND - 찾을 수 없음
@@ -84,6 +85,7 @@ public enum ErrorBaseCode implements ErrorCode {
 	 * 409 CONFLICT
 	 */
 	CONFLICT(HttpStatus.CONFLICT, "이미 존재하는 리소스입니다."),
+	GOAL_ALREADY_DECIDED(HttpStatus.CONFLICT, "이미 승인 또는 거절된 목표입니다."),
 
 	/**
 	 * 410 GONE

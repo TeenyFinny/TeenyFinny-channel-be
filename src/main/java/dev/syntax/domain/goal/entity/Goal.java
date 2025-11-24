@@ -46,4 +46,8 @@ public class Goal extends BaseTimeEntity {
     public void updatePayDay(Integer newPayDay) {
         this.payDay = newPayDay;
     }
+
+    public void updateStatus(GoalStatus goalStatus) {
+        this.status = goalStatus;
+    }
 }
