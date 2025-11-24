@@ -19,7 +19,7 @@ public class QuizProgress extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id; // progress_id
 
     @Column(name = "user_id", nullable = false)
     private Long userId;
