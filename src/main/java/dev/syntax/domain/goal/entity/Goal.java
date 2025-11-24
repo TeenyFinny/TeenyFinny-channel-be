@@ -38,7 +38,8 @@ public class Goal extends BaseTimeEntity {
     @Column(name = "pay_day", nullable = false)
     private Integer payDay;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
-    private GoalStatus status;
+    private GoalStatus status = GoalStatus.PENDING;
 }
