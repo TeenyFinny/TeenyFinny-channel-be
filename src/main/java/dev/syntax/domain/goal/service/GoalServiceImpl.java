@@ -30,32 +30,43 @@ public class GoalServiceImpl implements GoalService {
     private final CoreBankingClient coreBankingClient;
 
     // 공통 메서드
-    /** UserContext 기반 사용자 조회 */
+
+    /**
+     * UserContext 기반 사용자 조회
+     */
     private User getUserOrThrow(UserContext userContext) {
         return userContext.getUser();
     }
 
-    /** goalId로 Goal 조회 */
+    /**
+     * goalId로 Goal 조회
+     */
     private Goal getGoalOrThrow(Long goalId) {
         return goalRepository.findById(goalId)
                 .orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_NOT_FOUND));
     }
 
-    /** 해당 goal이 로그인한 사용자 소유인지 확인 */
+    /**
+     * 해당 goal이 로그인한 사용자 소유인지 확인
+     */
     private void validateGoalOwner(User user, Goal goal) {
         if (!goal.getUser().getId().equals(user.getId())) {
             throw new BusinessException(ErrorBaseCode.FORBIDDEN);
         }
     }
 
-    /** 상태가 ONGOING인지 확인 */
+    /**
+     * 상태가 ONGOING인지 확인
+     */
     private void validateGoalIsOngoing(Goal goal) {
         if (goal.getStatus() != GoalStatus.ONGOING) {
             throw new BusinessException(ErrorBaseCode.GOAL_NOT_ONGOING);
         }
     }
 
-    /** payDay 값 유효성 검사 */
+    /**
+     * payDay 값 유효성 검사
+     */
     private void validatePayDay(Integer payDay) {
         if (payDay == null || payDay < 1 || payDay > 31) {
             throw new BusinessException(ErrorBaseCode.GOAL_INVALID_PAYDAY);
@@ -70,7 +81,7 @@ public class GoalServiceImpl implements GoalService {
         User user = getUserOrThrow(userContext);
 
         if (!user.getRole().equals(Role.CHILD)) {
-            throw new BusinessException(ErrorBaseCode.GOAL_ACCESS_FORBIDDEN);
+            throw new BusinessException(ErrorBaseCode.GOAL_CREATE_FORBIDDEN);
         }
 
         if (req.getTargetAmount().compareTo(req.getMonthlyAmount()) < 0) {
@@ -139,7 +150,7 @@ public class GoalServiceImpl implements GoalService {
         User user = getUserOrThrow(userContext);
 
         if (!user.getRole().equals(Role.PARENT)) {
-            throw new BusinessException(ErrorBaseCode.GOAL_ACCESS_FORBIDDEN);
+            throw new BusinessException(ErrorBaseCode.GOAL_CREATE_FORBIDDEN);
         }
 
         Goal goal = getGoalOrThrow(goalId);
@@ -214,5 +225,26 @@ public class GoalServiceImpl implements GoalService {
                 coreInfo.getDepositAmounts(),
                 coreInfo.getDepositTimes()
         );
+    }
+
+    @Override
+    @Transactional
+    public GoalDeleteRes requestCancel(UserContext userContext, Long goalId) {
+        User child = getUserOrThrow(userContext);
+        Goal goal = getGoalOrThrow(goalId);
+
+        if (!child.getRole().equals(Role.CHILD)) {
+            throw new BusinessException(ErrorBaseCode.GOAL_ACCESS_FORBIDDEN);
+        }
+
+        validateGoalOwner(child, goal);
+        validateGoalIsOngoing(goal);
+
+        User parent = userRepository.findById(userContext.getParentId())
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_PARENT_NOT_FOUND));
+
+        notificationService.sendGoalCancelRequestNotice(parent, child.getName());
+
+        return new GoalDeleteRes(goal.getId(), "중도 해지 요청이 부모에게 전달되었습니다.");
     }
 }

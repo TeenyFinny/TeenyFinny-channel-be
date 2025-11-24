@@ -14,4 +14,6 @@ public interface GoalService {
     GoalApproveRes approveGoal(UserContext userContext, Long goalId, boolean approve);
 
     GoalDetailRes getGoalDetail(UserContext userContext, Long goalId);
+
+    GoalDeleteRes requestCancel(UserContext userContext, Long goalId);
 }
