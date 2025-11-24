@@ -42,6 +42,8 @@ public enum ErrorBaseCode implements ErrorCode {
 	BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
 	GOAL_INVALID_AMOUNT(HttpStatus.BAD_REQUEST, "목표 금액/납입 금액이 유효하지 않습니다."),
 	GOAL_INVALID_PAYDAY(HttpStatus.BAD_REQUEST, "납입일이 유효하지 않습니다."),
+	GOAL_ALREADY_PENDING(HttpStatus.BAD_REQUEST, "이미 승인 대기 중인 목표가 있어요."),
+	GOAL_ALREADY_ONGOING(HttpStatus.BAD_REQUEST, "이미 진행 중인 목표가 있어요."),
 
 	/**
 	 * 401 UNAUTHORIZED - 리소스 접근 권한
@@ -59,8 +61,10 @@ public enum ErrorBaseCode implements ErrorCode {
 	 */
 	NOT_FOUND_ENTITY(HttpStatus.NOT_FOUND, "대상을 찾을 수 없습니다."),
 	USER_NOT_FOUND(HttpStatus.NOT_FOUND, "대상을 찾을 수 없습니다."),
-  QUIZ_PROGRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "대상을 찾을 수 없습니다."),
+  	QUIZ_PROGRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "대상을 찾을 수 없습니다."),
+	QUIZ_INFO_NOT_FOUND(HttpStatus.NOT_FOUND, "대상을 찾을 수 없습니다."),
 	GOAL_NOT_FOUND(HttpStatus.NOT_FOUND, "목표 정보를 찾을 수 없습니다."),
+	GOAL_PARENT_NOT_FOUND(HttpStatus.NOT_FOUND, "가족 등록을 먼저 진행해 주세요."),
 
 	/**
 	 * 405 METHOD NOT ALLOWED - 허용되지 않은 메서드

@@ -15,4 +15,6 @@ public interface NotificationService {
     void markAsRead(User user, Long id);
 
 //    void removeNotice(User user, Long id);
+
+    void sendGoalRequestNotice(User parent, String childName);
 }

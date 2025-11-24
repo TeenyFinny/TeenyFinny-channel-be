@@ -9,4 +9,6 @@ import java.util.Optional;
 public interface UserRelationshipRepository extends JpaRepository<UserRelationship,Long> {
     Optional<UserRelationship> findByFamilyOtpAndChildIsNull(String familyOtp);
     Optional<UserRelationship> findByParentAndChildIsNull(User parent);
+
+    Optional<UserRelationship> findByChild(User child);
 }

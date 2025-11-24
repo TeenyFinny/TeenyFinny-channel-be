@@ -51,6 +51,19 @@ public class NotificationServiceImpl implements NotificationService {
         notification.markAsRead();
     }
 
+    @Override
+    @Transactional
+    public void sendGoalRequestNotice(User parent, String childName) {
+        Notification notification = Notification.builder()
+                .targetUser(parent)
+                .title("목표 생성 요청")
+                .content(childName + "(이)가 목표 생성을 요청했습니다!")
+                .type(NotificationType.GOAL)
+                .build();
+
+        notificationRepository.save(notification);
+    }
+
     // 4) 알림 삭제
 //    @Override
 //    @Transactional
