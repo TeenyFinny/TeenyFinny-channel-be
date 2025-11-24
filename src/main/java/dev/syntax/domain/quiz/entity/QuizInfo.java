@@ -20,18 +20,18 @@ public class QuizInfo extends BaseTimeEntity {
     @Column(name = "quiz_id")
     private Long id;
 
-    @Column(name = "title", nullable = false)
+    @Column(name = "title", columnDefinition = "TEXT", nullable = false)
     private String title;
 
-    @Column(name = "info", nullable = false)
+    @Column(name = "info", columnDefinition = "TEXT", nullable = false)
     private String info;
 
-    @Column(name = "question", nullable = false)
+    @Column(name = "question", columnDefinition = "TEXT", nullable = false)
     private String question;
 
     @Column(name = "answer", nullable = false)
     private String answer;
 
-    @Column(name = "explanation", nullable = false)
+    @Column(name = "explanation", columnDefinition = "TEXT", nullable = false)
     private String explanation;
 }
