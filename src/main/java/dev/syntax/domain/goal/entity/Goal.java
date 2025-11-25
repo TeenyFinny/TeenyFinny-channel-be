@@ -39,6 +39,9 @@ public class Goal extends BaseTimeEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    /**
+     * 목표 적금 계좌
+     */
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id")
     private Account account;
