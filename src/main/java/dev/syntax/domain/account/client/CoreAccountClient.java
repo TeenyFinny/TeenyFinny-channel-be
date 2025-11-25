@@ -52,9 +52,11 @@ public class CoreAccountClient {
         );
     }
 
+    private static final String GOAL_ACCOUNT_URL = "/core/banking/goal/account";
+
     public CoreGoalAccountRes createGoalAccount(Long userId, String name) {
         return coreRestTemplate.postForObject(
-                properties.getBaseUrl() + "/core/banking/goal/account",
+                properties.getBaseUrl() + GOAL_ACCOUNT_URL,
                 Map.of("userId", userId, "name", name),
                 CoreGoalAccountRes.class
         );

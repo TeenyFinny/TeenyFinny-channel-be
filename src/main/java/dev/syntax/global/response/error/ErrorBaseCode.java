@@ -121,7 +121,7 @@ public enum ErrorBaseCode implements ErrorCode {
 	 * 500 INTERNAL SERVER ERROR
 	 */
 	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류입니다."),
-    CREATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "투자계좌 생성에 실패했습니다."),
+    CREATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "계좌 생성에 실패했습니다."),
 
 	/**
 	 * Core API 관련 에러

@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class GoalAccountServiceImpl {
+public class GoalAccountServiceImpl implements GoalAccountService {
 
     private final CoreAccountClient coreAccountClient;
     private final UserRepository userRepository;
@@ -32,7 +32,7 @@ public class GoalAccountServiceImpl {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorBaseCode.USER_NOT_FOUND));
 
-        // 2. 검증 로직 TODO
+        // 2. 검증 로직
         if (goalRepository.existsByUserAndStatus(user, GoalStatus.ONGOING)) {
             throw new BusinessException(ErrorBaseCode.GOAL_ALREADY_ONGOING);
         }
