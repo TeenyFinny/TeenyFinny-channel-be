@@ -1,6 +1,8 @@
 package dev.syntax.domain.auth.service;
 
 import dev.syntax.domain.auth.dto.EmailValidationReq;
+import dev.syntax.domain.auth.dto.PasswordVerifyReq;
+import dev.syntax.domain.auth.dto.PasswordVerifyRes;
 import dev.syntax.domain.auth.dto.RefreshTokenRes;
 import dev.syntax.global.exception.BusinessException;
 
@@ -23,6 +25,19 @@ public interface AuthService {
 	 * @throws BusinessException 이메일이 이미 존재하는 경우 발생
 	 */
 	void checkEmailDuplicate(EmailValidationReq request);
+
+    /**
+     * 사용자가 입력한 비밀번호가 현재 계정의 비밀번호와 일치하는지 검증합니다.
+     * <p>
+     * 비밀번호가 일치하지 않으면 {@link BusinessException}을 발생시키며,
+     * 일치하면 {@link PasswordVerifyRes} 객체를 반환합니다.
+     *
+     * @param userId 검증할 사용자의 ID
+     * @param request 사용자가 입력한 비밀번호를 담은 요청 DTO
+     * @return 비밀번호 일치 여부를 담은 {@link PasswordVerifyRes}
+     * @throws BusinessException 비밀번호가 일치하지 않는 경우 발생
+     */
+    PasswordVerifyRes verifyPassword(Long userId, PasswordVerifyReq request);
 
 	/**
 	 * 사용자의 최신 정보로 새로운 JWT 토큰을 발급합니다.

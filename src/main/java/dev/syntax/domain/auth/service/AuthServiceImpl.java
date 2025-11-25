@@ -1,7 +1,10 @@
 package dev.syntax.domain.auth.service;
 
+import dev.syntax.domain.auth.dto.PasswordVerifyReq;
+import dev.syntax.domain.auth.dto.PasswordVerifyRes;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import dev.syntax.domain.auth.dto.EmailValidationReq;
@@ -22,6 +25,7 @@ public class AuthServiceImpl implements AuthService {
 
 	private final UserRepository userRepository;
 	private final JwtTokenProvider jwtTokenProvider;
+    private final PasswordEncoder passwordEncoder;
 
 	@Override
 	public void checkEmailDuplicate(EmailValidationReq request) {
@@ -52,4 +56,24 @@ public class AuthServiceImpl implements AuthService {
 				.accessToken(newAccessToken)
 				.build();
 	}
+
+    @Override
+    public PasswordVerifyRes verifyPassword(Long userId, PasswordVerifyReq request) {
+
+        // 1. 사용자 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorAuthCode.UNAUTHORIZED));
+
+        // 2. 비밀번호 비교 (PasswordEncoder 사용)
+        boolean matched = passwordEncoder.matches(request.password(), user.getPassword());
+
+        if (!matched) {
+            throw new BusinessException(ErrorAuthCode.PASSWORD_MISMATCH);
+            // == "AUTH04", "패스워드를 확인해주세요."
+        }
+
+        // 3. 성공 시 반환
+        return new PasswordVerifyRes(true);
+    }
+
 }
