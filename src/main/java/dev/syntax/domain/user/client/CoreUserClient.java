@@ -23,7 +23,7 @@ public class CoreUserClient {
 	private final CoreApiProperties properties;
 
 	/** Core 서버의 사용자 초기화 API 엔드포인트 */
-	private final String SIGNUP_URL = "/core/banking/init";
+	private static final String SIGNUP_URL = "/core/banking/init";
 
 	/**
 	 * Core 서버에 부모 사용자의 뱅킹 계정을 생성합니다.
@@ -33,11 +33,7 @@ public class CoreUserClient {
 	 * @throws dev.syntax.global.exception.CoreApiException Core 서버 API 호출 중 에러 발생 시
 	 */
 	public CoreParentInitRes createParentAccount(CoreUserInitReq req) {
-		return coreRestTemplate.postForObject(
-			properties.getBaseUrl() + SIGNUP_URL,
-			req,
-			CoreParentInitRes.class
-		);
+		return postToCore(req, CoreParentInitRes.class);
 	}
 
 	/**
@@ -48,10 +44,14 @@ public class CoreUserClient {
 	 * @throws dev.syntax.global.exception.CoreApiException Core 서버 API 호출 중 에러 발생 시
 	 */
 	public CoreChildInitRes createChildUser(CoreUserInitReq req) {
+		return postToCore(req, CoreChildInitRes.class);
+	}
+
+	private <T> T postToCore(CoreUserInitReq req, Class<T> responseType) {
 		return coreRestTemplate.postForObject(
 			properties.getBaseUrl() + SIGNUP_URL,
 			req,
-			CoreChildInitRes.class
+			responseType
 		);
 	}
 }

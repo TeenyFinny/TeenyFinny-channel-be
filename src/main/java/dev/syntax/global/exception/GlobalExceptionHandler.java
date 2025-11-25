@@ -66,11 +66,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(CoreApiException.class)
 	public ResponseEntity<BaseResponse<?>> handleCoreApiException(CoreApiException e) {
 		// 현재 인증된 사용자 정보 추출
-		Long userId = null;
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if (authentication != null && authentication.getPrincipal() instanceof UserContext userContext) {
-			userId = userContext.getId();
-		}
+		Long userId = getCurrentUserId();
 
 		log.error("[{}] : Core Status={}, Core Message={}, User Id={}",
 			e.getErrorCode(), e.getHttpStatusCode(), e.getCoreErrorMessage(), userId);
@@ -84,11 +80,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(ResourceAccessException.class)
 	public ResponseEntity<BaseResponse<?>> handleResourceAccessException(ResourceAccessException e) {
 		// 현재 인증된 사용자 정보 추출
-		Long userId = null;
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if (authentication != null && authentication.getPrincipal() instanceof UserContext userContext) {
-			userId = userContext.getId();
-		}
+		Long userId = getCurrentUserId();
 
 		log.error("[Core 서버 연결 실패] Message={}, User Id={}",
 			e.getMessage(), userId);
@@ -136,5 +128,13 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<BaseResponse<?>> handleException(Exception e) {
 		log.error("[Exception] {}", e.getMessage(), e);
 		return ApiResponseUtil.failure(ErrorBaseCode.INTERNAL_SERVER_ERROR);
+	}
+
+	private Long getCurrentUserId() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if (authentication != null && authentication.getPrincipal() instanceof UserContext userContext) {
+			return userContext.getId();
+		}
+		return null;
 	}
 }

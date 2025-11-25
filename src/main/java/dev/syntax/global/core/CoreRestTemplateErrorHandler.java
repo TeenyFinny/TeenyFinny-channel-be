@@ -77,20 +77,13 @@ public class CoreRestTemplateErrorHandler implements ResponseErrorHandler {
 	 * @return 매핑된 ErrorBaseCode
 	 */
 	private ErrorBaseCode mapStatusCodeToErrorCode(HttpStatusCode statusCode) {
-		int code = statusCode.value();
-
-		if (code == 401) {
-			return ErrorBaseCode.CORE_API_UNAUTHORIZED;
-		} else if (code == 403) {
-			return ErrorBaseCode.CORE_API_FORBIDDEN;
-		} else if (code == 404) {
-			return ErrorBaseCode.CORE_API_NOT_FOUND;
-		} else if (code == 408) {
-			return ErrorBaseCode.CORE_API_TIMEOUT;
-		} else if (code == 503) {
-			return ErrorBaseCode.CORE_API_UNAVAILABLE;
-		} else {
-			return ErrorBaseCode.CORE_API_ERROR;
-		}
+		return switch (statusCode.value()) {
+			case 401 -> ErrorBaseCode.CORE_API_UNAUTHORIZED;
+			case 403 -> ErrorBaseCode.CORE_API_FORBIDDEN;
+			case 404 -> ErrorBaseCode.CORE_API_NOT_FOUND;
+			case 408 -> ErrorBaseCode.CORE_API_TIMEOUT;
+			case 503 -> ErrorBaseCode.CORE_API_UNAVAILABLE;
+			default -> ErrorBaseCode.CORE_API_ERROR;
+		};
 	}
 }
