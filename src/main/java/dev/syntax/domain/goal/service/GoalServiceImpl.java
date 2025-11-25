@@ -2,6 +2,7 @@ package dev.syntax.domain.goal.service;
 
 import dev.syntax.domain.core.CoreBankingClient;
 import dev.syntax.domain.core.dto.GoalAccountInfoDto;
+import dev.syntax.domain.goal.client.CoreGoalClient;
 import dev.syntax.domain.goal.dto.*;
 import dev.syntax.domain.goal.entity.Goal;
 import dev.syntax.domain.goal.enums.GoalStatus;
@@ -15,11 +16,15 @@ import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorBaseCode;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  * GoalServiceImpl
@@ -30,11 +35,13 @@ import java.math.RoundingMode;
 @RequiredArgsConstructor
 public class GoalServiceImpl implements GoalService {
 
+    private static final Logger log = LoggerFactory.getLogger(GoalServiceImpl.class);
     private final UserRepository userRepository;
     private final GoalRepository goalRepository;
     private final NotificationService notificationService;
     private final CoreBankingClient coreBankingClient;
     private final UserRelationshipRepository userRelationshipRepository;
+    private final CoreGoalClient coreGoalClient;
 
     /**
      * UserContext로부터 User 엔티티 조회
@@ -245,35 +252,52 @@ public class GoalServiceImpl implements GoalService {
 
         validateGoalIsOngoing(goal);
 
-        GoalAccountInfoDto coreInfo = coreBankingClient.getGoalTransactionInfo(goalId);
+        String accountNo = goal.getAccount().getAccountNo();
 
-        if (goal.getMonthlyAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new BusinessException(ErrorBaseCode.GOAL_INVALID_AMOUNT);
+        CoreTransactionHistoryRes history =
+                coreGoalClient.getAccountHistory(accountNo);
+
+        if (history == null) {
+            throw new BusinessException(ErrorBaseCode.CORE_API_ERROR);
         }
 
+        BigDecimal currentAmount = history.getBalance();
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss");
+
+        // 입금 거래만 필터 (목표적금의 납입내역)
+        List<BigDecimal> depositAmounts = history.getTransactions().stream()
+                .filter(t -> t.getAmount().compareTo(BigDecimal.ZERO) > 0)
+                .map(CoreTransactionHistoryRes.TransactionItem::getAmount)
+                .toList();
+
+        List<String> depositDates = history.getTransactions().stream()
+                .filter(t -> t.getAmount().compareTo(BigDecimal.ZERO) > 0)
+                .map(t -> t.getTransactionDate().format(formatter))
+                .toList();
+
+        // 목표 기간 계산
         int period = goal.getTargetAmount()
                 .divide(goal.getMonthlyAmount(), RoundingMode.CEILING)
                 .intValue();
 
-        int progress = 0;
-        if (goal.getTargetAmount().compareTo(BigDecimal.ZERO) > 0) {
-            progress = coreInfo.getCurrentAmount()
-                    .multiply(BigDecimal.valueOf(100))
-                    .divide(goal.getTargetAmount(), 0, RoundingMode.HALF_UP)
-                    .intValue();
-        }
+        // 진행률 계산
+        int progress = currentAmount
+                .multiply(BigDecimal.valueOf(100))
+                .divide(goal.getTargetAmount(), 0, RoundingMode.HALF_UP)
+                .intValue();
 
         return new GoalDetailRes(
                 goal.getId(),
                 goal.getUser().getId(),
                 goal.getName(),
                 goal.getTargetAmount(),
-                coreInfo.getCurrentAmount(),
+                currentAmount,
                 period,
                 progress,
                 goal.getUser().getName(),
-                coreInfo.getDepositAmounts(),
-                coreInfo.getDepositTimes()
+                depositAmounts,
+                depositDates
         );
     }
 
