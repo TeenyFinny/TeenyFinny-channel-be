@@ -18,8 +18,9 @@ public class CoreGoalClient {
 
     public CoreTransactionHistoryRes getAccountHistory(String accountNo) {
         return coreRestTemplate.getForObject(
-                properties.getBaseUrl() + GET_HISTORY_URL + accountNo,
-                CoreTransactionHistoryRes.class
+                properties.getBaseUrl() + GET_HISTORY_URL + "{accountNo}",
+                CoreTransactionHistoryRes.class,
+                accountNo
         );
     }
 }
