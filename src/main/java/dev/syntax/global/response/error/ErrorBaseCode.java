@@ -50,11 +50,14 @@ public enum ErrorBaseCode implements ErrorCode {
 	GOAL_ALREADY_ONGOING(HttpStatus.BAD_REQUEST, "이미 진행 중인 목표가 있어요."),
 	GOAL_NOT_ONGOING(HttpStatus.BAD_REQUEST, "진행 중인 목표만 수정할 수 있어요."),
 	GOAL_NOT_COMPLETED(HttpStatus.BAD_REQUEST, "아직 목표에 도달하지 않았어요."),
+	INVEST_ACCOUNT_REQUIRED(HttpStatus.BAD_REQUEST, "투자 계좌가 없어 투자 이체를 설정할 수 없습니다."),
+	INVALID_RATIO_VALUE(HttpStatus.BAD_REQUEST, "비율 값이 잘못되었습니다."),
 
 	/**
 	 * 401 UNAUTHORIZED - 리소스 접근 권한
 	 */
 	UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증되지 않은 사용자입니다."),
+	INVALID_CHILD(HttpStatus.UNAUTHORIZED, "해당 자녀에 대한 접근 권한이 없습니다."),
 
 	/**
 	 * 403 FORBIDDEN - 리소스 접근 금지
@@ -63,7 +66,9 @@ public enum ErrorBaseCode implements ErrorCode {
 	TX_NO_PERMISSION(HttpStatus.FORBIDDEN, "해당 계좌에 대한 접근 권한이 없습니다."),
 	GOAL_REQUEST_FORBIDDEN(HttpStatus.FORBIDDEN, "부모는 목표에 관해 요청할 수 없습니다."),
 	GOAL_CHILD_NOT_MATCH(HttpStatus.FORBIDDEN, "해당 목표는 당신의 자녀가 생성한 목표가 아닙니다."),
-GOAL_ACCESS_FORBIDDEN(HttpStatus.FORBIDDEN, "목표 확정 및 취소는 부모만 가능합니다."),
+	GOAL_ACCESS_FORBIDDEN(HttpStatus.FORBIDDEN, "목표 확정 및 취소는 부모만 가능합니다."),
+	PARENT_ONLY_FEATURE(HttpStatus.FORBIDDEN, "부모만 사용할 수 있는 기능입니다."),
+
 
 	/**
 	 * 404 NOT FOUND - 찾을 수 없음
@@ -91,7 +96,7 @@ GOAL_ACCESS_FORBIDDEN(HttpStatus.FORBIDDEN, "목표 확정 및 취소는 부모�
 	CONFLICT(HttpStatus.CONFLICT, "이미 존재하는 리소스입니다."),
 	GOAL_ALREADY_DECIDED(HttpStatus.CONFLICT, "이미 승인 또는 거절된 목표입니다."),
 	CARD_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 카드입니다."),
-
+	AUTO_TRANSFER_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 자동이체가 설정되어 있습니다."),
 	/**
 	 * 410 GONE
 	 */
