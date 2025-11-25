@@ -1,5 +1,6 @@
 package dev.syntax.domain.goal.entity;
 
+import dev.syntax.domain.account.entity.Account;
 import dev.syntax.domain.goal.enums.GoalStatus;
 import dev.syntax.domain.user.entity.User;
 import dev.syntax.global.common.BaseTimeEntity;
@@ -37,6 +38,10 @@ public class Goal extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "account_id")
+    private Account account;
 
     /**
      * 목표 이름
