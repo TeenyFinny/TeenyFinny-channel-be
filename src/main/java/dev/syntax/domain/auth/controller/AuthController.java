@@ -24,6 +24,7 @@ import dev.syntax.domain.auth.dto.RefreshTokenRes;
 import dev.syntax.domain.auth.dto.SignupReq;
 import dev.syntax.domain.auth.dto.SimplePasswordVerifyReq;
 import dev.syntax.domain.auth.dto.UpdatePasswordReq;
+import dev.syntax.domain.auth.dto.UpdatePushReq;
 import dev.syntax.domain.auth.service.AuthService;
 import dev.syntax.domain.auth.service.FamilyService;
 import dev.syntax.domain.auth.service.LoginService;
@@ -212,28 +213,26 @@ public class AuthController {
 	@PatchMapping("/push")
 	public ResponseEntity<BaseResponse<?>> updatePushSettings(
 		@CurrentUser UserContext user,
-		@Valid @RequestBody dev.syntax.domain.auth.dto.UpdatePushReq request
+		@Valid @RequestBody UpdatePushReq request
 	) {
 		authService.updatePushSettings(user, request);
 		return ApiResponseUtil.success(SuccessCode.OK);
 	}
 
 	/**
-	 * 사용자의 본인 인증 정보를 검증합니다.
+	 * 사용자의 본인 인증 정보를 검증하는 mock입니다.
 	 *
 	 * <p>요청된 정보와 DB에 저장된 사용자 정보를 비교하여 인증을 수행합니다.
 	 * 이름, 전화번호, 생년월일 앞자리, 주민번호 뒷자리까지 모두 일치해야 인증이 성공합니다.
 	 *
-	 * @param context 인증된 사용자 컨텍스트
 	 * @param request 본인 인증 요청 DTO
 	 * @return 인증 성공 여부 및 메시지를 담은 {@link IdentityVerifyRes}를 표준 응답 포맷으로 래핑
 	 */
 	@PostMapping("/identity")
 	public ResponseEntity<BaseResponse<?>> verifyIdentity(
-		@CurrentUser UserContext context,
 		@Valid @RequestBody IdentityVerifyReq request
 	) {
-		IdentityVerifyRes response = authService.verifyIdentity(context.getId(), request);
+		IdentityVerifyRes response = authService.verifyIdentityMock(request);
 		return ApiResponseUtil.success(SuccessCode.OK, response);
 	}
 

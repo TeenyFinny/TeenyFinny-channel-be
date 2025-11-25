@@ -154,7 +154,7 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	@Override
-	public IdentityVerifyRes verifyIdentity(Long userId, IdentityVerifyReq req) {
+	public IdentityVerifyRes verifyIdentityMock(IdentityVerifyReq req) {
 
 		if (req == null) {
 			throw new BusinessException(ErrorAuthCode.INVALID_IDENTITY_FORMAT);
