@@ -15,14 +15,11 @@ public class ProfileServiceImpl implements ProfileService {
 
 	@Override
 	public ProfileInfoRes profileInfo(UserContext user) {
-		UserProfile profile = new UserProfile(
+		log.info("[프로필 상세 조회 성공] userId: {}", user.getId());
+		return new ProfileInfoRes(new UserProfile(
 			user.getUser().getName(),
 			user.getEmail(),
 			user.getUser().getPhoneNumber()
-		);
-		log.info("[프로필 상세 조회 성공] userId: {}", user.getId());
-		return ProfileInfoRes.builder()
-			.user(profile)
-			.build();
+		));
 	}
 }
