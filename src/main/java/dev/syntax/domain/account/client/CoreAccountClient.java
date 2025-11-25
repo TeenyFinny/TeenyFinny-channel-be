@@ -1,5 +1,6 @@
 package dev.syntax.domain.account.client;
 
+import dev.syntax.domain.account.dto.core.CoreGoalAccountRes;
 import dev.syntax.domain.account.dto.core.CoreInvestmentAccountRes;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -7,6 +8,8 @@ import org.springframework.web.client.RestTemplate;
 import dev.syntax.domain.account.dto.core.CoreUserAccountListRes;
 import dev.syntax.global.core.CoreApiProperties;
 import lombok.RequiredArgsConstructor;
+
+import java.util.Map;
 
 /**
  * Core 뱅킹 서버의 계좌 조회 API를 호출하는 클라이언트입니다.
@@ -46,6 +49,14 @@ public class CoreAccountClient {
                 properties.getBaseUrl() + INVESTMENT_ACCOUNT_URL + "?userId=" + userId,
                 null,
                 CoreInvestmentAccountRes.class
+        );
+    }
+
+    public CoreGoalAccountRes createGoalAccount(Long userId, String name) {
+        return coreRestTemplate.postForObject(
+                properties.getBaseUrl() + "/core/banking/goal/account",
+                Map.of("userId", userId, "name", name),
+                CoreGoalAccountRes.class
         );
     }
 }
