@@ -89,6 +89,11 @@ public class User extends BaseTimeEntity {
 		this.name = name;
 	}
 
+	public void updatePhoneNumber(String phoneNumber) {
+		validateNotBlank(phoneNumber);
+		this.phoneNumber = phoneNumber;
+	}
+
 	/**
 	 * 비밀번호를 업데이트합니다.
 	 *
