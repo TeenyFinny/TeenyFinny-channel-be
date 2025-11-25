@@ -1,66 +1,55 @@
-    package dev.syntax.domain.investment.service;
+package dev.syntax.domain.investment.service;
 
-    import dev.syntax.domain.account.entity.Account;
-    import dev.syntax.domain.account.enums.AccountType;
-    import dev.syntax.domain.account.repository.AccountRepository;
+import dev.syntax.domain.account.client.CoreAccountClient;
+import dev.syntax.domain.account.entity.Account;
+import dev.syntax.domain.account.enums.AccountType;
+import dev.syntax.domain.account.repository.AccountRepository;
+import dev.syntax.domain.investment.dto.res.AccountRes;
+import dev.syntax.domain.user.entity.User;
+import dev.syntax.domain.user.repository.UserRepository;
+import dev.syntax.global.exception.BusinessException;
+import dev.syntax.global.response.error.ErrorBaseCode;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
-    import java.util.Map;
-    import java.util.Optional;
+@Service
+@RequiredArgsConstructor
+public class AccountServiceImpl implements AccountService {
 
-    import dev.syntax.domain.investment.dto.res.AccountRes;
-    import dev.syntax.domain.user.entity.User;
-    import dev.syntax.domain.user.repository.UserRepository;
-    import dev.syntax.global.exception.BusinessException;
-    import dev.syntax.global.response.error.ErrorBaseCode;
-    import dev.syntax.global.response.error.ErrorCode;
-    import lombok.RequiredArgsConstructor;
-    import org.springframework.http.ResponseEntity;
-    import org.springframework.stereotype.Service;
-    import org.springframework.web.client.RestTemplate;
+    private final AccountRepository accountRepository;
+    private final CoreAccountClient coreAccountClient; // Core 호출 클라이언트 주입
+    private final UserRepository userRepository;
 
-    @Service
-    @RequiredArgsConstructor
-    public class AccountServiceImpl implements AccountService{
-        private final AccountRepository accountRepository;
-
-        public String getCanoByUserId(Long userId) {
-            Optional<Account> account = accountRepository.findByUserIdAndType(userId, AccountType.INVEST);
-            return account.map(Account::getAccountNo)
-                    .orElseThrow(() -> new BusinessException(ErrorBaseCode.TX_ACCOUNT_NOT_FOUND));
+    @Override
+    public AccountRes createInvestmentAccount(Long userId) {
+        // 1. Core 서버 호출 (Client 사용)
+        var coreResponse = coreAccountClient.createInvestmentAccount(userId);
+        if (coreResponse == null || coreResponse.getCano() == null) {
+            throw new BusinessException(ErrorBaseCode.CREATE_FAILED);
         }
 
-        private final RestTemplate restTemplate; // 코어 호출용
-        private final UserRepository userRepository;
+        String cano = coreResponse.getCano();
 
-        private static final String CORE_URL = "http://core-server/core/banking/account/investment";
+        // 2. 채널 DB에 계좌 정보 저장
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.USER_NOT_FOUND));
 
-        @Override
-        public AccountRes createInvestmentAccount(Long userId) {
-            ResponseEntity<Map> response = restTemplate.postForEntity(
-                    CORE_URL + "?userId=" + userId, null, Map.class
-            );
+        Account account = Account.builder()
+                .user(user)
+                .type(AccountType.INVEST)
+                .accountNo(cano)
+                .build();
 
-            if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
-                throw new BusinessException(ErrorBaseCode.CREATE_FAILED);
-            }
+        accountRepository.save(account);
 
-            String cano = (String) response.getBody().get("cano");
-            if (cano == null) {
-                throw new BusinessException(ErrorBaseCode.CREATE_FAILED);
-            }
-
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new BusinessException(ErrorBaseCode.USER_NOT_FOUND));
-
-            Account account = Account.builder()
-                    .user(user)
-                    .type(AccountType.INVEST)
-                    .accountNo(cano)
-                    .build();
-
-            accountRepository.save(account);
-
-            return new AccountRes(cano);
-        }
-
+        // 3. DTO 반환
+        return new AccountRes(cano);
     }
+
+    @Override
+    public String getCanoByUserId(Long userId) {
+        return accountRepository.findByUserIdAndType(userId, AccountType.INVEST)
+                .map(Account::getAccountNo)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.TX_ACCOUNT_NOT_FOUND));
+    }
+}
