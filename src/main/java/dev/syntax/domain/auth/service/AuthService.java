@@ -1,9 +1,6 @@
 package dev.syntax.domain.auth.service;
 
-import dev.syntax.domain.auth.dto.EmailValidationReq;
-import dev.syntax.domain.auth.dto.PasswordVerifyReq;
-import dev.syntax.domain.auth.dto.PasswordVerifyRes;
-import dev.syntax.domain.auth.dto.RefreshTokenRes;
+import dev.syntax.domain.auth.dto.*;
 import dev.syntax.global.exception.BusinessException;
 
 /**
@@ -39,7 +36,21 @@ public interface AuthService {
      */
     PasswordVerifyRes verifyPassword(Long userId, PasswordVerifyReq request);
 
-	/**
+    /**
+     * 사용자가 입력한 간편비밀번호가 현재 계정의 간편비밀번호와 일치하는지 검증합니다.
+     * <p>
+     * 간편비밀번호가 일치하지 않으면 {@link BusinessException}을 발생시키며,
+     * 일치하면 {@link SimplePasswordVerifyRes} 객체를 반환합니다.
+     *
+     * @param userId 검증할 사용자의 ID
+     * @param request 사용자가 입력한 간편비밀번호 요청 DTO
+     * @return 간편비밀번호 일치 여부를 담은 {@link SimplePasswordVerifyRes}
+     * @throws BusinessException 간편비밀번호가 일치하지 않을 경우 발생
+     */
+    SimplePasswordVerifyRes verifySimplePassword(Long userId, SimplePasswordVerifyReq request);
+
+
+    /**
 	 * 사용자의 최신 정보로 새로운 JWT 토큰을 발급합니다.
 	 *
 	 * @param userId 사용자 ID

@@ -124,4 +124,20 @@ public class AuthController {
         return ApiResponseUtil.success(SuccessCode.OK, response);
     }
 
+    /**
+     * 간편비밀번호(Simple Password)를 검증하는 엔드포인트
+     *
+     * @param context 인증된 사용자 컨텍스트
+     * @param req 사용자 입력 간편비밀번호 요청 DTO
+     */
+    @PostMapping("/simple-password")
+    public ResponseEntity<BaseResponse<?>> verifySimplePassword(
+            @CurrentUser UserContext context,
+            @Valid @RequestBody SimplePasswordVerifyReq req
+    ) {
+        SimplePasswordVerifyRes response = authService.verifySimplePassword(context.getId(), req);
+        return ApiResponseUtil.success(SuccessCode.OK, response);
+    }
+
+
 }
