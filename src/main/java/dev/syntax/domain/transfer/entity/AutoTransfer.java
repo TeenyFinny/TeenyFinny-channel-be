@@ -1,7 +1,6 @@
 package dev.syntax.domain.transfer.entity;
 
 import dev.syntax.domain.transfer.enums.AutoTransferFrequency;
-import dev.syntax.domain.transfer.enums.AutoTransferStatus;
 import dev.syntax.domain.transfer.enums.AutoTransferType;
 import dev.syntax.domain.user.entity.User;
 import dev.syntax.domain.account.entity.Account;
@@ -10,7 +9,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "auto_transfer")
@@ -51,14 +49,20 @@ public class AutoTransfer extends BaseTimeEntity {
     @Column(name = "transfer_date")
     private Integer transferDate;
 
-    @Column(name = "bank_transfer_id")
-    private Long bankTransferId;
 
-    @Builder.Default
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 10)
-    private AutoTransferStatus status = AutoTransferStatus.PENDING;
+    /**
+     * 코어 뱅킹 시스템에서 생성된 "기본 자동이체" 식별자.
+     * (용돈/목표 자동이체)
+     * null 허용되지 않음.
+     */
+    @Column(name = "primary_bank_transfer_id", nullable = false)
+    private Long primaryBankTransferId;
 
-    @Column(name = "last_sync_at")
-    private LocalDateTime lastSyncAt;
+
+    /**
+     * 코어 뱅킹 시스템에서 생성된 "투자 자동이체" 식별자.
+     * 투자 비율이 0일 경우 null.
+     */
+    @Column(name = "invest_bank_transfer_id")
+    private Long investBankTransferId;
 }
