@@ -14,6 +14,7 @@ import dev.syntax.domain.auth.dto.PasswordVerifyRes;
 import dev.syntax.domain.auth.dto.RefreshTokenRes;
 import dev.syntax.domain.auth.dto.SimplePasswordVerifyReq;
 import dev.syntax.domain.auth.dto.UpdatePasswordReq;
+import dev.syntax.domain.auth.dto.UpdatePushReq;
 import dev.syntax.domain.user.entity.User;
 import dev.syntax.domain.user.repository.UserRepository;
 import dev.syntax.global.auth.dto.UserContext;
@@ -136,7 +137,7 @@ public class AuthServiceImpl implements AuthService {
 
 	@Override
 	@Transactional
-	public void updatePushSettings(UserContext userContext, dev.syntax.domain.auth.dto.UpdatePushReq request) {
+	public void updatePushSettings(UserContext userContext, UpdatePushReq request) {
 		// DB에서 User 엔티티를 다시 조회 (영속성 컨텍스트에서 관리되는 엔티티)
 		User user = userRepository.findById(userContext.getId())
 			.orElseThrow(() -> new BusinessException(ErrorBaseCode.USER_NOT_FOUND));
