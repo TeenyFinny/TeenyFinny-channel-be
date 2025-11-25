@@ -1,10 +1,6 @@
 package dev.syntax.domain.investment.controller;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import dev.syntax.domain.investment.dto.res.AccountRes;
 import dev.syntax.domain.investment.service.AccountService;
 import dev.syntax.global.auth.annotation.CurrentUser;
 import dev.syntax.global.auth.dto.UserContext;
@@ -12,14 +8,16 @@ import dev.syntax.global.response.ApiResponseUtil;
 import dev.syntax.global.response.BaseResponse;
 import dev.syntax.global.response.SuccessCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-/**
- * 투자 계좌 관련 API 컨트롤러
- */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/investments")
-public class InvestmentAccountController {
+public class InvestAccountController {
 	private final AccountService accountService;
 
 	@GetMapping("/account")
@@ -28,5 +26,13 @@ public class InvestmentAccountController {
 	) {
 		String res = accountService.getCanoByUserId(userContext.getId());
 		return ApiResponseUtil.success(SuccessCode.OK, res);
+	}
+
+	@PostMapping("/account")
+	public ResponseEntity<BaseResponse<?>> createInvestmentAccount(
+		@CurrentUser UserContext userContext
+	) {
+		AccountRes res = accountService.createInvestmentAccount(userContext.getId());
+		return ApiResponseUtil.success(SuccessCode.CREATED, res);
 	}
 }
