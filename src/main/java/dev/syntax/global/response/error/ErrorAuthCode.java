@@ -32,7 +32,7 @@ public enum ErrorAuthCode implements ErrorBaseCodeForErrorCode {
     /**
      * 400 BAD_REQUEST - 잘못된 요청
      */
-    INVALID_IDENTITY_FORMAT(HttpStatus.UNAUTHORIZED, "본인 인증 요청 형식이 올바르지 않습니다.", "AUTH06"),
+    INVALID_IDENTITY_FORMAT(HttpStatus.BAD_REQUEST, "본인 인증 요청 형식이 올바르지 않습니다.", "AUTH06"),
 
     /**
 	 * 401 UNAUTHORIZED - 인증 실패

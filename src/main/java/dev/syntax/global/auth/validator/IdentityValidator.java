@@ -17,7 +17,7 @@ public class IdentityValidator {
     }
 
 
-    private static final DateTimeFormatter BIRTH_FORMATTER = DateTimeFormatter.ofPattern("yyMMdd").withResolverStyle(ResolverStyle.STRICT);;
+    private static final DateTimeFormatter BIRTH_FORMATTER = DateTimeFormatter.ofPattern("yyMMdd").withResolverStyle(ResolverStyle.STRICT);
 
     // 지원 통신사
     private static final String[] CARRIERS = {"SKT", "KT", "LGU+"};
