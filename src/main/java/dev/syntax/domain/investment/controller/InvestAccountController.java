@@ -17,23 +17,22 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/investments")
-public class AccountController {
-    private final AccountService accountService;
+public class InvestAccountController {
+	private final AccountService accountService;
 
+	@GetMapping("/account")
+	public ResponseEntity<BaseResponse<?>> getCanoByUserId(
+		@CurrentUser UserContext userContext
+	) {
+		String res = accountService.getCanoByUserId(userContext.getId());
+		return ApiResponseUtil.success(SuccessCode.OK, res);
+	}
 
-    @GetMapping("/account")
-    public ResponseEntity<BaseResponse<?>> getCanoByUserId (
-            @CurrentUser UserContext userContext
-    ) {
-        String res = accountService.getCanoByUserId(userContext.getId());
-        return ApiResponseUtil.success(SuccessCode.OK, res);
-    }
-
-    @PostMapping("/account")
-    public ResponseEntity<BaseResponse<?>> createInvestmentAccount(
-            @CurrentUser UserContext userContext
-    ) {
-        AccountRes res = accountService.createInvestmentAccount(userContext.getId());
-        return ApiResponseUtil.success(SuccessCode.CREATED, res);
-    }
+	@PostMapping("/account")
+	public ResponseEntity<BaseResponse<?>> createInvestmentAccount(
+		@CurrentUser UserContext userContext
+	) {
+		AccountRes res = accountService.createInvestmentAccount(userContext.getId());
+		return ApiResponseUtil.success(SuccessCode.CREATED, res);
+	}
 }

@@ -15,6 +15,7 @@ import dev.syntax.domain.account.client.CoreAccountClient;
 import dev.syntax.domain.account.dto.core.CoreAccountItemRes;
 import dev.syntax.domain.account.dto.core.CoreChildAccountInfoRes;
 import dev.syntax.domain.account.dto.core.CoreUserAccountListRes;
+import dev.syntax.domain.account.enums.AccountType;
 import dev.syntax.domain.home.dto.HomeRes;
 import dev.syntax.domain.user.entity.User;
 import dev.syntax.domain.user.enums.Role;
@@ -95,7 +96,7 @@ public class HomeServiceImpl implements HomeService {
 		BigDecimal totalBalance = sumAccountBalances(coreAccounts.accounts());
 
 		// 계좌 타입별 잔액 맵 생성 (accountType -> 잔액)
-		Map<String, BigDecimal> balancesByType = groupBalancesByAccountType(coreAccounts.accounts());
+		Map<AccountType, BigDecimal> balancesByType = groupBalancesByAccountType(coreAccounts.accounts());
 
 		return HomeRes.builder()
 			.user(HomeRes.UserDto.builder()
@@ -104,9 +105,9 @@ public class HomeServiceImpl implements HomeService {
 				.role(child.getRole())
 				.email(child.getEmail())
 				.totalBalance(NumberFormattingService(totalBalance))
-				.depositBalance(formatBalance(balancesByType, ALLOWANCE.name()))
-				.investmentBalance(formatBalance(balancesByType, INVEST.name()))
-				.savingBalance(formatBalance(balancesByType, GOAL.name()))
+				.depositBalance(formatBalance(balancesByType, ALLOWANCE))
+				.investmentBalance(formatBalance(balancesByType, INVEST))
+				.savingBalance(formatBalance(balancesByType, GOAL))
 				.build())
 			.build();
 	}
@@ -170,7 +171,7 @@ public class HomeServiceImpl implements HomeService {
 	 * @param accounts 계좌 정보 리스트
 	 * @return 계좌 타입 -> 총 잔액 맵
 	 */
-	private Map<String, BigDecimal> groupBalancesByAccountType(List<CoreAccountItemRes> accounts) {
+	private Map<AccountType, BigDecimal> groupBalancesByAccountType(List<CoreAccountItemRes> accounts) {
 		if (accounts == null) {
 			return Map.of();
 		}
@@ -206,7 +207,7 @@ public class HomeServiceImpl implements HomeService {
 	 * @param accountType 조회할 계좌 타입
 	 * @return 포맷팅된 잔액 문자열 (예: "120,000")
 	 */
-	private String formatBalance(Map<String, BigDecimal> balancesByType, String accountType) {
+	private String formatBalance(Map<AccountType, BigDecimal> balancesByType, AccountType accountType) {
 		return NumberFormattingService(balancesByType.getOrDefault(accountType, BigDecimal.ZERO));
 	}
 }
