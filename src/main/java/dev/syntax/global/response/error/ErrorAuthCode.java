@@ -29,7 +29,12 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public enum ErrorAuthCode implements ErrorBaseCodeForErrorCode {
 
-	/**
+    /**
+     * 400 BAD_REQUEST - 잘못된 요청
+     */
+    INVALID_IDENTITY_FORMAT(HttpStatus.BAD_REQUEST, "본인 인증 요청 형식이 올바르지 않습니다.", "AUTH06"),
+
+    /**
 	 * 401 UNAUTHORIZED - 인증 실패
 	 */
 	UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증되지 않은 사용자입니다.", "AUTH01"),
@@ -37,8 +42,7 @@ public enum ErrorAuthCode implements ErrorBaseCodeForErrorCode {
 	FAMILY_OTP_TIMEOUT(HttpStatus.UNAUTHORIZED, "OTP 코드가 만료되었습니다.", "FAM02"),
     PASSWORD_MISMATCH(HttpStatus.UNAUTHORIZED, "패스워드를 확인해주세요.", "AUTH04"),
     SIMPLE_PASSWORD_MISMATCH(HttpStatus.UNAUTHORIZED, "간편비밀번호가 일치하지 않습니다.", "AUTH05"),
-    IDENTITY_MISMATCH(HttpStatus.UNAUTHORIZED, "본인 인증 정보가 일치하지 않습니다.", "AUTH06"),
-    /**
+     /**
 	 * 403 FORBIDDEN - 권한 부족
 	 */
 	ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다.", "AUTH02"),
