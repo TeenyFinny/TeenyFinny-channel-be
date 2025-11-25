@@ -9,6 +9,7 @@ import dev.syntax.domain.user.entity.User;
 import dev.syntax.domain.user.repository.UserRepository;
 import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorBaseCode;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,7 @@ public class AccountServiceImpl implements AccountService {
     private final UserRepository userRepository;
 
     @Override
+    @Transactional
     public AccountRes createInvestmentAccount(Long userId) {
         // 1. Core 서버 호출 (Client 사용)
         var coreResponse = coreAccountClient.createInvestmentAccount(userId);
