@@ -1,6 +1,7 @@
 package dev.syntax.domain.transfer.utils;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * 자동이체 관련 유틸리티 클래스.
@@ -24,7 +25,7 @@ public class AutoTransferUtils {
     public static BigDecimal calculateInvestAmount(BigDecimal totalAmount, int ratio) {
         return totalAmount
                 .multiply(BigDecimal.valueOf(ratio))
-                .divide(BigDecimal.valueOf(100));
+                .divide(BigDecimal.valueOf(100), 0, RoundingMode.HALF_UP); // 반올림 처리
     }
 
     /**
