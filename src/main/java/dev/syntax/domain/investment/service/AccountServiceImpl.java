@@ -24,11 +24,11 @@ public class AccountServiceImpl implements AccountService {
     public AccountRes createInvestmentAccount(Long userId) {
         // 1. Core 서버 호출 (Client 사용)
         var coreResponse = coreAccountClient.createInvestmentAccount(userId);
-        if (coreResponse == null || coreResponse.getCano() == null) {
+        if (coreResponse == null || coreResponse.getAccountNumber() == null) {
             throw new BusinessException(ErrorBaseCode.CREATE_FAILED);
         }
 
-        String cano = coreResponse.getCano();
+        String cano = coreResponse.getAccountNumber();
 
         // 2. 채널 DB에 계좌 정보 저장
         User user = userRepository.findById(userId)

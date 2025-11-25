@@ -1,11 +1,14 @@
 package dev.syntax.domain.investment.service;
 
+import dev.syntax.domain.account.client.CoreAccountClient;
+import dev.syntax.domain.account.dto.core.CoreInvestmentAccountRes;
 import dev.syntax.domain.account.entity.Account;
 import dev.syntax.domain.account.enums.AccountType;
 import dev.syntax.domain.account.repository.AccountRepository;
 import dev.syntax.domain.user.entity.User;
 import dev.syntax.domain.user.enums.Role;
 import dev.syntax.domain.user.repository.UserRepository;
+import dev.syntax.global.core.CoreApiProperties;
 import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorBaseCode;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
@@ -25,79 +29,49 @@ import static org.mockito.Mockito.*;
 class AccountServiceImplTest {
 
     @InjectMocks
-    private AccountServiceImpl accountService;
+    private CoreAccountClient coreAccountClient;
 
     @Mock
-    private RestTemplate restTemplate;
+    private RestTemplate coreRestTemplate;
 
     @Mock
-    private UserRepository userRepository;
-
-    @Mock
-    private AccountRepository accountRepository;
+    private CoreApiProperties properties;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        when(properties.getBaseUrl()).thenReturn("http://localhost:8081");
     }
 
     @Test
-    void 투자계좌_생성_성공() {
+    void 투자계좌생성_성공() {
         Long userId = 1L;
-        String cano = "12345678";
+        CoreInvestmentAccountRes mockRes = new CoreInvestmentAccountRes("12345678",1L,new BigDecimal(0));
 
-        // 1. 코어 서버 호출 모킹
-        when(restTemplate.postForEntity(anyString(), any(), eq(Map.class)))
-                .thenReturn(ResponseEntity.ok(Map.of("cano", cano)));
+        when(coreRestTemplate.postForObject(
+                "http://localhost:8081/core/banking/account/investment?userId=" + userId,
+                null,
+                CoreInvestmentAccountRes.class
+        )).thenReturn(mockRes);
 
-        // 2. 사용자 조회 모킹
-        User user = User.builder()
-                .id(userId)
-                .name("테스트유저")
-                .role(Role.CHILD) // 또는 PARENT, 상황에 맞게
-                .children(new ArrayList<>()) // 필요하면 관계 추가
-                .build();
+        CoreInvestmentAccountRes res = coreAccountClient.createInvestmentAccount(userId);
 
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-
-        // 3. 저장 모킹
-        when(accountRepository.save(any(Account.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        // 실행
-        var res = accountService.createInvestmentAccount(userId);
-
-        // 검증
         assertNotNull(res);
-        assertEquals(cano, res.getCano());
-
-        verify(accountRepository, times(1)).save(any(Account.class));
+        assertEquals("12345678", res.getAccountNumber());
     }
 
     @Test
-    void 투자계좌_생성_실패_코어() {
+    void 투자계좌생성_실패_null() {
         Long userId = 1L;
 
-        when(restTemplate.postForEntity(anyString(), any(), eq(Map.class)))
-                .thenReturn(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null));
+        when(coreRestTemplate.postForObject(
+                "http://localhost:8081/core/banking/account/investment?userId=" + userId,
+                null,
+                CoreInvestmentAccountRes.class
+        )).thenReturn(null);
 
-        BusinessException exception = assertThrows(BusinessException.class,
-                () -> accountService.createInvestmentAccount(userId));
+        CoreInvestmentAccountRes res = coreAccountClient.createInvestmentAccount(userId);
 
-        assertEquals(ErrorBaseCode.CREATE_FAILED, exception.getErrorCode());
-    }
-
-    @Test
-    void 투자계좌_생성_실패_유저없음() {
-        Long userId = 1L;
-
-        when(restTemplate.postForEntity(anyString(), any(), eq(Map.class)))
-                .thenReturn(ResponseEntity.ok(Map.of("cano", "12345678")));
-
-        when(userRepository.findById(userId)).thenReturn(Optional.empty());
-
-        BusinessException exception = assertThrows(BusinessException.class,
-                () -> accountService.createInvestmentAccount(userId));
-
-        assertEquals(ErrorBaseCode.USER_NOT_FOUND, exception.getErrorCode());
+        assertNull(res);
     }
 }
