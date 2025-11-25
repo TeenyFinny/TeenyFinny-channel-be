@@ -8,6 +8,10 @@ import java.text.DecimalFormat;
  */
 public class Utils {
 
+	// ThreadLocal을 사용하여 DecimalFormat 인스턴스 캐싱 및 스레드 안정성 확보
+	private static final ThreadLocal<DecimalFormat> NUMBER_FORMATTER =
+		ThreadLocal.withInitial(() -> new DecimalFormat("#,###"));
+
 	/**
 	 * 정수 값을 천 단위 구분 기호(,)가 포함된 문자열로 변환합니다.
 	 * <p>
@@ -29,18 +33,22 @@ public class Utils {
 	 * BigDecimal 값을 천 단위 구분 기호(,)가 포함된 문자열로 변환합니다.
 	 * <p>
 	 * 예) 230010000.00 → "230,010,000"
+	 * 예) 123.56 → "124" (반올림)
+	 * 예) 123.49 → "123" (반올림)
 	 * </p>
 	 *
-	 * <p><b>주의:</b> 소수점 이하는 제거되고 정수 부분만 표시됩니다.
-	 * 소수점을 포함하려면 {@code String.format("%,.2f", num.doubleValue())}를 사용하세요.</p>
+	 * <p><b>주의:</b> 이 메소드는 {@code #,###} 패턴을 사용하며, 소수점 이하는
+	 * **반올림(Rounding)** 처리되어 정수 부분만 표시됩니다.
+	 * 정확한 소수점을 포함하려면 {@code String.format("%,.2f", num.doubleValue())}
+	 * 또는 {@code DecimalFormat}에 적절한 패턴을 설정하여 사용하세요.</p>
 	 *
 	 * @param num 천 단위 구분 기호로 포맷할 BigDecimal 값
-	 * @return 천 단위 구분 기호가 포함된 문자열 (소수점 제거)
+	 * @return 천 단위 구분 기호가 포함된 문자열 (소수점 반올림 처리)
 	 */
 	public static String NumberFormattingService(BigDecimal num) {
 		if (num == null) {
 			return "0";
 		}
-		return new DecimalFormat("#,###").format(num);
+		return NUMBER_FORMATTER.get().format(num);
 	}
 }

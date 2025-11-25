@@ -171,6 +171,9 @@ public class HomeServiceImpl implements HomeService {
 	 * @return 계좌 타입 -> 총 잔액 맵
 	 */
 	private Map<String, BigDecimal> groupBalancesByAccountType(List<CoreAccountItemRes> accounts) {
+		if (accounts == null) {
+			return Map.of();
+		}
 		return accounts.stream()
 			.collect(Collectors.groupingBy(
 				CoreAccountItemRes::accountType,
@@ -185,6 +188,9 @@ public class HomeServiceImpl implements HomeService {
 	 * @return 총 잔액
 	 */
 	private BigDecimal sumAccountBalances(List<CoreAccountItemRes> accounts) {
+		if (accounts == null) {
+			return BigDecimal.ZERO;
+		}
 		return accounts.stream()
 			.map(CoreAccountItemRes::balance)
 			.reduce(BigDecimal.ZERO, BigDecimal::add);
