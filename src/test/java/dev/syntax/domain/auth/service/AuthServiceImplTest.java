@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import dev.syntax.domain.auth.dto.SimplePasswordVerifyReq;
@@ -21,6 +22,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import dev.syntax.domain.auth.dto.PasswordVerifyReq;
 import dev.syntax.domain.auth.dto.PasswordVerifyRes;
+import dev.syntax.domain.auth.dto.IdentityVerifyReq;
+import dev.syntax.domain.auth.dto.IdentityVerifyRes;
 import dev.syntax.domain.user.entity.User;
 import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorAuthCode;
@@ -104,5 +107,62 @@ class AuthServiceImplTest {
         );
 
         assertThat(exception.getErrorCode()).isEqualTo(SIMPLE_PASSWORD_MISMATCH);
+    }
+
+    @Test
+    @DisplayName("본인 인증 성공 - 2000년대 남자")
+    void verifyIdentity_success_2000s_male() {
+        User user = User.builder()
+                .id(1L)
+                .name("김티니")
+                .phoneNumber("01012341234")
+                .birthDate(LocalDate.of(2001, 1, 1))
+                .gender((byte) 1) // 2000년대 남자 -> birthBack=3
+                .build();
+
+        IdentityVerifyReq req = new IdentityVerifyReq(
+                "SKT",
+                "01012341234",
+                "010101",
+                "3",
+                "김티니"
+        );
+
+        when(userRepository.findById(1L)).thenReturn(java.util.Optional.of(user));
+
+        IdentityVerifyRes response = authService.verifyIdentity(1L, req);
+
+        assertThat(response.verified()).isTrue();
+        assertThat(response.message()).isEqualTo("인증 완료");
+    }
+
+    @Test
+    @DisplayName("본인 인증 실패 - 주민번호 뒷자리 불일치")
+    void verifyIdentity_failure_birthBack_mismatch() {
+        User user = User.builder()
+                .id(1L)
+                .name("김티니")
+                .phoneNumber("01012341234")
+                .birthDate(LocalDate.of(2001, 1, 1))
+                .gender((byte) 1) // birthBack=3
+                .build();
+
+        IdentityVerifyReq req = new IdentityVerifyReq(
+                "SKT",
+                "01012341234",
+                "010101",
+                "1", // 잘못된 뒷자리
+                "김티니"
+        );
+
+        when(userRepository.findById(1L)).thenReturn(java.util.Optional.of(user));
+
+        BusinessException exception = catchThrowableOfType(
+                () -> authService.verifyIdentity(1L, req),
+                BusinessException.class
+        );
+
+        assertThat(exception.getErrorCode()).isEqualTo(ErrorAuthCode.IDENTITY_MISMATCH);
+        assertThat(exception.getMessage()).isEqualTo("본인 인증 정보가 일치하지 않습니다.");
     }
 }
