@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import dev.syntax.domain.auth.dto.SimplePasswordVerifyReq;
@@ -21,6 +22,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import dev.syntax.domain.auth.dto.PasswordVerifyReq;
 import dev.syntax.domain.auth.dto.PasswordVerifyRes;
+import dev.syntax.domain.auth.dto.IdentityVerifyReq;
+import dev.syntax.domain.auth.dto.IdentityVerifyRes;
 import dev.syntax.domain.user.entity.User;
 import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorAuthCode;
@@ -105,4 +108,6 @@ class AuthServiceImplTest {
 
         assertThat(exception.getErrorCode()).isEqualTo(SIMPLE_PASSWORD_MISMATCH);
     }
+
+
 }

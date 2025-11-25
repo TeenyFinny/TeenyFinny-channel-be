@@ -15,6 +15,8 @@ import dev.syntax.global.response.error.ErrorAuthCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.format.DateTimeFormatter;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -88,6 +90,22 @@ public class AuthServiceImpl implements AuthService {
         }
 
         return new PasswordVerifyRes(true);
+    }
+
+    @Override
+    public IdentityVerifyRes verifyIdentity(Long userId, IdentityVerifyReq request) {
+
+
+
+        //TODO: 검증 로직 구현 후 끌어와서 사용
+        boolean verified = true;
+
+        if (!verified) {
+            throw new BusinessException(ErrorAuthCode.IDENTITY_MISMATCH);
+        }
+
+        // 5. 성공 시 반환
+        return new IdentityVerifyRes(true, "인증 완료");
     }
 
 
