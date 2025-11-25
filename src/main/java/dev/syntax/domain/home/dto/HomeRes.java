@@ -25,13 +25,13 @@ public record HomeRes(
 		String name,
 		Role role,
 		String email,
-		Long balance, // 부모
+		String balance, // 부모
 		List<ChildDto> children, // 부모
 
-		Long totalBalance, // 자녀
-		Long depositBalance, // 자녀
-		Long investmentBalance, // 자녀
-		Long savingBalance // 자녀
+		String totalBalance, // 자녀
+		String depositBalance, // 자녀
+		String investmentBalance, // 자녀
+		String savingBalance // 자녀
 	) {
 	}
 
@@ -42,7 +42,7 @@ public record HomeRes(
 	public record ChildDto(
 		Long userId,
 		String name,
-		Long balance,
+		String balance,
 		Byte gender
 	) {
 	}
