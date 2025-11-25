@@ -108,4 +108,20 @@ public class AuthController {
 		log.info("[가족 등록 완료] child_id: {}, parent_id: {}", response.userId(), response.parentId());
 		return ApiResponseUtil.success(SuccessCode.OK, response);
 	}
+
+    /**
+     * 비밀번호 인증을 수행합니다.
+     *
+     * @param context 인증된 사용자
+     * @param req 비밀번호 인증 요청 DTO
+     */
+    @PostMapping("/password")
+    public ResponseEntity<BaseResponse<?>> verifyPassword(
+            @CurrentUser UserContext context,
+            @Valid @RequestBody PasswordVerifyReq req
+    ) {
+        PasswordVerifyRes response = authService.verifyPassword(context.getId(), req);
+        return ApiResponseUtil.success(SuccessCode.OK, response);
+    }
+
 }
