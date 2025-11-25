@@ -69,4 +69,22 @@ public class User extends BaseTimeEntity {
     @Builder.Default
     @OneToMany(mappedBy = "child")
     private List<UserRelationship> parents = new ArrayList<>();
+
+    /**
+     * 비밀번호를 업데이트합니다.
+     *
+     * @param password 새로운 비밀번호 (암호화된 상태)
+     */
+    public void updatePassword(String password) {
+        this.password = password;
+    }
+
+    /**
+     * 간편 비밀번호를 업데이트합니다.
+     *
+     * @param simplePassword 새로운 간편 비밀번호 (암호화된 상태)
+     */
+    public void updateSimplePassword(String simplePassword) {
+        this.simplePassword = simplePassword;
+    }
 }
