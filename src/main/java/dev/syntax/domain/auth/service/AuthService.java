@@ -40,14 +40,14 @@ public interface AuthService {
      * 사용자가 입력한 간편비밀번호가 현재 계정의 간편비밀번호와 일치하는지 검증합니다.
      * <p>
      * 간편비밀번호가 일치하지 않으면 {@link BusinessException}을 발생시키며,
-     * 일치하면 {@link SimplePasswordVerifyRes} 객체를 반환합니다.
+     * 일치하면 {@link PasswordVerifyRes} 객체를 반환합니다.
      *
      * @param userId 검증할 사용자의 ID
      * @param request 사용자가 입력한 간편비밀번호 요청 DTO
-     * @return 간편비밀번호 일치 여부를 담은 {@link SimplePasswordVerifyRes}
+     * @return 간편비밀번호 일치 여부를 담은 {@link PasswordVerifyRes}
      * @throws BusinessException 간편비밀번호가 일치하지 않을 경우 발생
      */
-    SimplePasswordVerifyRes verifySimplePassword(Long userId, SimplePasswordVerifyReq request);
+    PasswordVerifyRes verifySimplePassword(Long userId, SimplePasswordVerifyReq request);
 
 
     /**

@@ -74,7 +74,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public SimplePasswordVerifyRes verifySimplePassword(Long userId, SimplePasswordVerifyReq request) {
+    public PasswordVerifyRes verifySimplePassword(Long userId, SimplePasswordVerifyReq request) {
 
         // 사용자 조회
         User user = userRepository.findById(userId)
@@ -87,7 +87,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException(ErrorAuthCode.SIMPLE_PASSWORD_MISMATCH); // 새 에러코드
         }
 
-        return new SimplePasswordVerifyRes(true);
+        return new PasswordVerifyRes(true);
     }
 
 
