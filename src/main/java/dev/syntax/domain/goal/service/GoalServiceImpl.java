@@ -151,6 +151,8 @@ public class GoalServiceImpl implements GoalService {
 
         validatePayDay(req.getPayDay());
 
+        //TODO: 이쯤에서 createGoalAccount 의 반환값 true, false에 따라 분기하면 될 것 같습니다.
+
         Goal goal = Goal.builder()
                 .user(user)
                 .name(req.getName())
