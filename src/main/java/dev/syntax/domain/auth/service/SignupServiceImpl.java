@@ -1,9 +1,5 @@
 package dev.syntax.domain.auth.service;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import dev.syntax.domain.account.service.BankAccountService;
 import dev.syntax.domain.auth.dto.SignupReq;
 import dev.syntax.domain.auth.factory.UserFactory;
@@ -18,6 +14,9 @@ import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorAuthCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -53,7 +52,7 @@ public class SignupServiceImpl implements SignupService {
 
 			CoreParentInitRes coreRes = coreUserClient.createParentAccount(coreReq);
 			user.setCoreUserId(coreRes.coreUserId());
-			accountService.creatParentAccount(user, coreRes);
+			accountService.createParentAccount(user, coreRes);
 			log.info("부모 계좌 생성 완료: userId={}", user.getId());
 
 		} else { // CHILD

@@ -13,12 +13,12 @@ public interface BankAccountService {
 	 * @param user 사용자 정보
 	 * @param res Core 서버 초기화 응답
 	 */
-	void creatParentAccount(User user, CoreParentInitRes res);
+	void createParentAccount(User user, CoreParentInitRes res);
 
 	/**
 	 * 자녀의 용돈 계좌를 생성합니다.
 	 * @param user 부모 사용자 정보
-	 * @param res 자녀 계좌 생성 요청
+	 * @param req 자녀 계좌 생성 요청
 	 */
-	void createChildAllowanceAccount(User user, CreateChildAccountReq res);
+	void createChildAllowanceAccount(User user, CreateChildAccountReq req);
 }

@@ -26,13 +26,13 @@ public class AllowanceController {
 	/**
 	 * 자녀의 용돈 계좌를 생성합니다.
 	 * @param userContext 현재 사용자 정보
-	 * @param res 자녀 계좌 생성 요청
+	 * @param req 자녀 계좌 생성 요청
 	 * @return 성공 응답
 	 */
 	@PostMapping("/accounts")
 	public ResponseEntity<?> createAccount(@CurrentUser UserContext userContext,
-		@RequestBody CreateChildAccountReq res) {
-		bankAccountService.createChildAllowanceAccount(userContext.getUser(), res);
+		@RequestBody CreateChildAccountReq req) {
+		bankAccountService.createChildAllowanceAccount(userContext.getUser(), req);
 		return ApiResponseUtil.success(SuccessCode.CREATED);
 	}
 }
