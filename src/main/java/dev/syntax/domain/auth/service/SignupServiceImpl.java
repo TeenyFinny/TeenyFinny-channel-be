@@ -4,10 +4,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import dev.syntax.domain.account.service.BankAccountService;
 import dev.syntax.domain.auth.dto.SignupReq;
 import dev.syntax.domain.auth.factory.UserFactory;
 import dev.syntax.domain.user.client.CoreUserClient;
 import dev.syntax.domain.user.dto.CoreInitRes;
+import dev.syntax.domain.user.dto.CoreParentInitRes;
 import dev.syntax.domain.user.dto.CoreUserInitReq;
 import dev.syntax.domain.user.entity.User;
 import dev.syntax.domain.user.enums.Role;
@@ -26,6 +28,7 @@ public class SignupServiceImpl implements SignupService {
 	private final PasswordEncoder encoder;
 	private final UserRepository userRepository;
 	private final CoreUserClient coreUserClient;
+	private final BankAccountService accountService;
 
 	@Override
 	public void signup(SignupReq inputUser) {
@@ -46,16 +49,18 @@ public class SignupServiceImpl implements SignupService {
 		);
 
 		// 4. Core 서버 초기화 호출 (부모/자녀에 따라 응답이 다름)
-		CoreInitRes coreRes;
 		if (user.getRole() == Role.PARENT) {
 
-			coreRes = coreUserClient.createParentAccount(coreReq);
+			CoreParentInitRes coreRes = coreUserClient.createParentAccount(coreReq);
+			user.setCoreUserId(coreRes.coreUserId());
+			accountService.creatParentAccount(user, coreRes);
+			log.info("부모 계좌 생성 완료: userId={}", user.getId());
 
 		} else { // CHILD
 
-			coreRes = coreUserClient.createChildUser(coreReq);
+			CoreInitRes coreRes = coreUserClient.createChildUser(coreReq);
+			user.setCoreUserId(coreRes.coreUserId());
 		}
-		user.setCoreUserId(coreRes.coreUserId());
 
 		log.info("회원가입 + Core 초기화 완료: channelUserId={}, coreUserId={}",
 			user.getId(), user.getCoreUserId());
