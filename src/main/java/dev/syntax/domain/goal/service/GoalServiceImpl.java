@@ -1,5 +1,6 @@
 package dev.syntax.domain.goal.service;
 
+import dev.syntax.domain.account.entity.Account;
 import dev.syntax.domain.core.CoreBankingClient;
 import dev.syntax.domain.core.dto.GoalAccountInfoDto;
 import dev.syntax.domain.goal.client.CoreGoalClient;
@@ -26,6 +27,8 @@ import java.math.RoundingMode;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import static java.util.Optional.ofNullable;
+
 /**
  * GoalServiceImpl
  *
@@ -42,6 +45,8 @@ public class GoalServiceImpl implements GoalService {
     private final CoreBankingClient coreBankingClient;
     private final UserRelationshipRepository userRelationshipRepository;
     private final CoreGoalClient coreGoalClient;
+    private static final DateTimeFormatter GOAL_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss");
+
 
     /**
      * UserContext로부터 User 엔티티 조회
@@ -252,7 +257,9 @@ public class GoalServiceImpl implements GoalService {
 
         validateGoalIsOngoing(goal);
 
-        String accountNo = goal.getAccount().getAccountNo();
+        String accountNo = ofNullable(goal.getAccount())
+                .map(Account::getAccountNo)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.ACCOUNT_NOT_FOUND));
 
         CoreTransactionHistoryRes history =
                 coreGoalClient.getAccountHistory(accountNo);
@@ -263,29 +270,33 @@ public class GoalServiceImpl implements GoalService {
 
         BigDecimal currentAmount = history.getBalance();
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss");
-
-        // 입금 거래만 필터 (목표적금의 납입내역)
-        List<BigDecimal> depositAmounts = history.getTransactions().stream()
+        // 거래 내역 조회
+        List<CoreTransactionHistoryRes.TransactionItem> depositTransactions = history.getTransactions().stream()
                 .filter(t -> t.getAmount().compareTo(BigDecimal.ZERO) > 0)
+                .toList();
+        List<BigDecimal> depositAmounts = depositTransactions.stream()
                 .map(CoreTransactionHistoryRes.TransactionItem::getAmount)
                 .toList();
-
-        List<String> depositDates = history.getTransactions().stream()
-                .filter(t -> t.getAmount().compareTo(BigDecimal.ZERO) > 0)
-                .map(t -> t.getTransactionDate().format(formatter))
+        List<String> depositDates = depositTransactions.stream()
+                .map(t -> t.getTransactionDate().format(GOAL_DATE_FORMATTER))
                 .toList();
 
         // 목표 기간 계산
+        if (goal.getMonthlyAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessException(ErrorBaseCode.GOAL_INVALID_AMOUNT);
+        }
         int period = goal.getTargetAmount()
                 .divide(goal.getMonthlyAmount(), RoundingMode.CEILING)
                 .intValue();
 
         // 진행률 계산
-        int progress = currentAmount
-                .multiply(BigDecimal.valueOf(100))
-                .divide(goal.getTargetAmount(), 0, RoundingMode.HALF_UP)
-                .intValue();
+        int progress = 0;
+        if (goal.getTargetAmount().compareTo(BigDecimal.ZERO) > 0) {
+            progress = currentAmount
+                    .multiply(BigDecimal.valueOf(100))
+                    .divide(goal.getTargetAmount(), 0, RoundingMode.HALF_UP)
+                    .intValue();
+        }
 
         return new GoalDetailRes(
                 goal.getId(),
