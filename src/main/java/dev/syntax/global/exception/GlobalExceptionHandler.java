@@ -1,16 +1,21 @@
 package dev.syntax.global.exception;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.ResourceAccessException;
+
+import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.global.response.ApiResponseUtil;
 import dev.syntax.global.response.BaseResponse;
 import dev.syntax.global.response.error.ErrorAuthCode;
 import dev.syntax.global.response.error.ErrorBaseCode;
 import dev.syntax.global.response.error.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
  * 전역 예외 처리를 담당하는 핸들러입니다.
@@ -54,9 +59,45 @@ public class GlobalExceptionHandler {
 		return createErrorResponse(e.getErrorCode());
 	}
 
+	/**
+	 * CoreApiException 처리.
+	 * Core 서버 API 호출 중 발생한 예외를 처리하고 일관된 에러 응답을 반환합니다.
+	 */
+	@ExceptionHandler(CoreApiException.class)
+	public ResponseEntity<BaseResponse<?>> handleCoreApiException(CoreApiException e) {
+		// 현재 인증된 사용자 정보 추출
+		Long userId = null;
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if (authentication != null && authentication.getPrincipal() instanceof UserContext userContext) {
+			userId = userContext.getId();
+		}
+
+		log.error("[{}] : Core Status={}, Core Message={}, User Id={}",
+			e.getErrorCode(), e.getHttpStatusCode(), e.getCoreErrorMessage(), userId);
+		return createErrorResponse(e.getErrorCode());
+	}
+
+	/**
+	 * ResourceAccessException 처리.
+	 * Core 서버 연결 실패 시 발생하는 예외를 처리합니다.
+	 */
+	@ExceptionHandler(ResourceAccessException.class)
+	public ResponseEntity<BaseResponse<?>> handleResourceAccessException(ResourceAccessException e) {
+		// 현재 인증된 사용자 정보 추출
+		Long userId = null;
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if (authentication != null && authentication.getPrincipal() instanceof UserContext userContext) {
+			userId = userContext.getId();
+		}
+
+		log.error("[Core 서버 연결 실패] Message={}, User Id={}",
+			e.getMessage(), userId);
+		return ApiResponseUtil.failure(ErrorBaseCode.CORE_API_UNAVAILABLE);
+	}
+
 	private ResponseEntity<BaseResponse<?>> createErrorResponse(ErrorCode errorCode) {
 		if (errorCode instanceof ErrorAuthCode) {
-			return ApiResponseUtil.failure((ErrorAuthCode) errorCode);
+			return ApiResponseUtil.failure((ErrorAuthCode)errorCode);
 		}
 		return ApiResponseUtil.failure(errorCode);
 	}
@@ -69,7 +110,7 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler(AuthenticationException.class)
 	public ResponseEntity<BaseResponse<?>> handleAuthenticationException(AuthenticationException e) {
-		log.error("AuthenticationException: {}", e.getMessage());
+		log.error("[AuthenticationException] {}", e.getMessage());
 		return ApiResponseUtil.failure(ErrorAuthCode.UNAUTHORIZED);
 	}
 
@@ -81,7 +122,7 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler(AccessDeniedException.class)
 	public ResponseEntity<BaseResponse<?>> handleAccessDeniedException(AccessDeniedException e) {
-		log.error("AccessDeniedException: {}", e.getMessage());
+		log.error("[AccessDeniedException] {}", e.getMessage());
 		return ApiResponseUtil.failure(ErrorAuthCode.ACCESS_DENIED);
 	}
 
@@ -93,7 +134,7 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<BaseResponse<?>> handleException(Exception e) {
-		log.error("Exception: {}", e.getMessage(), e);
+		log.error("[Exception] {}", e.getMessage(), e);
 		return ApiResponseUtil.failure(ErrorBaseCode.INTERNAL_SERVER_ERROR);
 	}
 }
