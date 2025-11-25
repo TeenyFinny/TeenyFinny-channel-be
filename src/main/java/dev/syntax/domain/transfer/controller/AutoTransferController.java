@@ -1,6 +1,7 @@
 package dev.syntax.domain.transfer.controller;
 import dev.syntax.domain.transfer.dto.AutoTransferReq;
 import dev.syntax.domain.transfer.dto.AutoTransferRes;
+import dev.syntax.domain.transfer.enums.AutoTransferType;
 import dev.syntax.domain.transfer.service.AutoTransferCreateService;
 import dev.syntax.domain.transfer.service.AutoTransferInquiryService;
 import dev.syntax.global.auth.annotation.CurrentUser;
@@ -29,6 +30,7 @@ public class AutoTransferController {
     /**
      * 자동이체 설정 조회 API.
      * <p>
+     * 이 경로는 용돈 자동이체만 접근가능하다는 전제 하에 구현하였습니다.
      * 자녀의 자동이체 설정 정보를 조회합니다.
      * </p>
      *
@@ -41,11 +43,11 @@ public class AutoTransferController {
             @PathVariable("id") Long id,
             @CurrentUser UserContext ctx) {
 
-        AutoTransferRes res = autoTransferInquiryService.getAutoTransfer(id, ctx);
+        AutoTransferRes res = autoTransferInquiryService.getAutoTransfer(id, AutoTransferType.ALLOWANCE, ctx);
         return ApiResponseUtil.success(SuccessCode.OK, res);
     }
 
-        /**
+    /**
      * 자동이체 설정 생성 API.
      * <p>
      * 부모가 자녀의 계좌로 자동이체를 설정합니다.

@@ -39,5 +39,14 @@ public interface AutoTransferRepository extends JpaRepository<AutoTransfer, Long
      */
     Optional<AutoTransfer> findByUserId(Long childId);
 
+    /**
+     * 자녀 ID와 타입으로 자동이체 설정을 조회합니다.
+     *
+     * @param childId 자녀 ID
+     * @param type 자동이체 타입
+     * @return 자동이체 설정 (Optional)
+     */
+    Optional<AutoTransfer> findByUserIdAndType(Long childId, AutoTransferType type);
+
 
 }
