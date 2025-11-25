@@ -69,4 +69,40 @@ public class User extends BaseTimeEntity {
     @Builder.Default
     @OneToMany(mappedBy = "child")
     private List<UserRelationship> parents = new ArrayList<>();
+
+    /**
+     * 사용자 이름을 업데이트합니다.
+     *
+     * @param name 새로운 이름
+     */
+    public void updateName(String name) {
+        this.name = name;
+    }
+
+    /**
+     * 사용자 전화번호를 업데이트합니다.
+     *
+     * @param phoneNumber 새로운 전화번호
+     */
+    public void updatePhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    /**
+     * 푸시 알림 설정을 업데이트합니다.
+     *
+     * @param pushEnabled 푸시 알림 활성화 여부
+     */
+    public void updatePushEnabled(Boolean pushEnabled) {
+        this.pushEnabled = pushEnabled;
+    }
+
+    /**
+     * 야간 푸시 알림 설정을 업데이트합니다.
+     *
+     * @param nightPushEnabled 야간 푸시 알림 활성화 여부
+     */
+    public void updateNightPushEnabled(Boolean nightPushEnabled) {
+        this.nightPushEnabled = nightPushEnabled;
+    }
 }
