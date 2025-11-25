@@ -109,5 +109,43 @@ class AuthServiceImplTest {
         assertThat(exception.getErrorCode()).isEqualTo(SIMPLE_PASSWORD_MISMATCH);
     }
 
+    @Test
+    @DisplayName("본인인증 성공 - 정상 요청")
+    void verifyIdentity_success() {
+        // given
+        IdentityVerifyReq req = new IdentityVerifyReq(
+                "SKT",
+                "01012341234",
+                "010101",
+                "3",
+                "홍길동"
+        );
+
+        // when
+        IdentityVerifyRes res = authService.verifyIdentity(1L, req);
+
+        // then
+        assertThat(res.verified()).isTrue();
+        assertThat(res.message()).isEqualTo("인증 완료");
+    }
+
+    @Test
+    @DisplayName("본인인증 실패 - 잘못된 생년월일 형식")
+    void verifyIdentity_invalid_birth_format() {
+        // given
+        IdentityVerifyReq req = new IdentityVerifyReq(
+                "SKT",
+                "01012341234",
+                "990231",  // 존재하지 않는 날짜
+                "1",
+                "홍길동"
+        );
+
+        // when & then
+        assertThatThrownBy(() -> authService.verifyIdentity(1L, req))
+                .isInstanceOf(BusinessException.class)
+                .extracting(e -> ((BusinessException)e).getErrorCode())
+                .isEqualTo(ErrorAuthCode.INVALID_IDENTITY_FORMAT);
+    }
 
 }
