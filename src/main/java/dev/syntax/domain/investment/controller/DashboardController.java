@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/investments")
 public class DashboardController {
-    DashboardService dashboardService;
+    private final DashboardService dashboardService;
 
     @GetMapping
     public ResponseEntity<BaseResponse<DashboardRes>> getDashboard(

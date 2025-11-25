@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/investments")
 public class PortfolioController {
-    PortfolioService portfolioService;
+    private final PortfolioService portfolioService;
 
-    @GetMapping("portfolio")
+    @GetMapping("/portfolio")
     public ResponseEntity<BaseResponse<PortfolioRes>> getPortfolio(
             @CurrentUser UserContext userContext
     ) {

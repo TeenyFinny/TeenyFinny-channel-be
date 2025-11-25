@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/investments")
 public class StocksController {
-    StocksService stocksService;
+    private final StocksService stocksService;
 
     @GetMapping("/stocks")
     public ResponseEntity<BaseResponse<StocksRes>> getStocks(
