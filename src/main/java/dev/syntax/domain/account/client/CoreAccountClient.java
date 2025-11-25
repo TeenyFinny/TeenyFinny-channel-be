@@ -1,5 +1,6 @@
 package dev.syntax.domain.account.client;
 
+import dev.syntax.domain.account.dto.core.CoreInvestmentAccountRes;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -37,4 +38,14 @@ public class CoreAccountClient {
 			CoreUserAccountListRes.class
 		);
 	}
+
+    private static final String INVESTMENT_ACCOUNT_URL = "/core/banking/account/investment";
+
+    public CoreInvestmentAccountRes createInvestmentAccount(Long userId) {
+        return coreRestTemplate.postForObject(
+                properties.getBaseUrl() + INVESTMENT_ACCOUNT_URL + "?userId=" + userId,
+                null,
+                CoreInvestmentAccountRes.class
+        );
+    }
 }
