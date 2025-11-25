@@ -57,5 +57,16 @@ public interface AuthService {
 	 * @return 새로운 JWT 토큰
 	 */
 	RefreshTokenRes refreshToken(Long userId);
+
+    // 기존 메서드 생략...
+
+    /**
+     * 본인인증을 수행합니다.
+     *
+     * @param userId 인증 대상 사용자 ID
+     * @param request 본인인증 요청 DTO
+     * @return 인증 결과
+     */
+    IdentityVerifyRes verifyIdentity(Long userId, IdentityVerifyReq request);
 }
 

@@ -15,6 +15,8 @@ import dev.syntax.global.response.error.ErrorAuthCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.format.DateTimeFormatter;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -88,6 +90,39 @@ public class AuthServiceImpl implements AuthService {
         }
 
         return new PasswordVerifyRes(true);
+    }
+
+    @Override
+    public IdentityVerifyRes verifyIdentity(Long userId, IdentityVerifyReq request) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorAuthCode.UNAUTHORIZED));
+
+        // 2. 생년월일 앞자리 (YYMMDD)
+        String birthFront = user.getBirthDate().format(DateTimeFormatter.ofPattern("yyMMdd"));
+
+        // 3. 뒷자리 계산 (성별 + 출생년도 기준)
+        int year = user.getBirthDate().getYear(); // 4자리 연도
+        Byte gender = user.getGender();          // 1=남, 2=여
+
+        String birthBack = switch (gender) {
+            case 1 -> year < 2000 ? "1" : "3"; // 남자
+            case 2 -> year < 2000 ? "2" : "4"; // 여자
+            default -> "0";                     // 예외
+        };
+
+        // 4. 인증 비교
+        boolean verified = user.getName().equals(request.name())
+                && user.getPhoneNumber().equals(request.phoneNumber())
+                && birthFront.equals(request.birthFront())
+                && birthBack.equals(request.birthBack());
+
+        if (!verified) {
+            throw new BusinessException(ErrorAuthCode.IDENTITY_MISMATCH);
+        }
+
+        // 5. 성공 시 반환
+        return new IdentityVerifyRes(true, "인증 완료");
     }
 
 

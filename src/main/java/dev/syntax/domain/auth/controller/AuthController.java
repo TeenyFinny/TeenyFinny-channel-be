@@ -139,5 +139,14 @@ public class AuthController {
         return ApiResponseUtil.success(SuccessCode.OK, response);
     }
 
+    @PostMapping("/identity")
+    public ResponseEntity<BaseResponse<?>> verifyIdentity(
+            @CurrentUser UserContext context,
+            @Valid @RequestBody IdentityVerifyReq request
+    ) {
+        IdentityVerifyRes response = authService.verifyIdentity(context.getId(), request);
+        return ApiResponseUtil.success(SuccessCode.OK, response);
+    }
+
 
 }
