@@ -4,6 +4,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import dev.syntax.domain.auth.dto.EmailValidationReq;
 import dev.syntax.domain.auth.dto.IdentityVerifyReq;
@@ -20,7 +21,7 @@ import dev.syntax.global.auth.jwt.JwtTokenProvider;
 import dev.syntax.global.auth.validator.IdentityValidator;
 import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorAuthCode;
-import org.springframework.transaction.annotation.Transactional;
+import dev.syntax.global.response.error.ErrorBaseCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -104,7 +105,7 @@ public class AuthServiceImpl implements AuthService {
 	public void updatePassword(UserContext userContext, UpdatePasswordReq request) {
 		// DB에서 User 엔티티를 다시 조회 (영속성 컨텍스트에서 관리되는 엔티티)
 		User user = userRepository.findById(userContext.getId())
-			.orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+			.orElseThrow(() -> new BusinessException(ErrorBaseCode.USER_NOT_FOUND));
 
 		// 현재 비밀번호 검증
 		if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
@@ -124,13 +125,32 @@ public class AuthServiceImpl implements AuthService {
 	public void updateSimplePassword(UserContext userContext, SimplePasswordVerifyReq request) {
 		// DB에서 User 엔티티를 다시 조회 (영속성 컨텍스트에서 관리되는 엔티티)
 		User user = userRepository.findById(userContext.getId())
-			.orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+			.orElseThrow(() -> new BusinessException(ErrorBaseCode.USER_NOT_FOUND));
 
 		// 간편 비밀번호 암호화 및 업데이트
 		String encodedSimplePassword = passwordEncoder.encode(request.password());
 		user.updateSimplePassword(encodedSimplePassword);
 
 		log.info("[간편 비밀번호 변경 성공] userId: {}", user.getId());
+	}
+
+	@Override
+	@Transactional
+	public void updatePushSettings(UserContext userContext, dev.syntax.domain.auth.dto.UpdatePushReq request) {
+		// DB에서 User 엔티티를 다시 조회 (영속성 컨텍스트에서 관리되는 엔티티)
+		User user = userRepository.findById(userContext.getId())
+			.orElseThrow(() -> new BusinessException(ErrorBaseCode.USER_NOT_FOUND));
+
+		// 제공된 필드만 업데이트 (null이 아닌 경우에만)
+		if (request.pushEnabled() != null) {
+			user.updatePushEnabled(request.pushEnabled());
+		}
+		if (request.nightPushEnabled() != null) {
+			user.updateNightPushEnabled(request.nightPushEnabled());
+		}
+
+		log.info("[푸시 알림 설정 변경 성공] userId: {}, pushEnabled: {}, nightPushEnabled: {}",
+			user.getId(), user.getPushEnabled(), user.getNightPushEnabled());
 	}
 
 	@Override

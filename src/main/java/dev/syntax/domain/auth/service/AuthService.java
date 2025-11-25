@@ -8,6 +8,7 @@ import dev.syntax.domain.auth.dto.PasswordVerifyRes;
 import dev.syntax.domain.auth.dto.RefreshTokenRes;
 import dev.syntax.domain.auth.dto.SimplePasswordVerifyReq;
 import dev.syntax.domain.auth.dto.UpdatePasswordReq;
+import dev.syntax.domain.auth.dto.UpdatePushReq;
 import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.global.exception.BusinessException;
 
@@ -79,6 +80,18 @@ public interface AuthService {
 	 * @param request 새로운 간편 비밀번호 (6자리 숫자)
 	 */
 	void updateSimplePassword(UserContext user, SimplePasswordVerifyReq request);
+
+	/**
+	 * 사용자의 푸시 알림 설정을 변경합니다.
+	 * <p>
+	 * 푸시 알림과 야간 푸시 알림 설정을 변경합니다.
+	 * 요청 DTO에 포함된 필드만 업데이트되며, null인 필드는 기존 값을 유지합니다.
+	 * </p>
+	 *
+	 * @param user 현재 인증된 사용자 정보
+	 * @param request 푸시 알림 설정 (pushEnabled, nightPushEnabled)
+	 */
+	void updatePushSettings(UserContext user, UpdatePushReq request);
 
 	/**
 	 * 사용자의 최신 정보로 새로운 JWT 토큰을 발급합니다.
