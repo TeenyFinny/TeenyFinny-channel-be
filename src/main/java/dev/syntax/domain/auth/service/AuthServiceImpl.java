@@ -1,6 +1,7 @@
 package dev.syntax.domain.auth.service;
 
 import dev.syntax.domain.auth.dto.*;
+import dev.syntax.global.auth.validator.IdentityValidator;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,6 +16,7 @@ import dev.syntax.global.response.error.ErrorAuthCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 @Slf4j
@@ -93,18 +95,19 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public IdentityVerifyRes verifyIdentity(Long userId, IdentityVerifyReq request) {
+    public IdentityVerifyRes verifyIdentity(Long userId, IdentityVerifyReq req) {
 
-
-
-        //TODO: 검증 로직 구현 후 끌어와서 사용
-        boolean verified = true;
-
-        if (!verified) {
-            throw new BusinessException(ErrorAuthCode.IDENTITY_MISMATCH);
+        if (req == null) {
+            throw new BusinessException(ErrorAuthCode.INVALID_IDENTITY_FORMAT);
         }
 
-        // 5. 성공 시 반환
+        // 1. 요청 Body 검증 (DTO → 추가 validator)
+        IdentityValidator.validateCarrier(req.carrier());
+        IdentityValidator.validatePhone(req.phoneNumber());
+        IdentityValidator.validateBirth(req.birthFront(), req.birthBack());
+
+
+        // 2. 성공 시 반환
         return new IdentityVerifyRes(true, "인증 완료");
     }
 
