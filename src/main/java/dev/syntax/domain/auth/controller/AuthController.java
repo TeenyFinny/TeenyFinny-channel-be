@@ -1,6 +1,29 @@
 package dev.syntax.domain.auth.controller;
 
-import dev.syntax.domain.auth.dto.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import dev.syntax.domain.auth.dto.EmailValidationReq;
+import dev.syntax.domain.auth.dto.EmailValidationRes;
+import dev.syntax.domain.auth.dto.IdentityVerifyReq;
+import dev.syntax.domain.auth.dto.IdentityVerifyRes;
+import dev.syntax.domain.auth.dto.LoginReq;
+import dev.syntax.domain.auth.dto.LoginRes;
+import dev.syntax.domain.auth.dto.OtpGenerateRes;
+import dev.syntax.domain.auth.dto.OtpVerifyReq;
+import dev.syntax.domain.auth.dto.OtpVerifyRes;
+import dev.syntax.domain.auth.dto.PasswordVerifyReq;
+import dev.syntax.domain.auth.dto.PasswordVerifyRes;
+import dev.syntax.domain.auth.dto.RefreshTokenRes;
+import dev.syntax.domain.auth.dto.SignupReq;
+import dev.syntax.domain.auth.dto.SimplePasswordVerifyReq;
+import dev.syntax.domain.auth.dto.UpdatePasswordReq;
 import dev.syntax.domain.auth.service.AuthService;
 import dev.syntax.domain.auth.service.FamilyService;
 import dev.syntax.domain.auth.service.LoginService;
@@ -13,9 +36,6 @@ import dev.syntax.global.response.SuccessCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @Validated
@@ -109,54 +129,92 @@ public class AuthController {
 		return ApiResponseUtil.success(SuccessCode.OK, response);
 	}
 
-    /**
-     * 비밀번호 인증을 수행합니다.
-     *
-     * @param context 인증된 사용자
-     * @param req 비밀번호 인증 요청 DTO
-     */
-    @PostMapping("/password")
-    public ResponseEntity<BaseResponse<?>> verifyPassword(
-            @CurrentUser UserContext context,
-            @Valid @RequestBody PasswordVerifyReq req
-    ) {
-        PasswordVerifyRes response = authService.verifyPassword(context.getId(), req);
-        return ApiResponseUtil.success(SuccessCode.OK, response);
-    }
+	/**
+	 * 비밀번호 인증을 수행합니다.
+	 *
+	 * @param context 인증된 사용자
+	 * @param req 비밀번호 인증 요청 DTO
+	 */
+	@PostMapping("/password")
+	public ResponseEntity<BaseResponse<?>> verifyPassword(
+		@CurrentUser UserContext context,
+		@Valid @RequestBody PasswordVerifyReq req
+	) {
+		PasswordVerifyRes response = authService.verifyPassword(context.getId(), req);
+		return ApiResponseUtil.success(SuccessCode.OK, response);
+	}
 
-    /**
-     * 간편비밀번호(Simple Password)를 검증하는 엔드포인트
-     *
-     * @param context 인증된 사용자 컨텍스트
-     * @param req 사용자 입력 간편비밀번호 요청 DTO
-     */
-    @PostMapping("/simple-password")
-    public ResponseEntity<BaseResponse<?>> verifySimplePassword(
-            @CurrentUser UserContext context,
-            @Valid @RequestBody SimplePasswordVerifyReq req
-    ) {
-        PasswordVerifyRes response = authService.verifySimplePassword(context.getId(), req);
-        return ApiResponseUtil.success(SuccessCode.OK, response);
-    }
+	/**
+	 * 간편비밀번호(Simple Password)를 검증하는 엔드포인트
+	 *
+	 * @param context 인증된 사용자 컨텍스트
+	 * @param req 사용자 입력 간편비밀번호 요청 DTO
+	 */
+	@PostMapping("/simple-password")
+	public ResponseEntity<BaseResponse<?>> verifySimplePassword(
+		@CurrentUser UserContext context,
+		@Valid @RequestBody SimplePasswordVerifyReq req
+	) {
+		PasswordVerifyRes response = authService.verifySimplePassword(context.getId(), req);
+		return ApiResponseUtil.success(SuccessCode.OK, response);
+	}
 
-    /**
-     * 사용자의 본인 인증 정보를 검증합니다.
-     *
-     * <p>요청된 정보와 DB에 저장된 사용자 정보를 비교하여 인증을 수행합니다.
-     * 이름, 전화번호, 생년월일 앞자리, 주민번호 뒷자리까지 모두 일치해야 인증이 성공합니다.
-     *
-     * @param context 인증된 사용자 컨텍스트
-     * @param request 본인 인증 요청 DTO
-     * @return 인증 성공 여부 및 메시지를 담은 {@link IdentityVerifyRes}를 표준 응답 포맷으로 래핑
-     */
-    @PostMapping("/identity")
-    public ResponseEntity<BaseResponse<?>> verifyIdentity(
-            @CurrentUser UserContext context,
-            @Valid @RequestBody IdentityVerifyReq request
-    ) {
-        IdentityVerifyRes response = authService.verifyIdentity(context.getId(), request);
-        return ApiResponseUtil.success(SuccessCode.OK, response);
-    }
+	/**
+	 * 비밀번호를 변경합니다.
+	 * <p>
+	 * 현재 비밀번호를 검증한 후 새 비밀번호로 변경합니다.
+	 * 새 비밀번호는 8자리 이상이며 특수문자를 포함해야 합니다.
+	 * </p>
+	 *
+	 * @param user 현재 인증된 사용자 정보
+	 * @param request 현재 비밀번호와 새 비밀번호
+	 * @return 성공 응답
+	 */
+	@PatchMapping("/password")
+	public ResponseEntity<BaseResponse<?>> updatePassword(
+		@CurrentUser UserContext user,
+		@Valid @RequestBody UpdatePasswordReq request
+	) {
+		authService.updatePassword(user, request);
+		return ApiResponseUtil.success(SuccessCode.OK);
+	}
 
+	/**
+	 * 간편 비밀번호를 변경합니다.
+	 * <p>
+	 * 6자리 숫자로 구성된 간편 비밀번호를 변경합니다.
+	 * </p>
+	 *
+	 * @param user 현재 인증된 사용자 정보
+	 * @param request 새로운 간편 비밀번호 (6자리 숫자)
+	 * @return 성공 응답
+	 */
+	@PatchMapping("/simple-password")
+	public ResponseEntity<BaseResponse<?>> updateSimplePassword(
+		@CurrentUser UserContext user,
+		@Valid @RequestBody SimplePasswordVerifyReq request
+	) {
+		authService.updateSimplePassword(user, request);
+		return ApiResponseUtil.success(SuccessCode.OK);
+	}
+
+	/**
+	 * 사용자의 본인 인증 정보를 검증합니다.
+	 *
+	 * <p>요청된 정보와 DB에 저장된 사용자 정보를 비교하여 인증을 수행합니다.
+	 * 이름, 전화번호, 생년월일 앞자리, 주민번호 뒷자리까지 모두 일치해야 인증이 성공합니다.
+	 *
+	 * @param context 인증된 사용자 컨텍스트
+	 * @param request 본인 인증 요청 DTO
+	 * @return 인증 성공 여부 및 메시지를 담은 {@link IdentityVerifyRes}를 표준 응답 포맷으로 래핑
+	 */
+	@PostMapping("/identity")
+	public ResponseEntity<BaseResponse<?>> verifyIdentity(
+		@CurrentUser UserContext context,
+		@Valid @RequestBody IdentityVerifyReq request
+	) {
+		IdentityVerifyRes response = authService.verifyIdentity(context.getId(), request);
+		return ApiResponseUtil.success(SuccessCode.OK, response);
+	}
 
 }
