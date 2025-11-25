@@ -64,6 +64,32 @@ public class NotificationServiceImpl implements NotificationService {
         notificationRepository.save(notification);
     }
 
+    @Override
+    @Transactional
+    public void sendGoalCancelRequestNotice(User parent, String childName) {
+        Notification notification = Notification.builder()
+                .targetUser(parent)
+                .title("목표 중도 해지 요청")
+                .content(childName + "(이)가 목표 중도 해지를 요청했습니다.")
+                .type(NotificationType.GOAL)
+                .build();
+
+        notificationRepository.save(notification);
+    }
+
+    @Override
+    @Transactional
+    public void sendGoalCompleteRequestNotice(User parent, String childName) {
+        Notification notification = Notification.builder()
+                .targetUser(parent)
+                .title("목표 달성 완료")
+                .content(childName + "(이)가 목표를 달성했어요!")
+                .type(NotificationType.GOAL)
+                .build();
+
+        notificationRepository.save(notification);
+    }
+
     // 4) 알림 삭제
 //    @Override
 //    @Transactional
