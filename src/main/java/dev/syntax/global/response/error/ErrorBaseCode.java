@@ -57,7 +57,6 @@ public enum ErrorBaseCode implements ErrorCode {
 	 * 401 UNAUTHORIZED - 리소스 접근 권한
 	 */
 	UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증되지 않은 사용자입니다."),
-	INVALID_CHILD(HttpStatus.UNAUTHORIZED, "해당 자녀에 대한 접근 권한이 없습니다."),
 
 	/**
 	 * 403 FORBIDDEN - 리소스 접근 금지
@@ -68,6 +67,7 @@ public enum ErrorBaseCode implements ErrorCode {
 	GOAL_CHILD_NOT_MATCH(HttpStatus.FORBIDDEN, "해당 목표는 당신의 자녀가 생성한 목표가 아닙니다."),
 	GOAL_ACCESS_FORBIDDEN(HttpStatus.FORBIDDEN, "목표 확정 및 취소는 부모만 가능합니다."),
 	PARENT_ONLY_FEATURE(HttpStatus.FORBIDDEN, "부모만 사용할 수 있는 기능입니다."),
+	INVALID_CHILD(HttpStatus.FORBIDDEN, "해당 자녀에 대한 접근 권한이 없습니다."),
 
 
 	/**

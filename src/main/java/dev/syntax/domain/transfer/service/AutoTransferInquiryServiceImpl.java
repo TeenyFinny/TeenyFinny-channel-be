@@ -33,21 +33,14 @@ public class AutoTransferInquiryServiceImpl implements AutoTransferInquiryServic
         validateParentAccess(ctx, childId);
 
         // 자녀별 자동이체 단일 설정 조회
-        AutoTransfer transfer = autoTransferRepository.findByUserId(childId)
-                .orElse(null);
-
-        // 자동이체 설정이 없는 경우
-        if (transfer == null) {
-            return AutoTransferRes.init();
-        }
-
-        // 자동이체 설정 존재 → DTO 반환
-        return AutoTransferRes.of(
-                transfer.getId(),
-                transfer.getTransferAmount(),
-                transfer.getTransferDate(),
-                transfer.getRatio()
-        );
+        return autoTransferRepository.findByUserId(childId)
+                .map(transfer -> AutoTransferRes.of(
+                        transfer.getId(),
+                        transfer.getTransferAmount(),
+                        transfer.getTransferDate(),
+                        transfer.getRatio()
+                ))
+                .orElseGet(AutoTransferRes::init);
     }
 
     /**
