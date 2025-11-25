@@ -1,14 +1,11 @@
 package dev.syntax.domain.auth.service;
 
-import dev.syntax.domain.auth.dto.PasswordVerifyReq;
-import dev.syntax.domain.auth.dto.PasswordVerifyRes;
+import dev.syntax.domain.auth.dto.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import dev.syntax.domain.auth.dto.EmailValidationReq;
-import dev.syntax.domain.auth.dto.RefreshTokenRes;
 import dev.syntax.domain.user.entity.User;
 import dev.syntax.domain.user.repository.UserRepository;
 import dev.syntax.global.auth.dto.UserContext;
@@ -75,5 +72,23 @@ public class AuthServiceImpl implements AuthService {
         // 3. 성공 시 반환
         return new PasswordVerifyRes(true);
     }
+
+    @Override
+    public PasswordVerifyRes verifySimplePassword(Long userId, SimplePasswordVerifyReq request) {
+
+        // 사용자 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorAuthCode.UNAUTHORIZED));
+
+        // 간편비밀번호 비교 (DB에 저장된 간편비밀번호가 있다고 가정)
+        boolean matched = passwordEncoder.matches(request.password(), user.getSimplePassword());
+
+        if (!matched) {
+            throw new BusinessException(ErrorAuthCode.SIMPLE_PASSWORD_MISMATCH); // 새 에러코드
+        }
+
+        return new PasswordVerifyRes(true);
+    }
+
 
 }

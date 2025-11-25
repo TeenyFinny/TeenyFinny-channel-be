@@ -36,7 +36,7 @@ public enum ErrorAuthCode implements ErrorBaseCodeForErrorCode {
 	FAMILY_OTP_MISMATCH(HttpStatus.UNAUTHORIZED, "OTP 코드를 확인해주세요.", "FAM01"),
 	FAMILY_OTP_TIMEOUT(HttpStatus.UNAUTHORIZED, "OTP 코드가 만료되었습니다.", "FAM02"),
     PASSWORD_MISMATCH(HttpStatus.UNAUTHORIZED, "패스워드를 확인해주세요.", "AUTH04"),
-
+    SIMPLE_PASSWORD_MISMATCH(HttpStatus.UNAUTHORIZED, "간편비밀번호가 일치하지 않습니다.", "AUTH05"),
 	/**
 	 * 403 FORBIDDEN - 권한 부족
 	 */
