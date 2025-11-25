@@ -1,5 +1,6 @@
 package dev.syntax.domain.account.client;
 
+import dev.syntax.domain.account.dto.core.CoreGoalAccountReq;
 import dev.syntax.domain.account.dto.core.CoreGoalAccountRes;
 import dev.syntax.domain.account.dto.core.CoreInvestmentAccountRes;
 import org.springframework.stereotype.Service;
@@ -55,9 +56,10 @@ public class CoreAccountClient {
     private static final String GOAL_ACCOUNT_URL = "/core/banking/goal/account";
 
     public CoreGoalAccountRes createGoalAccount(Long userId, String name) {
+        CoreGoalAccountReq req = new CoreGoalAccountReq(userId, name);
         return coreRestTemplate.postForObject(
                 properties.getBaseUrl() + GOAL_ACCOUNT_URL,
-                Map.of("userId", userId, "name", name),
+                req,
                 CoreGoalAccountRes.class
         );
     }
