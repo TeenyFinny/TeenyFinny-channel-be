@@ -4,7 +4,9 @@ import dev.syntax.domain.investment.dto.res.DashboardRes;
 import dev.syntax.domain.investment.service.DashboardService;
 import dev.syntax.global.auth.annotation.CurrentUser;
 import dev.syntax.global.auth.dto.UserContext;
+import dev.syntax.global.response.ApiResponseUtil;
 import dev.syntax.global.response.BaseResponse;
+import dev.syntax.global.response.SuccessCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,10 +20,10 @@ public class DashboardController {
     private final DashboardService dashboardService;
 
     @GetMapping
-    public ResponseEntity<BaseResponse<DashboardRes>> getDashboard(
+    public ResponseEntity<BaseResponse<?>> getDashboard(
             @CurrentUser UserContext userContext
     ) {
-        // TODO
-        return null;
+        DashboardRes response = dashboardService.getDashboard(userContext);
+        return ApiResponseUtil.success(SuccessCode.OK, response);
     }
 }
