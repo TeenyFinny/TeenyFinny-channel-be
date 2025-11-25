@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dev.syntax.domain.transfer.dto.AutoTransferRes;
 import dev.syntax.domain.transfer.entity.AutoTransfer;
+import dev.syntax.domain.transfer.enums.AutoTransferType;
 import dev.syntax.domain.transfer.repository.AutoTransferRepository;
 import dev.syntax.domain.user.enums.Role;
 import dev.syntax.global.auth.dto.UserContext;
@@ -28,18 +29,25 @@ public class AutoTransferInquiryServiceImpl implements AutoTransferInquiryServic
      * - 있으면 설정 값을 포함하여 isInit=false 반환
      */
     @Override
-    public AutoTransferRes getAutoTransfer(Long childId, UserContext ctx) {
+    public AutoTransferRes getAutoTransfer(Long childId, AutoTransferType type, UserContext ctx) {
 
         validateParentAccess(ctx, childId);
 
-        // 자녀별 자동이체 단일 설정 조회
-        return autoTransferRepository.findByUserId(childId)
-                .map(transfer -> AutoTransferRes.of(
-                        transfer.getId(),
-                        transfer.getTransferAmount(),
-                        transfer.getTransferDate(),
-                        transfer.getRatio()
-                ))
+        // 자녀별 + 타입별 자동이체 설정 조회
+        return autoTransferRepository.findByUserIdAndType(childId, type)
+                .map(transfer -> {
+                    Integer ratio = transfer.getRatio();
+                    // GOAL 타입일 경우 비율 정보는 불필요하므로 null 처리 (또는 0)
+                    if (type == AutoTransferType.GOAL) {
+                        ratio = null;
+                    }
+                    return AutoTransferRes.of(
+                            transfer.getId(),
+                            transfer.getTransferAmount(),
+                            transfer.getTransferDate(),
+                            ratio
+                    );
+                })
                 .orElseGet(AutoTransferRes::init);
     }
 

@@ -1,5 +1,8 @@
 package dev.syntax.domain.transfer.controller;
+import dev.syntax.domain.transfer.dto.AutoTransferReq;
 import dev.syntax.domain.transfer.dto.AutoTransferRes;
+import dev.syntax.domain.transfer.enums.AutoTransferType;
+import dev.syntax.domain.transfer.service.AutoTransferCreateService;
 import dev.syntax.domain.transfer.service.AutoTransferInquiryService;
 import dev.syntax.global.auth.annotation.CurrentUser;
 import dev.syntax.global.auth.dto.UserContext;
@@ -22,10 +25,12 @@ import org.springframework.web.bind.annotation.*;
 public class AutoTransferController {
 
     private final AutoTransferInquiryService autoTransferInquiryService;
+    private final AutoTransferCreateService autoTransferCreateService;
     
     /**
      * 자동이체 설정 조회 API.
      * <p>
+     * 이 경로는 용돈 자동이체만 접근가능하다는 전제 하에 구현하였습니다.
      * 자녀의 자동이체 설정 정보를 조회합니다.
      * </p>
      *
@@ -38,8 +43,29 @@ public class AutoTransferController {
             @PathVariable("id") Long id,
             @CurrentUser UserContext ctx) {
 
-        AutoTransferRes res = autoTransferInquiryService.getAutoTransfer(id, ctx);
+        AutoTransferRes res = autoTransferInquiryService.getAutoTransfer(id, AutoTransferType.ALLOWANCE, ctx);
         return ApiResponseUtil.success(SuccessCode.OK, res);
+    }
+
+    /**
+     * 자동이체 설정 생성 API.
+     * <p>
+     * 부모가 자녀의 계좌로 자동이체를 설정합니다.
+     * </p>
+     *
+     * @param id 자녀 ID (URL 경로 변수)
+     * @param req 자동이체 설정 요청 정보 (총 금액, 이체일, 투자 비율)
+     * @param ctx 인증된 사용자 컨텍스트 (부모 권한 확인용)
+     * @return 생성 성공 응답 (201 Created)
+     */
+    @PostMapping("/{id}/auto-transfer")
+    public ResponseEntity<BaseResponse<?>> createAutoTransfer(
+            @PathVariable("id") Long id,
+            @RequestBody AutoTransferReq req,
+            @CurrentUser UserContext ctx) {
+
+        autoTransferCreateService.createAutoTransfer(id, req, ctx);
+        return ApiResponseUtil.success(SuccessCode.CREATED);
     }
 
 }

@@ -97,7 +97,7 @@ class AutoTransferServiceTest {
         Long childId = 10L;
 
         // when / then
-        assertThatThrownBy(() -> service.getAutoTransfer(childId, childCtx))
+        assertThatThrownBy(() -> service.getAutoTransfer(childId, AutoTransferType.ALLOWANCE, childCtx))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage(ErrorBaseCode.PARENT_ONLY_FEATURE.getMessage());
     }
@@ -109,7 +109,7 @@ class AutoTransferServiceTest {
         Long notMyChildId = 999L;
 
         // when / then
-        assertThatThrownBy(() -> service.getAutoTransfer(notMyChildId, parentCtx))
+        assertThatThrownBy(() -> service.getAutoTransfer(notMyChildId, AutoTransferType.ALLOWANCE, parentCtx))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage(ErrorBaseCode.INVALID_CHILD.getMessage());
     }
@@ -120,11 +120,11 @@ class AutoTransferServiceTest {
         // given
         Long childId = 10L;
 
-        given(autoTransferRepository.findByUserId(childId))
+        given(autoTransferRepository.findByUserIdAndType(childId, AutoTransferType.ALLOWANCE))
                 .willReturn(Optional.empty());
 
         // when
-        AutoTransferRes res = service.getAutoTransfer(childId, parentCtx);
+        AutoTransferRes res = service.getAutoTransfer(childId, AutoTransferType.ALLOWANCE, parentCtx);
 
         // then
         assertThat(res.getIsInit()).isTrue();
@@ -134,8 +134,8 @@ class AutoTransferServiceTest {
     }
 
     @Test
-    @DisplayName("자동이체가 있는 경우 isInit=false + 저장된 값 반환")
-    void return_auto_transfer_when_exists() {
+    @DisplayName("자동이체(ALLOWANCE)가 있는 경우 isInit=false + 값 반환")
+    void return_allowance_transfer_when_exists() {
         // given
         Long childId = 10L;
 
@@ -149,11 +149,11 @@ class AutoTransferServiceTest {
                 .type(AutoTransferType.ALLOWANCE)
                 .build();
 
-        given(autoTransferRepository.findByUserId(childId))
+        given(autoTransferRepository.findByUserIdAndType(childId, AutoTransferType.ALLOWANCE))
                 .willReturn(Optional.of(transfer));
 
         // when
-        AutoTransferRes res = service.getAutoTransfer(childId, parentCtx);
+        AutoTransferRes res = service.getAutoTransfer(childId, AutoTransferType.ALLOWANCE, parentCtx);
 
         // then
         assertThat(res.getIsInit()).isFalse();
@@ -161,5 +161,34 @@ class AutoTransferServiceTest {
         assertThat(res.getTransferAmount()).isEqualTo("25,000");
         assertThat(res.getTransferDate()).isEqualTo(14);
         assertThat(res.getRatio()).isEqualTo(25);
+    }
+
+    @Test
+    @DisplayName("자동이체(GOAL)가 있는 경우 비율은 null이어야 함")
+    void return_goal_transfer_without_ratio() {
+        // given
+        Long childId = 10L;
+
+        AutoTransfer transfer = AutoTransfer.builder()
+                .id(2L)
+                .user(null)
+                .account(null)
+                .transferAmount(BigDecimal.valueOf(50000))
+                .transferDate(20)
+                .ratio(0) // DB에는 0으로 저장되어 있어도
+                .type(AutoTransferType.GOAL)
+                .build();
+
+        given(autoTransferRepository.findByUserIdAndType(childId, AutoTransferType.GOAL))
+                .willReturn(Optional.of(transfer));
+
+        // when
+        AutoTransferRes res = service.getAutoTransfer(childId, AutoTransferType.GOAL, parentCtx);
+
+        // then
+        assertThat(res.getIsInit()).isFalse();
+        assertThat(res.getTransferId()).isEqualTo(2L);
+        assertThat(res.getTransferAmount()).isEqualTo("50,000");
+        assertThat(res.getRatio()).isNull(); // 응답에서는 null
     }
 }
