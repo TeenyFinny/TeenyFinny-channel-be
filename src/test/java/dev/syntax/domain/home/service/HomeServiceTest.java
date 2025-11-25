@@ -94,15 +94,15 @@ class HomeServiceTest {
 		// Core 계좌 조회 Mock
 		CoreUserAccountListRes coreAccounts = new CoreUserAccountListRes(
 			List.of(
-				new CoreAccountItemRes(1L, "1234-5678", "DEPOSIT", new BigDecimal("60000")),
+				new CoreAccountItemRes(1L, "1234-5678", "ALLOWANCE", new BigDecimal("60000")),
 				new CoreAccountItemRes(2L, "1234-5679", "INVEST", new BigDecimal("40000"))
 			),
 			List.of(
 				new CoreChildAccountInfoRes(2L, List.of(
-					new CoreAccountItemRes(3L, "2234-5678", "DEPOSIT", new BigDecimal("10000"))
+					new CoreAccountItemRes(3L, "2234-5678", "ALLOWANCE", new BigDecimal("10000"))
 				)),
 				new CoreChildAccountInfoRes(3L, List.of(
-					new CoreAccountItemRes(4L, "3234-5678", "DEPOSIT", new BigDecimal("5000"))
+					new CoreAccountItemRes(4L, "3234-5678", "ALLOWANCE", new BigDecimal("5000"))
 				))
 			)
 		);
@@ -132,7 +132,7 @@ class HomeServiceTest {
 
 		CoreUserAccountListRes coreAccounts = new CoreUserAccountListRes(
 			List.of(
-				new CoreAccountItemRes(1L, "1234-5678", "DEPOSIT", new BigDecimal("1000")),
+				new CoreAccountItemRes(1L, "1234-5678", "ALLOWANCE", new BigDecimal("1000")),
 				new CoreAccountItemRes(2L, "1234-5679", "GOAL", new BigDecimal("9000"))
 			),
 			List.of()

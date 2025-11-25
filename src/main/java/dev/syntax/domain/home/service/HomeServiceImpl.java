@@ -1,5 +1,6 @@
 package dev.syntax.domain.home.service;
 
+import static dev.syntax.domain.account.enums.AccountType.*;
 import static dev.syntax.global.service.Utils.*;
 
 import java.math.BigDecimal;
@@ -103,9 +104,9 @@ public class HomeServiceImpl implements HomeService {
 				.role(child.getRole())
 				.email(child.getEmail())
 				.totalBalance(NumberFormattingService(totalBalance))
-				.depositBalance(formatBalance(balancesByType, "DEPOSIT"))
-				.investmentBalance(formatBalance(balancesByType, "INVEST"))
-				.savingBalance(formatBalance(balancesByType, "GOAL"))
+				.depositBalance(formatBalance(balancesByType, ALLOWANCE.name()))
+				.investmentBalance(formatBalance(balancesByType, INVEST.name()))
+				.savingBalance(formatBalance(balancesByType, GOAL.name()))
 				.build())
 			.build();
 	}
