@@ -23,14 +23,18 @@ public class WebConfig implements WebMvcConfigurer {
 	 * CORS(Cross-Origin Resource Sharing) 정책을 설정합니다.
 	 *
 	 * <p>FE(Next.js / http://localhost:3000)와의 원활한 통신을 위해
-	 * 모든 경로("/**")에 대해 GET, POST, PUT, DELETE 요청을 허용합니다. (PATCH 추가 필요)</p>
+	 * 모든 경로("/**")에 대해 GET, POST, PUT, PATCH, DELETE 요청을 허용합니다.</p>
+	 *
+	 * <p><b>OPTIONS 메소드는 브라우저가 실제 요청(PUT, DELETE 등)을 보내기 전에
+	 * 서버에게 보안 정책을 확인하는 '프리플라이트(Preflight)' 요청에 사용됩니다.
+	 * 따라서 안전하지 않은 메소드를 허용할 경우, OPTIONS 메소드도 반드시 허용해야 합니다.</b></p>
 	 *
 	 * @param registry CORS 설정을 위한 {@link CorsRegistry}
 	 */
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {
 		registry.addMapping("/**")
-			.allowedMethods("GET", "POST", "PUT", "DELETE")
+			.allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
 			.allowedOrigins("http://localhost:3000");
 	}
 

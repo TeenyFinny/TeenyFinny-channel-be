@@ -140,5 +140,4 @@ public class User extends BaseTimeEntity {
 			throw new BusinessException(ErrorBaseCode.BAD_REQUEST);
 		}
 	}
-
 }
