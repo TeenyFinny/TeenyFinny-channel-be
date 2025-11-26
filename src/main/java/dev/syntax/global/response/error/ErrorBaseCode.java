@@ -54,6 +54,7 @@ public enum ErrorBaseCode implements ErrorCode {
 	INVALID_RATIO_VALUE(HttpStatus.BAD_REQUEST, "비율 값이 잘못되었습니다."),
 	INVALID_REQUEST(HttpStatus.BAD_REQUEST, "입력값이 유효하지 않습니다."),
 	INVALID_ACCOUNT_TYPE(HttpStatus.BAD_REQUEST, "입력값이 유효하지 않습니다."),
+	REPORT_NOT_AVAILABLE_YET(HttpStatus.BAD_REQUEST, "리포트는 전월까지만 조회할 수 있습니다."),
 
 	/**
 	 * 401 UNAUTHORIZED - 리소스 접근 권한
@@ -96,6 +97,7 @@ public enum ErrorBaseCode implements ErrorCode {
 	CONFLICT(HttpStatus.CONFLICT, "이미 존재하는 리소스입니다."),
 	GOAL_ALREADY_DECIDED(HttpStatus.CONFLICT, "이미 승인 또는 거절된 목표입니다."),
 	CARD_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 카드입니다."),
+	DUPLICATE_REPORT(HttpStatus.CONFLICT, "해당 월의 리포트가 이미 존재합니다."),
 	AUTO_TRANSFER_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 자동이체가 설정되어 있습니다."),
 	/**
 	 * 410 GONE
