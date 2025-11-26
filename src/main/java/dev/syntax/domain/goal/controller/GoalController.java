@@ -140,7 +140,7 @@ public class GoalController {
      * @param goalId      취소 확정할 목표 ID
      * @return 목표 취소 확정 결과(GoalDeleteRes)를 포함한 성공 응답
      */
-    @PostMapping("/{goalId}/confirm-cancel")
+    @PutMapping("/{goalId}/confirm-cancel")
     public ResponseEntity<BaseResponse<?>> confirmCancel(
             @CurrentUser UserContext userContext,
             @PathVariable Long goalId
@@ -176,7 +176,7 @@ public class GoalController {
      * @param goalId      완료 확정할 목표 ID
      * @return 목표 완료 확정 결과(GoalDeleteRes 또는 상태 DTO)를 포함한 성공 응답
      */
-    @PostMapping("/{goalId}/confirm-complete")
+    @PutMapping("/{goalId}/confirm-complete")
     public ResponseEntity<BaseResponse<?>> confirmComplete(
             @CurrentUser UserContext userContext,
             @PathVariable Long goalId
