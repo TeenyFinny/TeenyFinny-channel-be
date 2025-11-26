@@ -10,9 +10,10 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import dev.syntax.domain.goal.dto.*;
 import dev.syntax.domain.account.entity.Account;
 import dev.syntax.domain.core.CoreBankingClient;
-import dev.syntax.domain.core.dto.GoalAccountInfoDto;
+import dev.syntax.domain.user.repository.UserRelationshipRepository;
 import dev.syntax.domain.goal.client.CoreGoalClient;
 import dev.syntax.domain.goal.dto.CoreTransactionHistoryRes;
 import dev.syntax.domain.goal.dto.GoalApproveRes;
@@ -33,6 +34,7 @@ import dev.syntax.domain.user.repository.UserRepository;
 import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorBaseCode;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,128 +48,137 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class GoalServiceImpl implements GoalService {
 
-	private final UserRepository userRepository;
-	private final GoalRepository goalRepository;
-	private final NotificationService notificationService;
+    private final UserRepository userRepository;
+    private final GoalRepository goalRepository;
+    private final NotificationService notificationService;
 	private final CoreBankingClient coreBankingClient;
 	private final CoreGoalClient coreGoalClient;
-	private static final DateTimeFormatter GOAL_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss");
+    private final UserRelationshipRepository userRelationshipRepository;
+    private static final DateTimeFormatter GOAL_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss");
 	private final GoalAccountService goalAccountService;
 
-	/**
-	 * UserContext로부터 User 엔티티 조회
-	 *
-	 * @param userContext 현재 로그인한 사용자 컨텍스트
-	 * @return User 엔티티
-	 */
-	private User getUserOrThrow(UserContext userContext) {
-		return userContext.getUser();
-	}
+    /**
+     * UserContext로부터 User 엔티티 조회
+     *
+     * @param userContext 현재 로그인한 사용자 컨텍스트
+     * @return User 엔티티
+     */
+    private User getUserOrThrow(UserContext userContext) {
+        return userContext.getUser();
+    }
 
-	/**
-	 * goalId로 Goal 조회
-	 *
-	 * @param goalId 목표 ID
-	 * @return Goal 엔티티
-	 */
-	private Goal getGoalOrThrow(Long goalId) {
-		return goalRepository.findById(goalId)
-			.orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_NOT_FOUND));
-	}
+    /**
+     * goalId로 Goal 조회
+     *
+     * @param goalId 목표 ID
+     * @return Goal 엔티티
+     */
+    private Goal getGoalOrThrow(Long goalId) {
+        return goalRepository.findById(goalId)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_NOT_FOUND));
+    }
 
-	/**
-	 * 목표의 소유자가 로그인한 사용자와 같은지 검증
-	 *
-	 * @param user 로그인 사용자
-	 * @param goal 목표 엔티티
-	 */
-	private void validateGoalOwner(User user, Goal goal) {
-		if (!goal.getUser().getId().equals(user.getId())) {
-			throw new BusinessException(ErrorBaseCode.FORBIDDEN);
-		}
-	}
+    /**
+     * 목표의 소유자가 로그인한 사용자와 같은지 검증
+     *
+     * @param user 로그인 사용자
+     * @param goal 목표 엔티티
+     */
+    private void validateGoalOwner(User user, Goal goal) {
+        if (!goal.getUser().getId().equals(user.getId())) {
+            throw new BusinessException(ErrorBaseCode.FORBIDDEN);
+        }
+    }
 
-	/**
-	 * 목표 상태가 ONGOING인지 검증
-	 *
-	 * @param goal 목표 엔티티
-	 */
-	private void validateGoalIsOngoing(Goal goal) {
-		if (goal.getStatus() != GoalStatus.ONGOING) {
-			throw new BusinessException(ErrorBaseCode.GOAL_NOT_ONGOING);
-		}
-	}
+    /**
+     * 목표 상태가 ONGOING인지 검증
+     *
+     * @param goal 목표 엔티티
+     */
+    private void validateGoalIsOngoing(Goal goal) {
+        if (goal.getStatus() != GoalStatus.ONGOING) {
+            throw new BusinessException(ErrorBaseCode.GOAL_NOT_ONGOING);
+        }
+    }
 
-	/**
-	 * payDay 값이 유효한 범위(1–31)인지 검증
-	 *
-	 * @param payDay 납입일
-	 */
-	private void validatePayDay(Integer payDay) {
-		if (payDay == null || payDay < 1 || payDay > 31) {
-			throw new BusinessException(ErrorBaseCode.GOAL_INVALID_PAYDAY);
-		}
-	}
+    /**
+     * payDay 값이 유효한 범위(1–31)인지 검증
+     *
+     * @param payDay 납입일
+     */
+    private void validatePayDay(Integer payDay) {
+        if (payDay == null || payDay < 1 || payDay > 31) {
+            throw new BusinessException(ErrorBaseCode.GOAL_INVALID_PAYDAY);
+        }
+    }
 
-	/**
-	 * 부모가 해당 자녀와 가족 관계인지 검증
-	 *
-	 * @param userContext 로그인한 부모 컨텍스트
-	 * @param goal        자녀 목표
-	 */
-	private void validateParentHasChild(UserContext userContext, Goal goal) {
-		if (!userContext.getChildren().contains(goal.getUser().getId())) {
-			throw new BusinessException(ErrorBaseCode.GOAL_CHILD_NOT_MATCH);
-		}
-	}
+    /**
+     * 부모가 해당 자녀와 가족 관계인지 검증
+     *
+     * @param userContext 로그인한 부모 컨텍스트
+     * @param goal        자녀 목표
+     */
+    private void validateParentHasChild(UserContext userContext, Goal goal) {
+        if (!userContext.getChildren().contains(goal.getUser().getId())) {
+            throw new BusinessException(ErrorBaseCode.GOAL_CHILD_NOT_MATCH);
+        }
+    }
 
-	/**
-	 * 목표가 실제로 목표 금액만큼 달성되었는지 Core 서버 데이터로 확인
-	 *
-	 * @param goalId 목표 ID
-	 * @param goal   목표 엔티티
-	 */
-	private void validateGoalIsCompleted(Long goalId, Goal goal) {
-		GoalAccountInfoDto info = coreBankingClient.getGoalTransactionInfo(goalId);
-		if (info.getCurrentAmount().compareTo(goal.getTargetAmount()) < 0) {
-			throw new BusinessException(ErrorBaseCode.GOAL_NOT_COMPLETED);
-		}
-	}
+    /**
+     * 목표가 실제로 목표 금액만큼 달성되었는지 Core 서버 데이터로 확인
+     *
+     * @param goal   목표 엔티티
+     */
+    private void validateGoalIsCompleted(Goal goal) {
+        String accountNo = goal.getAccount().getAccountNo();
+        BigDecimal balance = coreGoalClient.getAccountHistory(accountNo).getBalance();
+        if (balance.compareTo(goal.getTargetAmount()) < 0) {
+            throw new BusinessException(ErrorBaseCode.GOAL_NOT_COMPLETED);
+        }
+    }
 
-	/**
-	 * 부모 엔티티 조회
-	 *
-	 * @param userContext 로그인한 사용자 컨텍스트
-	 * @return User 엔티티
-	 */
-	private User getParent(UserContext userContext) {
-		return userRepository.findById(userContext.getParentId())
-			.orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_PARENT_NOT_FOUND));
-	}
+    private void validateGoalIsNotCompleted(Goal goal) {
+        String accountNo = goal.getAccount().getAccountNo();
+        BigDecimal balance = coreGoalClient.getAccountHistory(accountNo).getBalance();
+        if (balance.compareTo(goal.getTargetAmount()) >= 0) {
+            throw new BusinessException(ErrorBaseCode.GOAL_IS_COMPLETED);
+        }
+    }
 
-	/**
-	 * 목표 생성
-	 */
-	@Override
-	@Transactional
-	public GoalCreateRes createGoal(UserContext userContext, GoalCreateReq req) {
+    /**
+     * 부모 엔티티 조회
+     *
+     * @param userContext 로그인한 사용자 컨텍스트
+     * @return User 엔티티
+     */
+    private User getParent(UserContext userContext) {
+        return userRepository.findById(userContext.getParentId())
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_PARENT_NOT_FOUND));
+    }
 
-		User user = getUserOrThrow(userContext);
+    /**
+     * 목표 생성
+     */
+    @Override
+    @Transactional
+    public GoalCreateRes createGoal(UserContext userContext, GoalCreateReq req) {
 
-		if (user.getRole() != Role.CHILD) {
-			throw new BusinessException(ErrorBaseCode.GOAL_REQUEST_FORBIDDEN);
-		}
-		if (req.getTargetAmount().compareTo(req.getMonthlyAmount()) < 0) {
-			throw new BusinessException(ErrorBaseCode.GOAL_INVALID_AMOUNT);
-		}
-		if (goalRepository.existsByUserAndStatus(user, GoalStatus.PENDING)) {
-			throw new BusinessException(ErrorBaseCode.GOAL_ALREADY_PENDING);
-		}
-		if (goalRepository.existsByUserAndStatus(user, GoalStatus.ONGOING)) {
-			throw new BusinessException(ErrorBaseCode.GOAL_ALREADY_ONGOING);
-		}
+        User user = getUserOrThrow(userContext);
 
-		validatePayDay(req.getPayDay());
+        if (user.getRole() != Role.CHILD) {
+            throw new BusinessException(ErrorBaseCode.GOAL_REQUEST_FORBIDDEN);
+        }
+        if (req.getTargetAmount().compareTo(req.getMonthlyAmount()) < 0) {
+            throw new BusinessException(ErrorBaseCode.GOAL_INVALID_AMOUNT);
+        }
+        if (goalRepository.existsByUserAndStatus(user, GoalStatus.PENDING)) {
+            throw new BusinessException(ErrorBaseCode.GOAL_ALREADY_PENDING);
+        }
+        if (goalRepository.existsByUserAndStatus(user, GoalStatus.ONGOING)) {
+            throw new BusinessException(ErrorBaseCode.GOAL_ALREADY_ONGOING);
+        }
+
+        validatePayDay(req.getPayDay());
 
 		Goal goal = Goal.builder()
 			.user(user)
@@ -201,7 +212,8 @@ public class GoalServiceImpl implements GoalService {
 		validateGoalIsOngoing(goal);
 		validatePayDay(req.getPayDay());
 
-		goal.updatePayDay(req.getPayDay());
+        goal.updatePayDay(req.getPayDay());
+        // TODO: core 자동이체 구현되면 coreGoalClient 연결하기
 
 		return new GoalUpdateRes(goal);
 	}
@@ -361,12 +373,15 @@ public class GoalServiceImpl implements GoalService {
 			throw new BusinessException(ErrorBaseCode.GOAL_ACCESS_FORBIDDEN);
 		}
 
-		Goal goal = getGoalOrThrow(goalId);
+        Goal goal = getGoalOrThrow(goalId);
+        String accountNo = goal.getAccount().getAccountNo();
 
-		validateParentHasChild(userContext, goal);
-		validateGoalIsOngoing(goal);
+        validateParentHasChild(userContext, goal);
+        validateGoalIsOngoing(goal);
+        validateGoalIsNotCompleted(goal);
 
-		goal.updateStatus(GoalStatus.CANCELLED);
+        goal.updateStatus(GoalStatus.CANCELLED);
+        coreGoalClient.updateAccountStatus(accountNo, new CoreUpdateAccountStatusReq("SUSPENDED"));
 
 		return new GoalDeleteRes(goalId, "목표 계좌가 중도 해지되었습니다.");
 	}
@@ -385,9 +400,9 @@ public class GoalServiceImpl implements GoalService {
 
 		Goal goal = getGoalOrThrow(goalId);
 
-		validateGoalOwner(child, goal);
-		validateGoalIsOngoing(goal);
-		validateGoalIsCompleted(goalId, goal);
+        validateGoalOwner(child, goal);
+        validateGoalIsOngoing(goal);
+        validateGoalIsCompleted(goal);
 
 		User parent = getParent(userContext);
 		notificationService.sendGoalCompleteRequestNotice(parent, child.getName());
@@ -407,13 +422,15 @@ public class GoalServiceImpl implements GoalService {
 			throw new BusinessException(ErrorBaseCode.GOAL_ACCESS_FORBIDDEN);
 		}
 
-		Goal goal = getGoalOrThrow(goalId);
+        Goal goal = getGoalOrThrow(goalId);
+        String accountNo = goal.getAccount().getAccountNo();
 
-		validateParentHasChild(userContext, goal);
-		validateGoalIsOngoing(goal);
-		validateGoalIsCompleted(goalId, goal);
+        validateParentHasChild(userContext, goal);
+        validateGoalIsOngoing(goal);
+        validateGoalIsCompleted(goal);
 
-		goal.updateStatus(GoalStatus.COMPLETED);
+        goal.updateStatus(GoalStatus.COMPLETED);
+        coreGoalClient.updateAccountStatus(accountNo, new CoreUpdateAccountStatusReq("CLOSED"));
 
 		return new GoalDeleteRes(goal.getId(), "목표가 달성 완료되었습니다!");
 	}

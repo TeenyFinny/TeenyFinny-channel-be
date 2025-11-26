@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.PutMapping;
 import dev.syntax.domain.goal.dto.GoalApproveReq;
 import dev.syntax.domain.goal.dto.GoalApproveRes;
 import dev.syntax.domain.goal.dto.GoalCreateReq;
@@ -146,23 +146,23 @@ public class GoalController {
 		return ApiResponseUtil.success(SuccessCode.OK, result);
 	}
 
-	/**
-	 * 목표 취소 확정 API
-	 *
-	 * <p>부모가 자녀의 목표 취소 요청을 승인(확정)합니다.</p>
-	 *
-	 * @param userContext 현재 로그인한 사용자 정보
-	 * @param goalId      취소 확정할 목표 ID
-	 * @return 목표 취소 확정 결과(GoalDeleteRes)를 포함한 성공 응답
-	 */
-	@PostMapping("/{goalId}/confirm-cancel")
-	public ResponseEntity<BaseResponse<?>> confirmCancel(
-		@CurrentUser UserContext userContext,
-		@PathVariable Long goalId
-	) {
-		GoalDeleteRes result = goalService.confirmCancel(userContext, goalId);
-		return ApiResponseUtil.success(SuccessCode.OK, result);
-	}
+    /**
+     * 목표 취소 확정 API
+     *
+     * <p>부모가 자녀의 목표 취소 요청을 승인(확정)합니다.</p>
+     *
+     * @param userContext 현재 로그인한 사용자 정보
+     * @param goalId      취소 확정할 목표 ID
+     * @return 목표 취소 확정 결과(GoalDeleteRes)를 포함한 성공 응답
+     */
+    @PutMapping("/{goalId}/confirm-cancel")
+    public ResponseEntity<BaseResponse<?>> confirmCancel(
+            @CurrentUser UserContext userContext,
+            @PathVariable Long goalId
+    ) {
+        GoalDeleteRes result = goalService.confirmCancel(userContext, goalId);
+        return ApiResponseUtil.success(SuccessCode.OK, result);
+    }
 
 	/**
 	 * 목표 완료 요청 API
@@ -182,21 +182,21 @@ public class GoalController {
 		return ApiResponseUtil.success(SuccessCode.OK, result);
 	}
 
-	/**
-	 * 목표 완료 확정 API
-	 *
-	 * <p>부모가 자녀의 목표 완료 요청을 승인(확정)합니다.</p>
-	 *
-	 * @param userContext 현재 로그인한 사용자 정보
-	 * @param goalId      완료 확정할 목표 ID
-	 * @return 목표 완료 확정 결과(GoalDeleteRes 또는 상태 DTO)를 포함한 성공 응답
-	 */
-	@PostMapping("/{goalId}/confirm-complete")
-	public ResponseEntity<BaseResponse<?>> confirmComplete(
-		@CurrentUser UserContext userContext,
-		@PathVariable Long goalId
-	) {
-		GoalDeleteRes result = goalService.confirmComplete(userContext, goalId);
-		return ApiResponseUtil.success(SuccessCode.OK, result);
-	}
+    /**
+     * 목표 완료 확정 API
+     *
+     * <p>부모가 자녀의 목표 완료 요청을 승인(확정)합니다.</p>
+     *
+     * @param userContext 현재 로그인한 사용자 정보
+     * @param goalId      완료 확정할 목표 ID
+     * @return 목표 완료 확정 결과(GoalDeleteRes 또는 상태 DTO)를 포함한 성공 응답
+     */
+    @PutMapping("/{goalId}/confirm-complete")
+    public ResponseEntity<BaseResponse<?>> confirmComplete(
+            @CurrentUser UserContext userContext,
+            @PathVariable Long goalId
+    ) {
+        GoalDeleteRes result = goalService.confirmComplete(userContext, goalId);
+        return ApiResponseUtil.success(SuccessCode.OK, result);
+    }
 }
