@@ -11,7 +11,6 @@ import dev.syntax.domain.account.enums.AccountType;
 import dev.syntax.domain.account.repository.AccountRepository;
 import dev.syntax.domain.goal.entity.Goal;
 import dev.syntax.domain.goal.repository.GoalRepository;
-import dev.syntax.domain.user.repository.UserRepository;
 import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorBaseCode;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +27,6 @@ import lombok.extern.slf4j.Slf4j;
 public class GoalAccountServiceImpl implements GoalAccountService {
 
 	private final CoreAccountClient coreAccountClient;
-	private final UserRepository userRepository;
 	private final AccountRepository accountRepository;
 	private final GoalRepository goalRepository;
 
@@ -44,7 +42,7 @@ public class GoalAccountServiceImpl implements GoalAccountService {
 	 *     <li>처리 도중 예외가 발생하면 false 반환, 정상 처리 시 true 반환</li>
 	 * </ol>
 	 *
-	 * @param goal 목표 이름
+	 * @param goal 목표
 	 * @return GoalAccountCreateRes 계좌 생성 성공 여부
 	 */
 	@Transactional
@@ -54,7 +52,7 @@ public class GoalAccountServiceImpl implements GoalAccountService {
 			.childCoreId(goal.getUser().getCoreUserId())
 			.name(goal.getName())
 			.build();
-		log.info(req.toString());
+
 		// core에 계좌 생성 요청
 		CoreAccountItemRes coreRes = coreAccountClient.createGoalAccount(req);
 		log.info("[CORE] 목표 계좌 생성 완료: userID={}, accountNumber={}", goal.getUser().getId(),
@@ -64,7 +62,7 @@ public class GoalAccountServiceImpl implements GoalAccountService {
 			throw new BusinessException(ErrorBaseCode.CREATE_FAILED);
 		}
 
-		// 4. 채널 DB에 계좌 정보 저장
+		// 채널 DB에 계좌 정보 저장
 		Account account = Account.builder()
 			.user(goal.getUser())
 			.type(AccountType.GOAL)
@@ -74,6 +72,7 @@ public class GoalAccountServiceImpl implements GoalAccountService {
 
 		// goal에 Account 연동 완료
 		goal.updateAccount(account);
+		goalRepository.save(goal);
 
 		log.info("[CHANNEL] 목표 계좌 생성 완료: userId={}, goalId={}, accountId={}, goalName={}", goal.getUser().getId(),
 			goal.getId(), account.getId(), goal.getName());
