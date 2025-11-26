@@ -29,4 +29,7 @@ public class SummaryReport extends BaseEntity {
 
     @Column(name = "total_expense", nullable = false, precision = 12, scale = 2)
     private BigDecimal totalExpense;
+
+    @Column(name = "prev_total_expense", nullable = true, precision = 12, scale = 2)
+    private BigDecimal prevTotalExpense;
 }
