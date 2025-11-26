@@ -13,12 +13,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/investments")
+@RequestMapping("/investments/stocks")
 public class StocksController {
     private final StocksService stocksService;
 
 
-    @GetMapping("/stocks")
+    @GetMapping
     public ResponseEntity<BaseResponse<?>> getStocks() {
         StocksRes response = stocksService.getStocks();
         return ApiResponseUtil.success(SuccessCode.OK, response);
