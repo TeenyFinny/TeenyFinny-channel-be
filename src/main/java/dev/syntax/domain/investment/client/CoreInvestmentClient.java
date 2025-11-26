@@ -1,6 +1,7 @@
 package dev.syntax.domain.investment.client;
 
-import dev.syntax.domain.investment.dto.res.InvestAccountRes;
+import dev.syntax.domain.account.dto.core.CoreInvestmentAccountRes;
+import dev.syntax.domain.investment.dto.res.InvestAccountPortfolioRes;
 import dev.syntax.domain.investment.dto.res.StocksRes;
 import dev.syntax.global.core.CoreApiProperties;
 import lombok.RequiredArgsConstructor;
@@ -13,8 +14,9 @@ public class CoreInvestmentClient {
     private final RestTemplate coreRestTemplate;
     private final CoreApiProperties properties;
 
-    private final static String STOCKS_URL = "/core/investments/stocks";
-    private final static String INVEST_ACCOUNT_URL = "/core/investments/account";
+    private static final String STOCKS_URL = "/core/investments/stocks";
+    private static final String INVEST_ACCOUNT_PORTFOLIO_URL = "/core/investments/account";
+    private static final String INVESTMENT_ACCOUNT_URL = "/core/banking/account/investment";
 
     public StocksRes getStocks() {
         return coreRestTemplate.getForObject(
@@ -23,10 +25,19 @@ public class CoreInvestmentClient {
         );
     }
 
-    public InvestAccountRes getInvestAccount(String cano) {
+    public InvestAccountPortfolioRes getInvestAccount(String cano) {
         return coreRestTemplate.getForObject(
-                properties.getBaseUrl() + INVEST_ACCOUNT_URL + "/" + cano,
-                InvestAccountRes.class
+                properties.getBaseUrl() + INVEST_ACCOUNT_PORTFOLIO_URL + "/" + cano,
+                InvestAccountPortfolioRes.class
+        );
+    }
+
+
+    public CoreInvestmentAccountRes createInvestmentAccount(Long userId) {
+        return coreRestTemplate.postForObject(
+                properties.getBaseUrl() + INVESTMENT_ACCOUNT_URL + "?userId=" + userId,
+                null,
+                CoreInvestmentAccountRes.class
         );
     }
 }

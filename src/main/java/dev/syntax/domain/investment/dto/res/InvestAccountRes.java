@@ -1,14 +1,10 @@
 package dev.syntax.domain.investment.dto.res;
 
-import dev.syntax.domain.investment.dto.HoldingItem;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
-import java.util.List;
-
-public record InvestAccountRes(
-        Long userId,
-        Long depositAmount,
-        Long totEvluAmt,
-        Long totalProfitAmount,
-        Double totalProfitRate,
-        List<HoldingItem> holdings
-) {}
+@Data
+@AllArgsConstructor
+public class InvestAccountRes {
+    private String cano;
+}
