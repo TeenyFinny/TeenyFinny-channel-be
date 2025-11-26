@@ -4,18 +4,21 @@ package dev.syntax.domain.report.enums;
  * 소비 카테고리.
  */
 public enum Category {
-    /** 쇼핑 */
-    SHOPPING, 
-    /** 교육 */
-    EDU, 
-    /** 교통 */
-    TRANSPORT, 
-    /** 이체 */
-    TRANSFER, 
-    /** 여가/문화 */
-    ENT,
-    /** 식비 */
-    FOOD, 
-    /** 기타 */
-    ETC
+    SHOPPING("쇼핑"),
+    EDU("교육"),
+    TRANSPORT("교통"),
+    TRANSFER("이체"),
+    ENT("여가/문화"),
+    FOOD("식비"),
+    ETC("기타");
+
+    private final String koreanName;
+
+    Category(String koreanName) {
+        this.koreanName = koreanName;
+    }
+
+    public String getKoreanName() {
+        return koreanName;
+    }
 }

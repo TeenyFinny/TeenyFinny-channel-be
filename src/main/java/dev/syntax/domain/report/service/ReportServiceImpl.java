@@ -6,7 +6,6 @@ import dev.syntax.domain.report.dto.ReportRes;
 import dev.syntax.domain.report.entity.DetailReport;
 import dev.syntax.domain.report.entity.SummaryReport;
 import dev.syntax.domain.report.enums.Category;
-import dev.syntax.domain.report.enums.CategoryMapper;
 import dev.syntax.domain.report.mock.MockCoreBankClient;
 import dev.syntax.domain.report.repository.DetailReportRepository;
 import dev.syntax.domain.report.repository.SummaryReportRepository;
@@ -43,11 +42,10 @@ public class ReportServiceImpl implements ReportService {
     public ReportRes getMonthlyReport(Long userId, int month, UserContext ctx) {
         // 조회 기간 검증 (현재 월 포함 미래는 조회 불가)
         LocalDate now = LocalDate.now();
-        int currentMonth = now.getMonthValue();
-        // 연도까지 고려해야 하지만, 요구사항상 month만 입력받으므로 일단 단순 비교
-        // (실제 서비스라면 연도도 입력받아야 함. 여기서는 현재 연도 기준 가정 or 단순 month 비교)
-        // 요구사항: "현재 월에 접근하려고 하면 에러"
-        if (month >= currentMonth) {
+        // "2025년 한정" 요구사항에 따라, 조회하려는 월이 현재 시점보다 이전인지 연도까지 포함하여 검증합니다.
+        java.time.YearMonth requestedYm = java.time.YearMonth.of(2025, month);
+        java.time.YearMonth currentYm = java.time.YearMonth.from(now);
+        if (!requestedYm.isBefore(currentYm)) {
             throw new BusinessException(ErrorBaseCode.REPORT_NOT_AVAILABLE_YET);
         }
         // 0. 검증
@@ -143,13 +141,16 @@ public class ReportServiceImpl implements ReportService {
      * 전월 소비 총액 조회
      */
     private BigDecimal fetchPrevTotal(Long userId, int month) {
-        int prev = (month == 1) ? 12 : month - 1;
+        // 1월의 경우, 전년도 데이터 조회가 불가능하므로 0을 반환합니다.
+        if (month == 1) {
+            return BigDecimal.ZERO;
+        }
+        int prev = month - 1;
 
         return summaryReportRepository.findByUserIdAndMonth(userId, prev)
                 .map(SummaryReport::getTotalExpense)
                 .orElse(BigDecimal.ZERO);
     }
-
 
     /**
      * SummaryReport + DetailReport -> Front Response 변환
@@ -162,12 +163,19 @@ public class ReportServiceImpl implements ReportService {
 
         BigDecimal diff = summary.getTotalExpense().subtract(prev).abs();
 
-        String comparedType =
-                summary.getTotalExpense().compareTo(prev) >= 0 ? "more" : "less";
+        String comparedType;
+        int comparison = summary.getTotalExpense().compareTo(prev);
+        if (comparison > 0) {
+            comparedType = "more";
+        } else if (comparison < 0) {
+            comparedType = "less";
+        } else {
+            comparedType = "same";
+        }
 
         List<CategoryRes> categoryList = details.stream()
                 .map(d -> new CategoryRes(
-                        CategoryMapper.toKorean(d.getCategory()), // Enum -> 한글 변환
+                        d.getCategory().getKoreanName(), // Enum -> 한글 변환
                         Utils.NumberFormattingService(d.getAmount()),
                         d.getPercent().doubleValue()
                 ))
