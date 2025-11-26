@@ -4,6 +4,6 @@ import lombok.Getter;
 
 @Getter
 public class CoreUpdateAccountStatusRes {
-    Long accountId;
-    String status;
+    private Long accountId;
+    private String status;
 }
