@@ -1,5 +1,6 @@
 package dev.syntax.domain.report.entity;
 
+import dev.syntax.domain.report.enums.Category;
 import dev.syntax.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -26,8 +27,9 @@ public class DetailReport extends BaseEntity {
     @JoinColumn(name = "report_id", nullable = false)
     private SummaryReport report;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "category", nullable = false, length = 100)
-    private String category;
+    private Category category;
 
     @Column(name = "amount", nullable = false, precision = 12, scale = 2)
     private BigDecimal amount;
