@@ -1,8 +1,6 @@
 package dev.syntax.domain.goal.service;
 
 import dev.syntax.domain.account.entity.Account;
-import dev.syntax.domain.core.CoreBankingClient;
-import dev.syntax.domain.core.dto.GoalAccountInfoDto;
 import dev.syntax.domain.goal.client.CoreGoalClient;
 import dev.syntax.domain.goal.dto.*;
 import dev.syntax.domain.goal.entity.Goal;
@@ -42,7 +40,6 @@ public class GoalServiceImpl implements GoalService {
     private final UserRepository userRepository;
     private final GoalRepository goalRepository;
     private final NotificationService notificationService;
-    private final CoreBankingClient coreBankingClient;
     private final UserRelationshipRepository userRelationshipRepository;
     private final CoreGoalClient coreGoalClient;
     private static final DateTimeFormatter GOAL_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss");
@@ -118,13 +115,21 @@ public class GoalServiceImpl implements GoalService {
     /**
      * 목표가 실제로 목표 금액만큼 달성되었는지 Core 서버 데이터로 확인
      *
-     * @param goalId 목표 ID
      * @param goal   목표 엔티티
      */
-    private void validateGoalIsCompleted(Long goalId, Goal goal) {
-        GoalAccountInfoDto info = coreBankingClient.getGoalTransactionInfo(goalId);
-        if (info.getCurrentAmount().compareTo(goal.getTargetAmount()) < 0) {
+    private void validateGoalIsCompleted(Goal goal) {
+        String accountNo = goal.getAccount().getAccountNo();
+        BigDecimal balance = coreGoalClient.getAccountHistory(accountNo).getBalance();
+        if (balance.compareTo(goal.getTargetAmount()) < 0) {
             throw new BusinessException(ErrorBaseCode.GOAL_NOT_COMPLETED);
+        }
+    }
+
+    private void validateGoalIsNotCompleted(Goal goal) {
+        String accountNo = goal.getAccount().getAccountNo();
+        BigDecimal balance = coreGoalClient.getAccountHistory(accountNo).getBalance();
+        if (balance.compareTo(goal.getTargetAmount()) >= 0) {
+            throw new BusinessException(ErrorBaseCode.GOAL_IS_COMPLETED);
         }
     }
 
@@ -196,6 +201,7 @@ public class GoalServiceImpl implements GoalService {
         validatePayDay(req.getPayDay());
 
         goal.updatePayDay(req.getPayDay());
+        // TODO: core 자동이체 구현되면 coreGoalClient 연결하기
 
         return new GoalUpdateRes(goal);
     }
@@ -350,11 +356,14 @@ public class GoalServiceImpl implements GoalService {
         }
 
         Goal goal = getGoalOrThrow(goalId);
+        String accountNo = goal.getAccount().getAccountNo();
 
         validateParentHasChild(userContext, goal);
         validateGoalIsOngoing(goal);
+        validateGoalIsNotCompleted(goal);
 
         goal.updateStatus(GoalStatus.CANCELLED);
+        coreGoalClient.updateAccountStatus(accountNo, new CoreUpdateAccountStatusReq("SUSPENDED"));
 
         return new GoalDeleteRes(goalId, "목표 계좌가 중도 해지되었습니다.");
     }
@@ -375,7 +384,7 @@ public class GoalServiceImpl implements GoalService {
 
         validateGoalOwner(child, goal);
         validateGoalIsOngoing(goal);
-        validateGoalIsCompleted(goalId, goal);
+        validateGoalIsCompleted(goal);
 
         User parent = getParent(userContext);
         notificationService.sendGoalCompleteRequestNotice(parent, child.getName());
@@ -396,12 +405,14 @@ public class GoalServiceImpl implements GoalService {
         }
 
         Goal goal = getGoalOrThrow(goalId);
+        String accountNo = goal.getAccount().getAccountNo();
 
         validateParentHasChild(userContext, goal);
         validateGoalIsOngoing(goal);
-        validateGoalIsCompleted(goalId, goal);
+        validateGoalIsCompleted(goal);
 
         goal.updateStatus(GoalStatus.COMPLETED);
+        coreGoalClient.updateAccountStatus(accountNo, new CoreUpdateAccountStatusReq("CLOSED"));
 
         return new GoalDeleteRes(goal.getId(), "목표가 달성 완료되었습니다!");
     }
