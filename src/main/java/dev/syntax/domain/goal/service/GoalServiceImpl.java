@@ -10,12 +10,10 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dev.syntax.domain.goal.dto.*;
 import dev.syntax.domain.account.entity.Account;
-import dev.syntax.domain.core.CoreBankingClient;
-import dev.syntax.domain.user.repository.UserRelationshipRepository;
 import dev.syntax.domain.goal.client.CoreGoalClient;
 import dev.syntax.domain.goal.dto.CoreTransactionHistoryRes;
+import dev.syntax.domain.goal.dto.CoreUpdateAccountStatusReq;
 import dev.syntax.domain.goal.dto.GoalApproveRes;
 import dev.syntax.domain.goal.dto.GoalCreateReq;
 import dev.syntax.domain.goal.dto.GoalCreateRes;
@@ -34,7 +32,6 @@ import dev.syntax.domain.user.repository.UserRepository;
 import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorBaseCode;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -51,9 +48,7 @@ public class GoalServiceImpl implements GoalService {
     private final UserRepository userRepository;
     private final GoalRepository goalRepository;
     private final NotificationService notificationService;
-	private final CoreBankingClient coreBankingClient;
 	private final CoreGoalClient coreGoalClient;
-    private final UserRelationshipRepository userRelationshipRepository;
     private static final DateTimeFormatter GOAL_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss");
 	private final GoalAccountService goalAccountService;
 
