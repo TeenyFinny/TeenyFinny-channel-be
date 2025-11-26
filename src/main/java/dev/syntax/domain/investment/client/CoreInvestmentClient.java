@@ -18,6 +18,7 @@ public class CoreInvestmentClient {
     private static final String INVEST_ACCOUNT_PORTFOLIO_URL = "/core/investments/account";
     private static final String INVESTMENT_ACCOUNT_URL = "/core/banking/account/investment";
 
+
     public StocksRes getStocks() {
         return coreRestTemplate.getForObject(
                 properties.getBaseUrl() + STOCKS_URL,

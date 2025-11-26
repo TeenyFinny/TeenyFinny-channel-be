@@ -2,6 +2,7 @@ package dev.syntax.global.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -11,6 +12,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.beans.factory.annotation.Value;
+import java.util.Arrays;
 
 import dev.syntax.global.auth.jwt.JwtAccessDeniedHandler;
 import dev.syntax.global.auth.jwt.JwtAuthenticationEntryPoint;
@@ -47,6 +53,9 @@ public class SecurityConfig {
 	private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 	private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
+	@Value("${cors.allowed-origin-patterns}")
+	private String[] allowedOriginPatterns;
+
 	/**
 	 * SecurityFilterChain을 구성합니다.
 	 *
@@ -64,6 +73,8 @@ public class SecurityConfig {
 		http
 			// JWT 기반 인증에서는 CSRF가 필요하지 않음
 			.csrf(csrf -> csrf.disable())
+			// CORS 설정 적용
+			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
 			// 인증 및 인가 관련 예외 처리기 등록
 			.exceptionHandling(exceptionHandling -> exceptionHandling
@@ -78,6 +89,7 @@ public class SecurityConfig {
 
 			// 경로별 인증 여부 설정
 			.authorizeHttpRequests(authorize -> authorize
+				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 				.requestMatchers(
 					"/auth/**",
 					"/public/**",
@@ -119,5 +131,26 @@ public class SecurityConfig {
 	@Bean
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
 		return configuration.getAuthenticationManager();
+	}
+
+	/**
+	 * CORS 설정을 위한 Bean 등록
+	 *
+	 * <p>허용된 출처(Origin), 메소드, 헤더 및 자격 증명(Credentials)을 설정합니다.
+	 * 모든 경로("/**")에 대해 해당 정책을 적용합니다.</p>
+	 *
+	 * @return CorsConfigurationSource CORS 설정 소스
+	 */
+	@Bean
+	public CorsConfigurationSource corsConfigurationSource() {
+		CorsConfiguration configuration = new CorsConfiguration();
+		configuration.setAllowedOriginPatterns(Arrays.asList(allowedOriginPatterns));
+		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+		configuration.setAllowedHeaders(Arrays.asList("*"));
+		configuration.setAllowCredentials(true);
+
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", configuration);
+		return source;
 	}
 }

@@ -1,6 +1,5 @@
 package dev.syntax.domain.investment.controller;
 
-import dev.syntax.domain.investment.dto.res.DashboardRes;
 import dev.syntax.domain.investment.dto.res.PortfolioRes;
 import dev.syntax.domain.investment.service.PortfolioService;
 import dev.syntax.global.auth.annotation.CurrentUser;
@@ -14,11 +13,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/investments")
+@RequestMapping("/investments/portfolio")
 public class PortfolioController {
     private final PortfolioService portfolioService;
 
-    @GetMapping("/portfolio")
+    @GetMapping
     public ResponseEntity<BaseResponse<PortfolioRes>> getPortfolio(
             @CurrentUser UserContext userContext
     ) {
