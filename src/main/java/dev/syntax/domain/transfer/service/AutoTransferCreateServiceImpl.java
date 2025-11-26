@@ -7,8 +7,6 @@ import dev.syntax.domain.transfer.client.CoreAutoTransferClient;
 import dev.syntax.domain.transfer.dto.AutoTransferReq;
 import dev.syntax.domain.transfer.dto.CoreAutoTransferReq;
 import dev.syntax.domain.transfer.dto.CoreAutoTransferRes;
-import dev.syntax.domain.transfer.entity.AutoTransfer;
-import dev.syntax.domain.transfer.enums.AutoTransferType;
 import dev.syntax.domain.transfer.repository.AutoTransferRepository;
 import dev.syntax.domain.transfer.utils.AutoTransferUtils;
 import dev.syntax.domain.user.entity.User;
@@ -59,12 +57,10 @@ public class AutoTransferCreateServiceImpl implements AutoTransferCreateService 
     public void createAutoTransfer(Long childId, AutoTransferReq req, UserContext ctx) {
 
         validateParentAccess(ctx, childId);
-
         // 중복 설정 여부 확인
         if (autoTransferRepository.existsByUserIdAndType(childId, req.getType())) {
             throw new BusinessException(ErrorBaseCode.AUTO_TRANSFER_ALREADY_EXISTS);
         }
-
         // 부모 계좌 조회
         Account parentAccount = accountRepository.findByUserIdAndType(ctx.getId(), AccountType.DEPOSIT)
                 .orElseThrow(() -> new BusinessException(ErrorBaseCode.ACCOUNT_NOT_FOUND));
@@ -97,36 +93,31 @@ public class AutoTransferCreateServiceImpl implements AutoTransferCreateService 
         BigDecimal investAmount = amounts[1];
 
         CoreAutoTransferReq allowanceAutoTransferReq = new CoreAutoTransferReq(
-            childId,
-            parentAccount.getId(),
-            allowanceAccount.getId(),
-            allowanceAmount,
-            req.getTransferDate(),
-            "용돈"
-        );
+                childId,
+                parentAccount.getId(),
+                allowanceAccount.getId(),
+                allowanceAmount,
+                req.getTransferDate(),
+                "용돈");
 
-        CoreAutoTransferRes coreAllowanceRes =
-            coreAutoTransferClient.createAutoTransfer(childId, allowanceAutoTransferReq);
-
+        CoreAutoTransferRes coreAllowanceRes = coreAutoTransferClient.createAutoTransfer(childId,
+                allowanceAutoTransferReq);
         if (coreAllowanceRes == null || coreAllowanceRes.autoTransferId() == null) {
             throw new BusinessException(ErrorBaseCode.CREATE_FAILED);
         }
-        if(req.getRatio() > 0){
-                    CoreAutoTransferReq investCoreAutoTransferReq = new CoreAutoTransferReq(
-            childId,
-            parentAccount.getId(),
-            investAccount.getId(),
-            investAmount,
-            req.getTransferDate(),
-            "용돈"
-        );
-                CoreAutoTransferRes coreRes = coreAutoTransferClient.createAutoTransfer(childId, investCoreAutoTransferReq);
-                    if (coreRes == null || coreRes.autoTransferId() == null) {
+        if (req.getRatio() > 0) {
+            CoreAutoTransferReq investCoreAutoTransferReq = new CoreAutoTransferReq(
+                    childId,
+                    parentAccount.getId(),
+                    investAccount.getId(),
+                    investAmount,
+                    req.getTransferDate(),
+                    "용돈");
+            CoreAutoTransferRes coreRes = coreAutoTransferClient.createAutoTransfer(childId, investCoreAutoTransferReq);
+            if (coreRes == null || coreRes.autoTransferId() == null) {
                 throw new BusinessException(ErrorBaseCode.CREATE_FAILED);
             }
-        }   
-              
-
+        }
 
     }
 
