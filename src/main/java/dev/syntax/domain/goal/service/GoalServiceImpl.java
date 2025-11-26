@@ -243,10 +243,13 @@ public class GoalServiceImpl implements GoalService {
 
 		goal.updateStatus(approve ? GoalStatus.ONGOING : GoalStatus.REJECTED);
 
-		// core에 계좌 생성 요청
-		Goal createdGoal = goalAccountService.createGoalAccount(goal);
+		if (approve) {
+			// core에 계좌 생성 요청
+			Goal createdGoal = goalAccountService.createGoalAccount(goal);
+			return new GoalApproveRes(createdGoal);
+		}
 
-		return new GoalApproveRes(createdGoal);
+		return new GoalApproveRes(goal);
 	}
 
 	/**
