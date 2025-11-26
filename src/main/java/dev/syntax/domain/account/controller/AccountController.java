@@ -269,7 +269,6 @@ public class AccountController {
                 @PathVariable("id") Long id,
                 @RequestBody AutoTransferReq req,
                 @CurrentUser UserContext ctx) {
-
                 autoTransferCreateService.createAutoTransfer(id, req, ctx);
                 return ApiResponseUtil.success(SuccessCode.CREATED);
         }

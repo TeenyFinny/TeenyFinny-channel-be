@@ -7,6 +7,7 @@ import dev.syntax.domain.transfer.client.CoreAutoTransferClient;
 import dev.syntax.domain.transfer.dto.AutoTransferReq;
 import dev.syntax.domain.transfer.dto.CoreAutoTransferReq;
 import dev.syntax.domain.transfer.dto.CoreAutoTransferRes;
+import dev.syntax.domain.transfer.entity.AutoTransfer;
 import dev.syntax.domain.transfer.repository.AutoTransferRepository;
 import dev.syntax.domain.transfer.utils.AutoTransferUtils;
 import dev.syntax.domain.user.entity.User;
@@ -100,25 +101,37 @@ public class AutoTransferCreateServiceImpl implements AutoTransferCreateService 
                 req.getTransferDate(),
                 "용돈");
 
-        CoreAutoTransferRes coreAllowanceRes = coreAutoTransferClient.createAutoTransfer(childId,
-                allowanceAutoTransferReq);
+        CoreAutoTransferRes coreAllowanceRes = coreAutoTransferClient.createAutoTransfer(allowanceAutoTransferReq);
         if (coreAllowanceRes == null || coreAllowanceRes.autoTransferId() == null) {
             throw new BusinessException(ErrorBaseCode.CREATE_FAILED);
         }
+        CoreAutoTransferReq investCoreAutoTransferReq = null;
+        CoreAutoTransferRes coreInvestRes = null;
         if (req.getRatio() > 0) {
-            CoreAutoTransferReq investCoreAutoTransferReq = new CoreAutoTransferReq(
+            investCoreAutoTransferReq = new CoreAutoTransferReq(
                     childId,
                     parentAccount.getId(),
                     investAccount.getId(),
                     investAmount,
                     req.getTransferDate(),
                     "용돈");
-            CoreAutoTransferRes coreRes = coreAutoTransferClient.createAutoTransfer(childId, investCoreAutoTransferReq);
-            if (coreRes == null || coreRes.autoTransferId() == null) {
+            coreInvestRes = coreAutoTransferClient.createAutoTransfer(investCoreAutoTransferReq);
+            if (coreInvestRes == null || coreInvestRes.autoTransferId() == null) {
                 throw new BusinessException(ErrorBaseCode.CREATE_FAILED);
             }
         }
+        AutoTransfer autoTransfer = AutoTransfer.builder()
+        .user(child)
+        .account(allowanceAccount) // 주계좌는 항상 용돈 계좌
+        .transferAmount(req.getTotalAmount())
+        .transferDate(req.getTransferDate())
+        .ratio(req.getRatio())
+        .type(req.getType()) // ALLOWANCE or GOAL
+        .primaryBankTransferId(coreAllowanceRes.autoTransferId())
+        .investBankTransferId(investCoreAutoTransferReq == null ? null : coreInvestRes.autoTransferId()) // GOAL이면 null
+        .build();
 
+        autoTransferRepository.save(autoTransfer);
     }
 
     private void validateParentAccess(UserContext ctx, Long childId) {

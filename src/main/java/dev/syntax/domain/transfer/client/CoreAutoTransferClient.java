@@ -1,6 +1,5 @@
 package dev.syntax.domain.transfer.client;
 
-import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -23,12 +22,10 @@ public class CoreAutoTransferClient {
     /**
      * Core 자동이체 생성 요청
      *
-     * @param userId CoreUserId (부모)
      * @param req 자동이체 생성 요청 정보
      * @return CoreAutoTransferRes (autoTransferId)
      */
-    public CoreAutoTransferRes createAutoTransfer(Long userId, CoreAutoTransferReq req){
-        
+    public CoreAutoTransferRes createAutoTransfer(CoreAutoTransferReq req){
         return coreRestTemplate.postForObject(
                 properties.getBaseUrl() + AUTO_TRANSFER_URL,
                 req,
