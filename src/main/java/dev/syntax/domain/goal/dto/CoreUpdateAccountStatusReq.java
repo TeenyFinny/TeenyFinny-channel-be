@@ -6,5 +6,5 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class CoreUpdateAccountStatusReq {
-    String status;
+    private String status;
 }
