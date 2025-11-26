@@ -6,6 +6,7 @@ import dev.syntax.domain.goal.dto.CoreUpdateAccountStatusRes;
 import dev.syntax.global.core.CoreApiProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -28,11 +29,13 @@ public class CoreGoalClient {
     }
 
     public CoreUpdateAccountStatusRes updateAccountStatus(String accountNo, CoreUpdateAccountStatusReq req) {
-        return coreRestTemplate.postForObject(
+
+        return coreRestTemplate.exchange(
                 properties.getBaseUrl() + UPDATE_ACCOUNT_STATUS_URL,
-                req,
+                HttpMethod.PUT,
+                new HttpEntity<>(req),
                 CoreUpdateAccountStatusRes.class,
                 accountNo
-        );
+        ).getBody();
     }
 }
