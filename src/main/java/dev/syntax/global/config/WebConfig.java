@@ -2,6 +2,7 @@ package dev.syntax.global.config;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -19,6 +20,9 @@ import dev.syntax.global.auth.resolver.CurrentUserArgumentResolver;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
+	@Value("${cors.allowed-origin-patterns}")
+	private String[] allowedOriginPatterns;
+
 	/**
 	 * CORS(Cross-Origin Resource Sharing) 정책을 설정합니다.
 	 *
@@ -35,10 +39,7 @@ public class WebConfig implements WebMvcConfigurer {
 	public void addCorsMappings(CorsRegistry registry) {
 		registry.addMapping("/**")
 			.allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
-			.allowedOriginPatterns(
-				"http://localhost:*",
-				"https://*.vercel.app"
-			)
+			.allowedOriginPatterns(allowedOriginPatterns)
 			.allowCredentials(true);
 	}
 
