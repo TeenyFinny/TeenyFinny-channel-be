@@ -376,6 +376,8 @@ public class GoalServiceImpl implements GoalService {
 
         Goal goal = getGoalOrThrow(goalId);
         String accountNo = goal.getAccount().getAccountNo();
+        Account allowanceAccount = accountRepository.findByUserIdAndType(goal.getUser().getId(), AccountType.ALLOWANCE)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.ACCOUNT_NOT_FOUND));
 
         validateParentHasChild(userContext, goal);
         validateGoalIsOngoing(goal);
@@ -383,6 +385,7 @@ public class GoalServiceImpl implements GoalService {
 
         goal.updateStatus(GoalStatus.CANCELLED);
         coreGoalClient.updateAccountStatus(accountNo, new CoreUpdateAccountStatusReq("SUSPENDED"));
+        autoTransferService.deleteAutoTransfer(allowanceAccount.getId(), AutoTransferType.GOAL);
 
 		return new GoalDeleteRes(goalId, "목표 계좌가 중도 해지되었습니다.");
 	}
