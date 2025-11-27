@@ -25,14 +25,13 @@ public class InvestTradeOrderController {
 
     @PostMapping("/buy")
     public ResponseEntity<BaseResponse<?>> buyStocks(
-            @RequestBody BuyReq buyReq,
-            @CurrentUser UserContext user
+            @RequestBody BuyReq buyReq
     ) {
         TradeOrderRes response = tradeOrderService.buy(buyReq);
         return ApiResponseUtil.success(SuccessCode.OK, response);
     }
     @PostMapping("/sell")
-    public ResponseEntity<BaseResponse<?>> buyStocks(
+    public ResponseEntity<BaseResponse<?>> sellStocks(
             @RequestBody SellReq sellReq
     ) {
         TradeOrderRes response = tradeOrderService.sell(sellReq);
