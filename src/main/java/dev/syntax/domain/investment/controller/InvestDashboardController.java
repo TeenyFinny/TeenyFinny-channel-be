@@ -15,13 +15,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/investments")
+@RequestMapping("/investments/dashboard")
 public class InvestDashboardController {
     private final InvestDashboardService dashboardService;
 
     @GetMapping
     public ResponseEntity<BaseResponse<?>> getDashboard(
-    @CurrentUser UserContext userContext
+        @CurrentUser UserContext userContext
     ) {
         InvestDashboardRes response = dashboardService.getDashboard(userContext);
         return ApiResponseUtil.success(SuccessCode.OK, response);

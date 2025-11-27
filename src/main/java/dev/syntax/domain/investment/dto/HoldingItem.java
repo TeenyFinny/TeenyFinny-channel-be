@@ -26,11 +26,11 @@ package dev.syntax.domain.investment.dto;
 public record HoldingItem(
         String productCode,   // 종목코드 (e.g., 005930)
         String productName,   // 종목명 (e.g., 삼성전자)
-        Long quantity,        // 보유 수량
-        Long avgPrice,        // 평균 매입 단가 (Portfolio 저장 값)
-        Long currentPrice,    // 현재가 (KIS 실시간/스냅샷 데이터)
-        Long evaluationAmount, // 평가금액 = 현재가 * 보유수량
-        Long profitAmount,     // 평가손익 = 평가금액 - (평균매입단가 * 보유수량)
+        String quantity,        // 보유 수량
+        String avgPrice,        // 평균 매입 단가 (Portfolio 저장 값)
+        String currentPrice,    // 현재가 (KIS 실시간/스냅샷 데이터)
+        String evaluationAmount, // 평가금액 = 현재가 * 보유수량
+        String profitAmount,     // 평가손익 = 평가금액 - (평균매입단가 * 보유수량)
         Double profitRate,     // 수익률 (%) = 평가손익 / (평균매입단가 * 보유수량)
         Double weight          // 전체 포트폴리오에서 해당 종목이 차지하는 비중 (0~1)
 ) {}

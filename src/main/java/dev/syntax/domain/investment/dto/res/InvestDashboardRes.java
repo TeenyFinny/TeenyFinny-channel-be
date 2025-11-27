@@ -6,9 +6,9 @@ import java.util.List;
 
 public record InvestDashboardRes(
         Long userId,
-        Long depositAmount,
-        Long totEvluAmt,
-        Long totalProfitAmount,
+        String depositAmount,
+        String totEvluAmt,
+        String totalProfitAmount,
         Double totalProfitRate,
         List<HoldingItem> top3Holdings
 ) {}
