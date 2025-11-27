@@ -1,28 +1,14 @@
 package dev.syntax.domain.auth.service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.UUID;
-
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import dev.syntax.domain.account.service.BankAccountService;
 import dev.syntax.domain.auth.client.KakaoOAuthClient;
 import dev.syntax.domain.auth.dto.LoginRes;
 import dev.syntax.domain.auth.dto.UserLoginInfo;
-import dev.syntax.domain.auth.dto.oauth.KakaoLoginReq;
-import dev.syntax.domain.auth.dto.oauth.KakaoLoginRes;
-import dev.syntax.domain.auth.dto.oauth.KakaoSignupReq;
-import dev.syntax.domain.auth.dto.oauth.KakaoTokenRes;
-import dev.syntax.domain.auth.dto.oauth.KakaoUserInfo;
+import dev.syntax.domain.auth.dto.oauth.*;
 import dev.syntax.domain.auth.entity.KakaoTempToken;
 import dev.syntax.domain.auth.repository.KakaoTempTokenRepository;
 import dev.syntax.domain.user.client.CoreUserClient;
+import dev.syntax.domain.user.dto.CoreInitRes;
 import dev.syntax.domain.user.dto.CoreParentInitRes;
 import dev.syntax.domain.user.dto.CoreUserInitReq;
 import dev.syntax.domain.user.entity.User;
@@ -35,6 +21,16 @@ import dev.syntax.global.response.error.ErrorAuthCode;
 import dev.syntax.global.response.error.ErrorBaseCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 /**
  * 카카오 OAuth 인증 서비스 구현체
@@ -126,6 +122,11 @@ public class KakaoOAuthServiceImpl implements KakaoOAuthService {
 				accountService.createParentAccount(savedUser, coreRes);
 				log.info("[Core 부모 계정 + 계좌 생성 완료] channel_user_id: {}, core_user_id: {}",
 					savedUser.getId(), coreRes.coreUserId());
+			} else {
+				CoreInitRes coreRes = coreUserClient.createChildUser(coreUserReq);
+				user.setCoreUserId(coreRes.coreUserId());
+				log.info("[Core 자녀 사용자 생성 완료] channel_user_id: {}, core_user_id: {}",
+						savedUser.getId(), savedUser.getCoreUserId());
 			}
 		} catch (Exception e) {
 			log.error("[Core 사용자 생성 실패] user_id: {}, error: {}",
