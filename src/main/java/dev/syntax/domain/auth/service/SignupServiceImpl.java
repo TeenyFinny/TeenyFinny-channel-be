@@ -1,5 +1,9 @@
 package dev.syntax.domain.auth.service;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import dev.syntax.domain.account.service.BankAccountService;
 import dev.syntax.domain.auth.dto.SignupReq;
 import dev.syntax.domain.auth.factory.UserFactory;
@@ -14,9 +18,6 @@ import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorAuthCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -38,6 +39,7 @@ public class SignupServiceImpl implements SignupService {
 		// 2. User 저장
 		User user = UserFactory.create(inputUser, encoder);
 		userRepository.save(user);
+
 		// 3. CoreUserInitReq 생성
 		CoreUserInitReq coreReq = new CoreUserInitReq(
 			user.getId(),                   // channelUserId
@@ -47,21 +49,25 @@ public class SignupServiceImpl implements SignupService {
 			user.getBirthDate()
 		);
 
-		// 4. Core 서버 초기화 호출 (부모/자녀에 따라 응답이 다름)
-		if (user.getRole() == Role.PARENT) {
+		try{
+			// 4. Core 서버 초기화 호출 (부모/자녀에 따라 응답이 다름)
+			if (user.getRole() == Role.PARENT) {
 
-			CoreParentInitRes coreRes = coreUserClient.createParentAccount(coreReq);
-			user.setCoreUserId(coreRes.coreUserId());
-			accountService.createParentAccount(user, coreRes);
-			log.info("부모 계좌 생성 완료: userId={}", user.getId());
+				CoreParentInitRes coreRes = coreUserClient.createParentAccount(coreReq);
+				user.setCoreUserId(coreRes.coreUserId());
+				accountService.createParentAccount(user, coreRes);
+				log.info("부모 계좌 생성 완료: userId={}", user.getId());
 
-		} else { // CHILD
+			} else { // CHILD
 
-			CoreInitRes coreRes = coreUserClient.createChildUser(coreReq);
-			user.setCoreUserId(coreRes.coreUserId());
+				CoreInitRes coreRes = coreUserClient.createChildUser(coreReq);
+				user.setCoreUserId(coreRes.coreUserId());
+			}
+			log.info("회원가입 + Core 회원 생성 완료: channelUserId={}, coreUserId={}",
+				user.getId(), user.getCoreUserId());
+		} catch (RuntimeException  e) {
+			log.error("Core 회원 생성 실패: {}", e.getMessage(), e);
+			throw new BusinessException(ErrorAuthCode.CORE_INIT_FAIL);
 		}
-
-		log.info("회원가입 + Core 초기화 완료: channelUserId={}, coreUserId={}",
-			user.getId(), user.getCoreUserId());
 	}
 }
