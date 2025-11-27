@@ -1,11 +1,8 @@
 package dev.syntax.domain.investment.controller;
 
-import dev.syntax.domain.investment.dto.req.BuyReq;
-import dev.syntax.domain.investment.dto.req.SellReq;
-import dev.syntax.domain.investment.dto.res.TradeOrderRes;
+import dev.syntax.domain.investment.dto.req.InvestTradeOrderReq;
+import dev.syntax.domain.investment.dto.res.InvestTradeOrderRes;
 import dev.syntax.domain.investment.service.InvestTradeOrderService;
-import dev.syntax.global.auth.annotation.CurrentUser;
-import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.global.response.ApiResponseUtil;
 import dev.syntax.global.response.BaseResponse;
 import dev.syntax.global.response.SuccessCode;
@@ -25,16 +22,16 @@ public class InvestTradeOrderController {
 
     @PostMapping("/buy")
     public ResponseEntity<BaseResponse<?>> buyStocks(
-            @RequestBody BuyReq buyReq
+            @RequestBody InvestTradeOrderReq buyReq
     ) {
-        TradeOrderRes response = tradeOrderService.buy(buyReq);
+        InvestTradeOrderRes response = tradeOrderService.buy(buyReq);
         return ApiResponseUtil.success(SuccessCode.OK, response);
     }
     @PostMapping("/sell")
     public ResponseEntity<BaseResponse<?>> sellStocks(
-            @RequestBody SellReq sellReq
+            @RequestBody InvestTradeOrderReq sellReq
     ) {
-        TradeOrderRes response = tradeOrderService.sell(sellReq);
+        InvestTradeOrderRes response = tradeOrderService.sell(sellReq);
         return ApiResponseUtil.success(SuccessCode.OK, response);
     }
 }

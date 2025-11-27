@@ -5,7 +5,7 @@ import dev.syntax.domain.investment.enums.TradeType;
 import lombok.Data;
 
 @Data
-public class TradeOrderRes {
+public class InvestTradeOrderRes {
     private TradeType tradeType;
 
     private String productCode;

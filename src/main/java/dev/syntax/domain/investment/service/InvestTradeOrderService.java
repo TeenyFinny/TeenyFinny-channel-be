@@ -1,11 +1,10 @@
 package dev.syntax.domain.investment.service;
 
-import dev.syntax.domain.investment.dto.req.BuyReq;
-import dev.syntax.domain.investment.dto.req.SellReq;
-import dev.syntax.domain.investment.dto.res.TradeOrderRes;
+import dev.syntax.domain.investment.dto.req.InvestTradeOrderReq;
+import dev.syntax.domain.investment.dto.res.InvestTradeOrderRes;
 
 
 public interface InvestTradeOrderService {
-    public TradeOrderRes buy(BuyReq buyReq);
-    public TradeOrderRes sell(SellReq sellReq);
+    public InvestTradeOrderRes buy(InvestTradeOrderReq buyReq);
+    public InvestTradeOrderRes sell(InvestTradeOrderReq sellReq);
 }
