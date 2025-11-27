@@ -156,8 +156,12 @@ pipeline {
                     )
                 ]) {
                     sh '''
-                        ssh -i "$BASTION_KEY" "$BASTION_USER"@ec2-15-165-208-216.ap-northeast-2.compute.amazonaws.com "hostname; whoami"
+                        ssh -o StrictHostKeyChecking=no \
+                            -i "$BASTION_KEY" \
+                            "$BASTION_USER"@ec2-15-165-208-216.ap-northeast-2.compute.amazonaws.com \
+                            "hostname; whoami"
                     '''
+
                 }
 
                 echo 'main branch : 배포가 완료되었습니다.'
