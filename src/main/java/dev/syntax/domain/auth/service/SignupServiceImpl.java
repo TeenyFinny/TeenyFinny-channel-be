@@ -65,7 +65,7 @@ public class SignupServiceImpl implements SignupService {
 			}
 			log.info("회원가입 + Core 회원 생성 완료: channelUserId={}, coreUserId={}",
 				user.getId(), user.getCoreUserId());
-		} catch (BusinessException e) {
+		} catch (RuntimeException  e) {
 			log.error("Core 회원 생성 실패: {}", e.getMessage(), e);
 			throw new BusinessException(ErrorAuthCode.CORE_INIT_FAIL);
 		}
