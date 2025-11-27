@@ -9,7 +9,9 @@ import java.util.List;
 
 import dev.syntax.domain.account.enums.AccountType;
 import dev.syntax.domain.account.repository.AccountRepository;
+import dev.syntax.domain.transfer.entity.AutoTransfer;
 import dev.syntax.domain.transfer.enums.AutoTransferType;
+import dev.syntax.domain.transfer.repository.AutoTransferRepository;
 import dev.syntax.domain.transfer.service.AutoTransferService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,6 +58,7 @@ public class GoalServiceImpl implements GoalService {
     private static final DateTimeFormatter GOAL_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss");
 	private final GoalAccountService goalAccountService;
     private final AutoTransferService autoTransferService;
+    private final AutoTransferRepository autoTransferRepository;
     private final AccountRepository accountRepository;
 
     /**
@@ -208,13 +211,19 @@ public class GoalServiceImpl implements GoalService {
 
 		User user = getUser(userContext);
 		Goal goal = getGoalOrThrow(goalId);
+        AutoTransfer autoTransfer = autoTransferRepository.findByUserIdAndType(user.getId(), AutoTransferType.GOAL)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.AUTO_TRANSFER_NOT_FOUND));
 
-		validateGoalOwner(user, goal);
+        Integer payDayForUpdate = req.getPayDay();
+
+        validateGoalOwner(user, goal);
 		validateGoalIsOngoing(goal);
-		validatePayDay(req.getPayDay());
+		validatePayDay(payDayForUpdate);
 
-        goal.updatePayDay(req.getPayDay());
+        goal.updatePayDay(payDayForUpdate);
+
         // TODO: core 자동이체 구현되면 coreGoalClient 연결하기
+        coreGoalClient.updateAutoTransferDay(autoTransfer.getId(), payDayForUpdate);
 
 		return new GoalUpdateRes(goal);
 	}
