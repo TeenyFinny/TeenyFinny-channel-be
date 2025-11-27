@@ -18,5 +18,13 @@ public interface AutoTransferService {
      */
     void createAutoTransfer(Long childId, AutoTransferReq req, UserContext ctx);
 
+    /**
+     * 자동이체 설정을 수정합니다.
+     *
+     * @param childId 자녀 ID
+     * @param req     수정할 자동이체 설정 정보
+     * @param ctx     사용자 컨텍스트
+     * @return 수정된 자동이체 정보
+     */
     AutoTransferRes updateAutoTransfer(Long childId, AutoTransferReq req, UserContext ctx);
 }

@@ -36,6 +36,12 @@ public class CoreAutoTransferClient {
         );
     }
 
+    /**
+     * Core 자동이체 수정 요청.
+     *
+     * @param autoTransferId 수정할 자동이체 ID
+     * @param req            수정할 자동이체 정보
+     */
     public void updateAutoTransfer(Long autoTransferId, CoreAutoTransferReq req){
         HttpEntity<CoreAutoTransferReq> entity = new HttpEntity<>(req);
         coreRestTemplate.exchange(

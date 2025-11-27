@@ -277,6 +277,17 @@ public class AccountController {
         }
 
 
+        /**
+         * 자동이체 설정 수정 API.
+         * <p>
+         * 부모가 자녀의 자동이체 설정(금액, 이체일, 투자 비율)을 수정합니다.
+         * </p>
+         *
+         * @param id  자녀 ID (URL 경로 변수)
+         * @param req 수정할 자동이체 설정 정보
+         * @param ctx 인증된 사용자 컨텍스트 (부모 권한 확인용)
+         * @return 수정된 자동이체 정보 (200 OK)
+         */
         @PutMapping("/{id}/auto-transfer")
         public ResponseEntity<BaseResponse<?>> updateAutoTransfer(
                 @PathVariable("id") Long id,

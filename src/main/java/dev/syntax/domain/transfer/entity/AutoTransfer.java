@@ -67,6 +67,12 @@ public class AutoTransfer extends BaseTimeEntity {
     @Column(name = "invest_bank_transfer_id")
     private Long investBankTransferId;
 
+    /**
+     * 자동이체 설정을 업데이트합니다.
+     *
+     * @param newReq              새로운 자동이체 설정 요청 정보 (비율, 이체일, 총 금액)
+     * @param newInvestTransferId 새로운 투자 자동이체 ID (Core 뱅킹, 없을 경우 null)
+     */
     public void updateAutoTransfer(AutoTransferReq newReq, Long newInvestTransferId){
         this.ratio = newReq.getRatio();
         this.transferDate = newReq.getTransferDate();

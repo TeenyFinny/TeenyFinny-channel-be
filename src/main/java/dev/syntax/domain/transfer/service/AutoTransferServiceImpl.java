@@ -98,6 +98,24 @@ public class AutoTransferServiceImpl implements AutoTransferService {
         saveAutoTransfer(child, allowanceAccount, req, coreAllowanceRes.autoTransferId(), investTransferId);
     }
 
+    /**
+     * 자동이체 설정을 수정합니다.
+     * <p>
+     * 1. 부모 권한 검증
+     * 2. 기존 자동이체 설정 조회
+     * 3. 사용자 및 계좌 조회
+     * 4. 입력값 검증 (비율 등)
+     * 5. 금액 재계산
+     * 6. Core 뱅킹 API 호출 (용돈 및 투자 자동이체 수정/생성/해지)
+     * 7. 자동이체 정보 업데이트 (DB)
+     * </p>
+     *
+     * @param childId 자녀 ID
+     * @param req     수정할 자동이체 설정 정보
+     * @param ctx     사용자 컨텍스트
+     * @return 수정된 자동이체 정보
+     * @throws BusinessException 권한 없음, 설정 없음, 잘못된 입력값 등
+     */
     @Override
     public AutoTransferRes updateAutoTransfer(Long childId, AutoTransferReq req, UserContext ctx) {
         validateParentAccess(ctx, childId);
@@ -171,6 +189,13 @@ public class AutoTransferServiceImpl implements AutoTransferService {
                 existingTransfer.getRatio());
     }
 
+    /**
+     * 부모 권한 및 자녀 관계를 검증합니다.
+     *
+     * @param ctx     사용자 컨텍스트
+     * @param childId 자녀 ID
+     * @throws BusinessException 부모가 아니거나 자녀가 아닌 경우
+     */
     private void validateParentAccess(UserContext ctx, Long childId) {
         if (!Role.PARENT.name().equals(ctx.getRole())) {
             throw new BusinessException(ErrorBaseCode.PARENT_ONLY_FEATURE);
@@ -180,11 +205,26 @@ public class AutoTransferServiceImpl implements AutoTransferService {
         }
     }
 
+    /**
+     * 사용자 ID와 계좌 유형으로 계좌를 조회합니다.
+     *
+     * @param userId 사용자 ID
+     * @param type   계좌 유형
+     * @return 조회된 계좌
+     * @throws BusinessException 계좌를 찾을 수 없는 경우
+     */
     private Account getAccount(Long userId, AccountType type) {
         return accountRepository.findByUserIdAndType(userId, type)
                 .orElseThrow(() -> new BusinessException(ErrorBaseCode.ACCOUNT_NOT_FOUND));
     }
 
+    /**
+     * 투자 비율을 검증합니다.
+     *
+     * @param ratio         투자 비율 (0~100)
+     * @param investAccount 투자 계좌 (비율이 0보다 클 경우 필수)
+     * @throws BusinessException 비율이 범위를 벗어나거나 투자 계좌가 없는 경우
+     */
     private void validateRatio(Integer ratio, Account investAccount) {
         if (ratio < 0 || ratio > 100) {
             throw new BusinessException(ErrorBaseCode.INVALID_RATIO_VALUE);
@@ -194,10 +234,30 @@ public class AutoTransferServiceImpl implements AutoTransferService {
         }
     }
 
+    /**
+     * Core 뱅킹 API 요청 객체를 생성합니다.
+     *
+     * @param childId 자녀 ID
+     * @param fromId  출금 계좌 ID
+     * @param toId    입금 계좌 ID
+     * @param amount  이체 금액
+     * @param date    이체일
+     * @return CoreAutoTransferReq 객체
+     */
     private CoreAutoTransferReq createCoreReq(Long childId, Long fromId, Long toId, BigDecimal amount, Integer date) {
         return new CoreAutoTransferReq(childId, fromId, toId, amount, date, "용돈");
     }
 
+    /**
+     * 자동이체 엔티티를 생성하고 저장합니다.
+     *
+     * @param user      사용자 (자녀)
+     * @param account   주 계좌 (용돈 계좌)
+     * @param req       자동이체 요청 정보
+     * @param primaryId 주 자동이체 ID (Core)
+     * @param investId  투자 자동이체 ID (Core, 없을 경우 null)
+     * @return 저장된 AutoTransfer 엔티티
+     */
     private AutoTransfer saveAutoTransfer(User user, Account account, AutoTransferReq req, Long primaryId,
             Long investId) {
         AutoTransfer transfer = AutoTransfer.builder()
