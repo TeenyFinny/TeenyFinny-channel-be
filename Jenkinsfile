@@ -147,20 +147,36 @@ pipeline {
                         keyFileVariable: 'BASTION_KEY',     // 쉘에서 쓸 파일 경로 변수명
                         usernameVariable: 'BASTION_USER'    // 쉘에서 쓸 유저명 변수명
                     ),
-
-                    // 3) Private 서버 접속용 SSH 키
-                    sshUserPrivateKey(
-                        credentialsId: 'aws-private-key',
-                        keyFileVariable: 'PRIVATE_KEY',
-                        usernameVariable: 'PRIVATE_USER'
-                    )
                 ]) {
                     sh '''
                         ssh -o StrictHostKeyChecking=no \
                             -i "$BASTION_KEY" \
-                            "$BASTION_USER"@ec2-15-165-208-216.ap-northeast-2.compute.amazonaws.com \
-                            "hostname; whoami"
-                    '''
+                            "$BASTION_USER"@ec2-15-165-208-216.ap-northeast-2.compute.amazonaws.com << 'EOSSH'
+# 점프서버 방문 후 실행할 로직
+echo "[bastion] $(hostname) / $(whoami)"
+
+# 첫번째 운영 서버 방문 후 실행할 로직
+ssh -o StrictHostKeyChecking=no \
+    -i ~/.ssh/sw-team-3-bastion-rsa.pem \
+    ubuntu@172.31.66.7 << 'EOSSH_PRIV1'
+
+echo "[private-1] $(hostname) / $(whoami)"
+docker ps
+
+EOSSH_PRIV1
+
+# 두번째 운영 서버 방문 후 실행할 로직
+ssh -o StrictHostKeyChecking=no \
+    -i ~/.ssh/sw-team-3-bastion-rsa.pem \
+    ubuntu@172.31.38.144 << 'EOSSH_PRIV2'
+
+echo "[private-2] $(hostname) / $(whoami)"
+docker ps
+
+EOSSH_PRIV2
+
+EOSSH
+'''
 
                 }
 
