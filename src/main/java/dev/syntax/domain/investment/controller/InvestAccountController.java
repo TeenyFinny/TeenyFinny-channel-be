@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class InvestAccountController {
 	private final InvestAccountService investAccountService;
 
-	@GetMapping("/account")
+	@GetMapping
 	public ResponseEntity<BaseResponse<?>> getInvestAccountPortfolio (
 					@CurrentUser UserContext userContext
 	) {

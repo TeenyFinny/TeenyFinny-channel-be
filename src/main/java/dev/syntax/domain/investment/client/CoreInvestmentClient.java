@@ -6,7 +6,7 @@ import dev.syntax.domain.investment.dto.req.SellReq;
 import dev.syntax.domain.investment.dto.res.InvestAccountPortfolioRes;
 import dev.syntax.domain.investment.dto.res.InvestDashboardRes;
 import dev.syntax.domain.investment.dto.res.StocksRes;
-import dev.syntax.domain.investment.dto.res.TradeOrder;
+import dev.syntax.domain.investment.dto.res.TradeOrderRes;
 import dev.syntax.global.core.CoreApiProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -56,18 +56,18 @@ public class CoreInvestmentClient {
         );
     }
 
-    public TradeOrder tradeOrderBuy(BuyReq buyReq) {
+    public TradeOrderRes tradeOrderBuy(BuyReq buyReq) {
         return coreRestTemplate.postForObject(
                 properties.getBaseUrl() + TRADE_ORDER_BUY_URL,
                 buyReq,
-                TradeOrder.class
+                TradeOrderRes.class
         );
     }
-    public TradeOrder tradeOrderSell(SellReq sellReq) {
+    public TradeOrderRes tradeOrderSell(SellReq sellReq) {
         return coreRestTemplate.postForObject(
                 properties.getBaseUrl() + TRADE_ORDER_SELL_URL,
                 sellReq,
-                TradeOrder.class
+                TradeOrderRes.class
         );
     }
 

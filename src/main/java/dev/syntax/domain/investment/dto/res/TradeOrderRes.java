@@ -2,17 +2,19 @@ package dev.syntax.domain.investment.dto.res;
 
 import dev.syntax.domain.investment.enums.OrderStatus;
 import dev.syntax.domain.investment.enums.TradeType;
+import lombok.Data;
 
-public class TradeOrder {
+@Data
+public class TradeOrderRes {
     private TradeType tradeType;
 
     private String productCode;
 
     private String productName;
 
-    private Integer quantity;
+    private long quantity;
 
-    private Long price;
+    private String price;
 
-    private OrderStatus status = OrderStatus.EXECUTED;
+    private OrderStatus status;
 }
