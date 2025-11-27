@@ -155,7 +155,9 @@ pipeline {
                         usernameVariable: 'PRIVATE_USER'
                     )
                 ]) {
-                    ssh -i "$BASTION_KEY" "$BASTION_USER"@점프서버IP "hostname; whoami"
+                    sh '''
+                        ssh -i "$BASTION_KEY" "$BASTION_USER"@점프서버IP "hostname; whoami"
+                    '''
                 }
 
                 echo 'main branch : 배포가 완료되었습니다.'
