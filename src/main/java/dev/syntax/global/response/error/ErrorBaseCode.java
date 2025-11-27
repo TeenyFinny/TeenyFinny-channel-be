@@ -132,7 +132,7 @@ public enum ErrorBaseCode implements ErrorCode {
 	 */
 	TOKEN_ISSUE_FAILED(HttpStatus.BAD_GATEWAY, "카카오 토큰 발급 실패"),
 	USER_INFO_REQUEST_FAILED(HttpStatus.BAD_GATEWAY, "카카오 사용자 정보 조회 실패"),
-	USER_INFO_PARSE_FAILED(HttpStatus.BAD_GATEWAY,"카카오 사용자 정보 조회 실패"),
+	USER_INFO_PARSE_FAILED(HttpStatus.BAD_GATEWAY,"카카오 사용자 정보 파싱 실패"),
 
 	/**
 	 * Core API 관련 에러

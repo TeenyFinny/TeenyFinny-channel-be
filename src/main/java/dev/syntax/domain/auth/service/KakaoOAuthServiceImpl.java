@@ -29,6 +29,7 @@ import dev.syntax.domain.user.repository.UserRepository;
 import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.global.auth.jwt.JwtTokenProvider;
 import dev.syntax.global.exception.BusinessException;
+import dev.syntax.global.response.error.ErrorAuthCode;
 import dev.syntax.global.response.error.ErrorBaseCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -93,13 +94,13 @@ public class KakaoOAuthServiceImpl implements KakaoOAuthService {
 
 		// 2. providerId 중복 확인
 		if (userRepository.findByProviderIdWithChildren(tempToken.getProviderId()).isPresent()) {
-			throw new BusinessException(ErrorBaseCode.CONFLICT);
+			throw new BusinessException(ErrorAuthCode.KAKAO_PROVIDER_CONFLICT);
 		}
 
 		// 3. 이메일 중복 확인 (카카오 이메일이 있는 경우)
 		if (tempToken.getKakaoEmail() != null &&
 			userRepository.existsByEmail(tempToken.getKakaoEmail())) {
-			throw new BusinessException(ErrorBaseCode.CONFLICT);
+			throw new BusinessException(ErrorAuthCode.KAKAO_EMAIL_CONFLICT);
 		}
 
 		// 4. User 엔티티 생성
@@ -117,7 +118,7 @@ public class KakaoOAuthServiceImpl implements KakaoOAuthService {
 			);
 
 			Long coreUserId;
-			if (savedUser.getRole().name().equals("PARENT")) {
+			if (savedUser.getRole() == Role.PARENT) {
 				coreUserId = coreUserClient.createParentAccount(coreUserReq).coreUserId();
 			} else {
 				coreUserId = coreUserClient.createChildUser(coreUserReq).coreUserId();

@@ -55,7 +55,7 @@ public enum ErrorAuthCode implements ErrorBaseCodeForErrorCode {
 	 */
 	EMAIL_CONFLICT(HttpStatus.CONFLICT, "해당 이메일로 가입할 수 없습니다.", "AUTH03"),
 	KAKAO_EMAIL_CONFLICT(HttpStatus.CONFLICT, "해당 이메일로 가입된 카카오 계정이 있습니다.", "KAKAO02"),
-	KAKAO_PROVIDER_CONFLICT(HttpStatus.CONFLICT, "이미 등록된 회원입니다.", "KAKAO02");
+	KAKAO_PROVIDER_CONFLICT(HttpStatus.CONFLICT, "이미 등록된 회원입니다.", "KAKAO03");
 
 	// 마지막 항목의 ;을 쉼표로 바꾸고 여기에 마저 추가
 

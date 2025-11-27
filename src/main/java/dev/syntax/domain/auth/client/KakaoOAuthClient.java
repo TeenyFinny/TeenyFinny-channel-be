@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import dev.syntax.domain.auth.dto.oauth.KakaoTokenRes;
@@ -73,7 +74,7 @@ public class KakaoOAuthClient {
 
 			log.info("[카카오 토큰 발급 성공]");
 			return response.getBody();
-		} catch (Exception e) {
+		} catch (RestClientException e) {
 			log.error("[카카오 토큰 발급 실패] code: {}, error: {}", code, e.getMessage());
 			throw new BusinessException(ErrorAuthCode.TOKEN_VALIDATION_FAILED);
 		}
@@ -106,7 +107,7 @@ public class KakaoOAuthClient {
 
 			log.info("[카카오 사용자 정보 조회 성공] kakao_id: {}", response.getBody().id());
 			return response.getBody();
-		} catch (Exception e) {
+		} catch (RestClientException e) {
 			log.error("[카카오 사용자 정보 조회 실패] error: {}", e.getMessage());
 			throw new BusinessException(ErrorBaseCode.USER_INFO_PARSE_FAILED);
 		}
