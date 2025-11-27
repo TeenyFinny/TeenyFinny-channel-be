@@ -6,6 +6,7 @@ pipeline {
         MAIN_IMAGE_NAME = 'docker.io/teenyfinny/channel'        // 메인 브랜치에서 다룰 이미지 이름
         DEV_IMAGE_NAME = 'docker.io/teenyfinny/channeltest'     // 테스트 브랜치에서 다룰 이미지 이름
         TEST_APP_NAME = 'sw_team_3_channel'                     // 테스트 서버에서의 컨테이너명
+        MAIN_APP_NAME = 'channel-server'                     // 운영 서버에서의 컨테이너명
     }
 
     stages {
@@ -76,7 +77,6 @@ pipeline {
 //             when {
 //                 anyOf{
 //                     branch 'main'
-//                     // branch 'test/jenkins'
 //                 }
 //             }
 //             steps {
@@ -102,7 +102,6 @@ pipeline {
 //             when {
 //                 anyOf{
 //                     branch 'dev'
-//                     branch 'test/jenkins'
 //                 }
 //             }
 //             steps {
@@ -162,8 +161,49 @@ ssh -o StrictHostKeyChecking=no \\
 
 echo "[private-1] \$(hostname)"
 sudo docker ps
-echo '${REG_PASS}' | sudo docker login -u '${REG_USER}' --password-stdin
-sudo docker pull teenyfinny/channel:latest
+
+# Jenkins credentials/env를 Groovy가 먼저 치환
+echo '${env.REG_PASS}' | sudo docker login -u '${env.REG_USER}' --password-stdin
+sudo docker pull '${env.MAIN_IMAGE_NAME}':latest
+
+# 0) 헬스체크 - 서버가 살아있는지 확인
+echo "[health-check] Checking server health..."
+health_status=\$(curl -s --connect-timeout 2 --max-time 3 "http://127.0.0.1:8260/actuator/health" 2>/dev/null | jq -r '.status' 2>/dev/null)
+
+if [ "\$health_status" = "UP" ]; then
+    echo "[health-check] Server is healthy. Proceeding with graceful shutdown..."
+
+    # 1) readiness OFF 요청 보내고 응답 출력
+    echo "[readiness/off] request"
+    curl -XPOST "http://127.0.0.1:8260/internal/readiness/off" || echo "[readiness/off] curl failed: \$?"
+    echo ""  # 줄바꿈
+
+    # 2) drain 루프 - 매번 응답 JSON 출력
+    echo "[drain] start polling..."
+    while true; do
+        resp="\$(curl -s "http://127.0.0.1:8260/actuator/drain")"
+        echo "[drain] response: \${resp}"
+
+        echo "\${resp}" | jq -e '.drained == true' >/dev/null 2>&1 && {
+            echo "[drain] drained == true, continue pipeline."
+            break
+        }
+
+        echo "[drain] Waiting to drain..."
+        sleep 1
+    done
+fi
+
+# 4) 새 컨테이너 실행 (백그라운드)
+sudo docker rm -f ${env.MAIN_APP_NAME} || true
+
+cd /home/sw_team_3/backend
+
+sudo docker compose -p sw_team_3 up -d app-local-1
+
+# 5) 상태 확인
+sudo docker ps --filter "name=${env.MAIN_APP_NAME}"
+sudo docker logs --tail=50 "${env.MAIN_APP_NAME}" || true
 
 EOSSH_PRIV1
 
@@ -174,13 +214,14 @@ ssh -o StrictHostKeyChecking=no \\
 
 echo "[private-2] \$(hostname)"
 sudo docker ps
-echo '${REG_PASS}' | sudo docker login -u '${REG_USER}' --password-stdin
-sudo docker pull teenyfinny/channel:latest
+echo '${env.REG_PASS}' | sudo docker login -u '${env.REG_USER}' --password-stdin
+sudo docker pull '${env.MAIN_IMAGE_NAME}':latest
 
 EOSSH_PRIV2
 
 EOSSH
-                   """
+                    """
+
                 }
 
                 echo 'main branch : 배포가 완료되었습니다.'
@@ -196,46 +237,48 @@ EOSSH
             steps {
                 echo 'dev branch : 배포가 시작되었습니다.'
                 echo 'dev branch : 해당 단계에서 실패 시 CI/CD 담당자에게 문의해주세요.'
-                withCredentials([usernamePassword(
-                    credentialsId: 'docker-hub',
-                    usernameVariable: 'REG_USER',
-                    passwordVariable: 'REG_PASS'
-                )]){
-                    sh '''
-                        echo $REG_PASS | docker login -u $REG_USER --password-stdin
-                    '''
-                    script {
-                        def branch = env.GIT_BRANCH     // SCM 사용 시 제공되는 브랜치명을 조건문의 분기로 사용
 
-                        // test/jenkins 부분의 경우 파이프라인이 완성되었다고 판단되면 삭제할 예정입니다.
-                        // 동작 자체는 dev 브랜치의 경우와 동일합니다.
-                        if (branch == 'test/jenkins' || branch == 'origin/test/jenkins') {
-                            sh(label: 'Docker build & push (latest)', script: '''
-                            set -euxo pipefail
-                            docker build -t ${DEV_IMAGE_NAME}:latest .
-                            docker push  ${DEV_IMAGE_NAME}:latest
-                        ''')
-                        }
+                sh('''
+# 0) 헬스체크 - 서버가 살아있는지 확인
+echo "[health-check] Checking server health..."
+health_status=$(curl -s --connect-timeout 2 --max-time 3 "http://192.168.0.79:8260/actuator/health" 2>/dev/null | jq -r '.status' 2>/dev/null)
 
-                        // DEV_IMAGE_NAME 이름으로 이미지를 빌드한 뒤 도커 허브에 푸시합니다.
-                        if (branch == 'dev' || branch == 'origin/dev') {
-                            sh(label: 'Docker build & push (latest)', script: '''
-                            set -euxo pipefail
-                            docker build -t ${DEV_IMAGE_NAME}:latest .
-                            docker push  ${DEV_IMAGE_NAME}:latest
-                        ''')
-                        }
+if [ "$health_status" = "UP" ]; then
+    echo "[health-check] Server is healthy. Proceeding with graceful shutdown..."
 
-                        // MAIN_IMAGE_NAME 이름으로 이미지를 빌드한 뒤 도커 허브에 푸시합니다.
-                        if (branch == 'main' || branch == 'origin/main') {
-                            sh(label: 'Docker build & push (latest)', script: '''
-                            set -euxo pipefail
-                            docker build -t ${MAIN_IMAGE_NAME}:latest .
-                            docker push  ${MAIN_IMAGE_NAME}:latest
+    # 1) readiness OFF 요청 보내고 응답 출력
+    echo "[readiness/off] request"
+    curl -XPOST "http://192.168.0.79:8260/internal/readiness/off" || echo "[readiness/off] curl failed: $?"
+    echo ""  # 줄바꿈
+
+    # 2) drain 루프 - 매번 응답 JSON 출력
+    echo "[drain] start polling..."
+    while true; do
+        resp="$(curl -s "http://192.168.0.79:8260/actuator/drain")"
+        echo "[drain] response: ${resp}"
+
+        echo "${resp}" | jq -e '.drained == true' >/dev/null 2>&1 && {
+            echo "[drain] drained == true, continue pipeline."
+            break
+        }
+
+        echo "[drain] Waiting to drain..."
+        sleep 1
+    done
+fi
+
+# 4) 새 컨테이너 실행 (백그라운드)
+docker rm -f ${TEST_APP_NAME} || true
+
+cd /home/sw_team_3/backend
+
+docker compose -p sw_team_3 up -d app-local-1
+
+# 5) 상태 확인
+docker ps --filter "name=${TEST_APP_NAME}"
+docker logs --tail=50 "${TEST_APP_NAME}" || true
                         ''')
-                        }
-                    }
-                }
+
                 echo 'dev branch : 배포가 완료되었습니다.'
             }
         }
