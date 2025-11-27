@@ -156,7 +156,7 @@ pipeline {
                     )
                 ]) {
                     sh '''
-                        ssh -i "$BASTION_KEY" "$BASTION_USER"@점프서버IP "hostname; whoami"
+                        ssh -i "$BASTION_KEY" "$BASTION_USER"@ec2-15-165-208-216.ap-northeast-2.compute.amazonaws.com "hostname; whoami"
                     '''
                 }
 
