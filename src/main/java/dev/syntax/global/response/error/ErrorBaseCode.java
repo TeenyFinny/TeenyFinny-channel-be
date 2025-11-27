@@ -86,7 +86,7 @@ public enum ErrorBaseCode implements ErrorCode {
 	TX_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 거래내역을 찾을 수 없습니다."),
 	ACCOUNT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 계좌를 찾을 수 없습니다."),
 	CARD_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 카드를 찾을 수 없습니다."),
-    AUTO_TRANSFER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 자동이체입니다."),
+	AUTO_TRANSFER_NOT_FOUND(HttpStatus.NOT_FOUND, "자동이체를 찾을 수 없습니다."),
 
 	/**
 	 * 405 METHOD NOT ALLOWED - 허용되지 않은 메서드
