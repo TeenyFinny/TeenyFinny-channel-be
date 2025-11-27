@@ -207,7 +207,7 @@ if sudo docker ps -a --format '{{.Names}}' | grep -q "^${env.MAIN_APP_NAME}\$"; 
   done
 
   echo "[docker] Removing existing container: ${env.MAIN_APP_NAME}"
-  sudo docker rm ${env.MAIN_APP_NAME}
+  sudo docker rm -f ${env.MAIN_APP_NAME}
 
   # 완전히 삭제될 때까지 대기 (모든 컨테이너 목록에서 사라질 때까지)
   while sudo docker ps -a --format '{{.Names}}' | grep -q "^${env.MAIN_APP_NAME}\$"; do
@@ -220,13 +220,13 @@ fi
 
 
 sudo docker run -d \
-  --name channel-server \
+  --name ${env.MAIN_APP_NAME}" \
   -p 8080:8080 \
   -e TZ=Asia/Seoul \
   --restart unless-stopped \
   -e SPRING_PROFILES_ACTIVE=secret \
   -v /home/ubuntu/app-config/application-secret.yml:/config/application-secret.yml \
-  teenyfinny/channel:latest
+  ${env.MAIN_IMAGE_NAME}":latest
 
 # 5) 상태 확인
 sudo docker ps --filter "name=${env.MAIN_APP_NAME}"
