@@ -3,10 +3,11 @@ package dev.syntax.domain.transfer.service;
 import dev.syntax.domain.account.entity.Account;
 import dev.syntax.domain.account.enums.AccountType;
 import dev.syntax.domain.account.repository.AccountRepository;
-
+import dev.syntax.domain.transfer.client.CoreAutoTransferClient;
 import dev.syntax.domain.transfer.dto.AutoTransferReq;
+import dev.syntax.domain.transfer.dto.CoreAutoTransferReq;
+import dev.syntax.domain.transfer.dto.CoreAutoTransferRes;
 import dev.syntax.domain.transfer.entity.AutoTransfer;
-import dev.syntax.domain.transfer.enums.AutoTransferType;
 import dev.syntax.domain.transfer.repository.AutoTransferRepository;
 import dev.syntax.domain.transfer.utils.AutoTransferUtils;
 import dev.syntax.domain.user.entity.User;
@@ -35,6 +36,7 @@ public class AutoTransferCreateServiceImpl implements AutoTransferCreateService 
     private final AutoTransferRepository autoTransferRepository;
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
+    private final CoreAutoTransferClient coreAutoTransferClient;
 
     /**
      * 자동이체 설정을 생성합니다.
@@ -56,12 +58,10 @@ public class AutoTransferCreateServiceImpl implements AutoTransferCreateService 
     public void createAutoTransfer(Long childId, AutoTransferReq req, UserContext ctx) {
 
         validateParentAccess(ctx, childId);
-
         // 중복 설정 여부 확인
         if (autoTransferRepository.existsByUserIdAndType(childId, req.getType())) {
             throw new BusinessException(ErrorBaseCode.AUTO_TRANSFER_ALREADY_EXISTS);
         }
-
         // 부모 계좌 조회
         Account parentAccount = accountRepository.findByUserIdAndType(ctx.getId(), AccountType.DEPOSIT)
                 .orElseThrow(() -> new BusinessException(ErrorBaseCode.ACCOUNT_NOT_FOUND));
@@ -70,85 +70,66 @@ public class AutoTransferCreateServiceImpl implements AutoTransferCreateService 
         User child = userRepository.findById(childId)
                 .orElseThrow(() -> new BusinessException(ErrorBaseCode.USER_NOT_FOUND));
 
-        // 공통: 주계좌(용돈 계좌)는 항상 저장해야 함
+        // 용돈 계좌 조회
         Account allowanceAccount = accountRepository.findByUserIdAndType(childId, AccountType.ALLOWANCE)
                 .orElseThrow(() -> new BusinessException(ErrorBaseCode.ACCOUNT_NOT_FOUND));
 
-        Long primaryCoreId;
-        Long investCoreId = null; // 투자 자동이체는 ALLOWANCE일 때만 존재
+        // 투자 계좌 조회 (optional)
+        Account investAccount = accountRepository.findByUserIdAndType(childId, AccountType.INVEST)
+                .orElse(null);
 
-        // ===============================
-        // 1) 용돈 자동이체 (투자 비율 포함)
-        // ===============================
-        if (req.getType() == AutoTransferType.ALLOWANCE) {
+        // 비율 검증
+        if (req.getRatio() < 0 || req.getRatio() > 100) {
+            throw new BusinessException(ErrorBaseCode.INVALID_RATIO_VALUE);
+        }
 
-            // 투자 계좌 조회 (optional)
-            Account investAccount = accountRepository.findByUserIdAndType(childId, AccountType.INVEST)
-                    .orElse(null);
+        // 투자 비율 > 0인데 계좌 없음
+        if (req.getRatio() > 0 && investAccount == null) {
+            throw new BusinessException(ErrorBaseCode.INVEST_ACCOUNT_REQUIRED);
+        }
 
-            // 비율 검증
-            if (req.getRatio() < 0 || req.getRatio() > 100) {
-                throw new BusinessException(ErrorBaseCode.INVALID_RATIO_VALUE);
-            }
+        // ratio에 따른 용돈/투자 금액 계산
+        BigDecimal[] amounts = AutoTransferUtils.calculateAmounts(req.getTotalAmount(), req.getRatio());
+        BigDecimal allowanceAmount = amounts[0];
+        BigDecimal investAmount = amounts[1];
 
-            // 투자 비율 > 0인데 계좌 없음
-            if (req.getRatio() > 0 && investAccount == null) {
-                throw new BusinessException(ErrorBaseCode.INVEST_ACCOUNT_REQUIRED);
-            }
+        CoreAutoTransferReq allowanceAutoTransferReq = new CoreAutoTransferReq(
+                childId,
+                parentAccount.getId(),
+                allowanceAccount.getId(),
+                allowanceAmount,
+                req.getTransferDate(),
+                "용돈");
 
-            // 금액 계산
-            BigDecimal[] amounts = AutoTransferUtils.calculateAmounts(req.getTotalAmount(), req.getRatio());
-            BigDecimal allowanceAmount = amounts[0];
-            BigDecimal investAmount = amounts[1];
-
-            // 용돈 코어 생성
-            primaryCoreId = createCoreTransfer(
-                    parentAccount,
-                    allowanceAccount,
-                    allowanceAmount,
+        CoreAutoTransferRes coreAllowanceRes = coreAutoTransferClient.createAutoTransfer(allowanceAutoTransferReq);
+        if (coreAllowanceRes == null || coreAllowanceRes.autoTransferId() == null) {
+            throw new BusinessException(ErrorBaseCode.CREATE_FAILED);
+        }
+        CoreAutoTransferReq investCoreAutoTransferReq = null;
+        CoreAutoTransferRes coreInvestRes = null;
+        if (req.getRatio() > 0) {
+            investCoreAutoTransferReq = new CoreAutoTransferReq(
+                    childId,
+                    parentAccount.getId(),
+                    investAccount.getId(),
+                    investAmount,
                     req.getTransferDate(),
                     "용돈");
-
-            // 투자 비율 > 0일 때만 투자 코어 생성
-            if (req.getRatio() > 0) {
-                investCoreId = createCoreTransfer(
-                        parentAccount,
-                        investAccount,
-                        investAmount,
-                        req.getTransferDate(),
-                        "투자");
+            coreInvestRes = coreAutoTransferClient.createAutoTransfer(investCoreAutoTransferReq);
+            if (coreInvestRes == null || coreInvestRes.autoTransferId() == null) {
+                throw new BusinessException(ErrorBaseCode.CREATE_FAILED);
             }
         }
-
-        // ===============================
-        // 2) 목표 자동이체
-        // ===============================
-        else { // GOAL
-
-            // 목표 계좌 조회
-            Account goalAccount = accountRepository.findByUserIdAndType(childId, AccountType.GOAL)
-                    .orElseThrow(() -> new BusinessException(ErrorBaseCode.ACCOUNT_NOT_FOUND));
-
-            // 목표 자동이체 코어 호출
-            primaryCoreId = createCoreTransfer(
-                    parentAccount,
-                    goalAccount,
-                    req.getTotalAmount(),
-                    req.getTransferDate(),
-                    "목표");
-        }
-
-        // 최종 자동이체 저장
         AutoTransfer autoTransfer = AutoTransfer.builder()
-                .user(child)
-                .account(allowanceAccount) // 주계좌는 항상 용돈 계좌
-                .transferAmount(req.getTotalAmount())
-                .transferDate(req.getTransferDate())
-                .ratio(req.getRatio())
-                .type(req.getType()) // ALLOWANCE or GOAL
-                .primaryBankTransferId(primaryCoreId)
-                .investBankTransferId(investCoreId) // GOAL이면 null
-                .build();
+        .user(child)
+        .account(allowanceAccount) // 주계좌는 항상 용돈 계좌
+        .transferAmount(req.getTotalAmount())
+        .transferDate(req.getTransferDate())
+        .ratio(req.getRatio())
+        .type(req.getType()) // ALLOWANCE or GOAL
+        .primaryBankTransferId(coreAllowanceRes.autoTransferId())
+        .investBankTransferId(investCoreAutoTransferReq == null ? null : coreInvestRes.autoTransferId()) // GOAL이면 null
+        .build();
 
         autoTransferRepository.save(autoTransfer);
     }
@@ -164,16 +145,4 @@ public class AutoTransferCreateServiceImpl implements AutoTransferCreateService 
         }
     }
 
-    /**
-     * 코어 자동이체 생성 (Mock)
-     * 실제 연동 시 CoreBankClient.createAutoTransfer() 호출 예정
-     */
-    protected Long createCoreTransfer(Account from, Account to, BigDecimal amt, Integer date, String memo) {
-
-        log.info("[CORE] 자동이체 생성 | FROM={} | TO={} | AMT={} | DATE={} | MEMO={}",
-                from.getAccountNo(), to.getAccountNo(), amt, date, memo);
-
-        // 실제 코어 연동 시 생성된 ID 반환
-        return (long) (Math.random() * 1_000_000_000L);
-    }
 }
