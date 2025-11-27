@@ -1,14 +1,5 @@
 package dev.syntax.global.exception;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.client.ResourceAccessException;
-
 import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.global.response.ApiResponseUtil;
 import dev.syntax.global.response.BaseResponse;
@@ -16,6 +7,16 @@ import dev.syntax.global.response.error.ErrorAuthCode;
 import dev.syntax.global.response.error.ErrorBaseCode;
 import dev.syntax.global.response.error.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.ResourceAccessException;
 
 /**
  * 전역 예외 처리를 담당하는 핸들러입니다.
@@ -104,6 +105,22 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<BaseResponse<?>> handleAuthenticationException(AuthenticationException e) {
 		log.error("[AuthenticationException] {}", e.getMessage());
 		return ApiResponseUtil.failure(ErrorAuthCode.UNAUTHORIZED);
+	}
+
+	/**
+	 * @Valid / @Validated 실패 시 발생
+	 */
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ResponseEntity<BaseResponse<?>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+
+		String errorMessage = ex.getBindingResult()
+				.getFieldErrors()
+				.stream()
+				.findFirst()
+				.map(FieldError::getDefaultMessage)
+				.orElse("잘못된 요청입니다.");
+
+		throw new BusinessException(ErrorAuthCode.INVALID_IDENTITY_FORMAT);
 	}
 
 	/**

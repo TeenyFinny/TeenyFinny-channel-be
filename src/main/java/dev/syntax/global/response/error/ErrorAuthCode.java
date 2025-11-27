@@ -1,10 +1,9 @@
 package dev.syntax.global.response.error;
 
-import org.springframework.http.HttpStatus;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 
 /**
  * 인증/인가(Auth) 관련 오류 코드를 관리하는 열거형입니다.
@@ -34,7 +33,7 @@ public enum ErrorAuthCode implements ErrorBaseCodeForErrorCode {
      * 400 BAD_REQUEST - 잘못된 요청
      */
     INVALID_IDENTITY_FORMAT(HttpStatus.BAD_REQUEST, "본인 인증 요청 형식이 올바르지 않습니다.", "AUTH06"),
-
+	INVALID_FORMAT(HttpStatus.BAD_REQUEST, "요청 형식이 올바르지 않습니다.", "AUTH07"),
     /**
 	 * 401 UNAUTHORIZED - 인증 실패
 	 */
