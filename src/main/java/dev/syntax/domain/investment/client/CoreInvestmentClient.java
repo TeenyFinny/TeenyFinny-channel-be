@@ -47,7 +47,7 @@ public class CoreInvestmentClient {
 	public InvestDashboardRes getDashboard(String cano) {
 		return coreRestTemplate.getForObject(
 			properties.getBaseUrl() + DASHBOARD_URL + "/" + cano,
-			InvestDashboardRes.class
+				InvestDashboardRes.class
 		);
 	}
 }
