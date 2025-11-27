@@ -255,10 +255,6 @@ if [ "\$health_status" != "UP" ]; then
   exit 1   # 여기서 ssh 종료 → Jenkins stage 실패
 fi
 
-# 6) 상태 확인 (원래 있던 docker ps/logs)
-sudo docker ps --filter "name=${env.MAIN_APP_NAME}"
-sudo docker logs --tail=50 "${env.MAIN_APP_NAME}" || true
-
 EOSSH_PRIV1
 
 # 두 번째 운영 서버
@@ -268,8 +264,99 @@ ssh -o StrictHostKeyChecking=no \\
 
 echo "[private-2] \$(hostname)"
 sudo docker ps
+
+# Jenkins credentials/env를 Groovy가 먼저 치환
 echo '${env.REG_PASS}' | sudo docker login -u '${env.REG_USER}' --password-stdin
 sudo docker pull '${env.MAIN_IMAGE_NAME}':latest
+
+# 0) 헬스체크 - 서버가 살아있는지 확인
+echo "[health-check] Checking server health..."
+health_status=\$(curl -s --connect-timeout 2 --max-time 3 "http://127.0.0.1:8080/actuator/health" 2>/dev/null | jq -r '.status' 2>/dev/null)
+
+if [ "\$health_status" = "UP" ]; then
+    echo "[health-check] Server is healthy. Proceeding with graceful shutdown..."
+
+    # 1) readiness OFF 요청 보내고 응답 출력
+    echo "[readiness/off] request"
+    curl -XPOST "http://127.0.0.1:8080/internal/readiness/off" || echo "[readiness/off] curl failed: \$?"
+    echo ""  # 줄바꿈
+
+    # 2) drain 루프 - 매번 응답 JSON 출력
+    echo "[drain] start polling..."
+    while true; do
+        resp="\$(curl -s "http://127.0.0.1:8080/actuator/drain")"
+        echo "[drain] response: \${resp}"
+
+        echo "\${resp}" | jq -e '.drained == true' >/dev/null 2>&1 && {
+            echo "[drain] drained == true, continue pipeline."
+            break
+        }
+
+        echo "[drain] Waiting to drain..."
+        sleep 1
+    done
+fi
+
+# 4) 새 컨테이너 실행 (백그라운드)
+# 4) 기존 컨테이너 종료 & 삭제 (완료될 때까지 대기)
+if sudo docker ps -a --format '{{.Names}}' | grep -q "^${env.MAIN_APP_NAME}\$"; then
+  echo "[docker] Stopping existing container: ${env.MAIN_APP_NAME}"
+  sudo docker stop ${env.MAIN_APP_NAME}
+
+  # 완전히 내려갈 때까지 대기 (실행 중 컨테이너 목록에서 사라질 때까지)
+  while sudo docker ps --format '{{.Names}}' | grep -q "^${env.MAIN_APP_NAME}\$"; do
+    echo "[docker] Waiting for container to stop..."
+    sleep 1
+  done
+
+  echo "[docker] Removing existing container: ${env.MAIN_APP_NAME}"
+  sudo docker rm -f ${env.MAIN_APP_NAME}
+
+  # 완전히 삭제될 때까지 대기 (모든 컨테이너 목록에서 사라질 때까지)
+  while sudo docker ps -a --format '{{.Names}}' | grep -q "^${env.MAIN_APP_NAME}\$"; do
+    echo "[docker] Waiting for container to be removed..."
+    sleep 1
+  done
+else
+  echo "[docker] No existing container named ${env.MAIN_APP_NAME}"
+fi
+
+
+sudo docker run -d \
+  --name channel-server \
+  -p 8080:8080 \
+  -e TZ=Asia/Seoul \
+  --restart unless-stopped \
+  -e SPRING_PROFILES_ACTIVE=secret \
+  -v /home/ubuntu/app-config/application-secret.yml:/config/application-secret.yml \
+  teenyfinny/channel:latest
+
+# 5) 상태 확인
+# 5) 배포 후 health check (actuator/health = UP 될 때까지 대기)
+echo "[post-deploy] Waiting for actuator health = UP..."
+
+max_retries=60   # 최대 60번 (2분 정도)
+retry=0
+health_status="UNKNOWN"
+
+while [ "\$retry" -lt "\$max_retries" ]; do
+  health_status=\$(curl -s --connect-timeout 2 --max-time 3 \
+    "http://127.0.0.1:8080/actuator/health" 2>/dev/null | jq -r '.status' 2>/dev/null)
+
+  if [ "\$health_status" = "UP" ]; then
+    echo "[post-deploy] Server is UP (actuator/health)."
+    break
+  fi
+
+  echo "[post-deploy] Current status=\${health_status:-UNKNOWN}, retry=\$((retry+1))/\$max_retries"
+  retry=\$((retry+1))
+  sleep 2
+done
+
+if [ "\$health_status" != "UP" ]; then
+  echo "[post-deploy] Server did NOT become healthy within timeout."
+  exit 1   # 여기서 ssh 종료 → Jenkins stage 실패
+fi
 
 EOSSH_PRIV2
 
