@@ -24,7 +24,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "user")
+@Table(name = "user_service")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -69,7 +69,7 @@ public class User extends BaseTimeEntity {
 	@Column(name = "night_push_enabled", nullable = false)
 	private Boolean nightPushEnabled = false;
 
-	@Column(name = "provider_id", length = 10)
+	@Column(name = "provider_id", length = 255)
 	private String providerId;
 
 	@Setter

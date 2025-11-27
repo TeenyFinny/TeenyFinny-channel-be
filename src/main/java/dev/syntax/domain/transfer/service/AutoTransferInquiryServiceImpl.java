@@ -24,7 +24,7 @@ public class AutoTransferInquiryServiceImpl implements AutoTransferInquiryServic
      * 자동이체 설정 조회.
      *
      * - 부모 권한 검증
-     * - 자녀 ID로 자동이체 설정 1건 조회
+     * - 자녀 ID로 자동이체 설정 최대 2건(용돈+투자/목표 총 2개) 조회
      * - 없으면 isInit=true 반환
      * - 있으면 설정 값을 포함하여 isInit=false 반환
      */
