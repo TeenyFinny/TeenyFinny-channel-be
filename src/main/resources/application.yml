@@ -4,7 +4,7 @@ spring:
   lifecycle:
     timeout-per-shutdown-phase: 60S # ??: ?, ???? ?? ????
   profiles:
-    include: secret
+    include: secret, kakao
 
 server:
   port: 8080

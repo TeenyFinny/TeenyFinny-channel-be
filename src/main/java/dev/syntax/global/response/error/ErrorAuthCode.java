@@ -1,9 +1,10 @@
 package dev.syntax.global.response.error;
 
+import org.springframework.http.HttpStatus;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 
 /**
  * 인증/인가(Auth) 관련 오류 코드를 관리하는 열거형입니다.
@@ -42,6 +43,8 @@ public enum ErrorAuthCode implements ErrorBaseCodeForErrorCode {
 	FAMILY_OTP_TIMEOUT(HttpStatus.UNAUTHORIZED, "OTP 코드가 만료되었습니다.", "FAM02"),
     PASSWORD_MISMATCH(HttpStatus.UNAUTHORIZED, "패스워드를 확인해주세요.", "AUTH04"),
     SIMPLE_PASSWORD_MISMATCH(HttpStatus.UNAUTHORIZED, "간편비밀번호가 일치하지 않습니다.", "AUTH05"),
+	TOKEN_VALIDATION_FAILED(HttpStatus.UNAUTHORIZED, "카카오 인증이 실패했습니다.", "KAKAO01"),
+
      /**
 	 * 403 FORBIDDEN - 권한 부족
 	 */
@@ -50,7 +53,9 @@ public enum ErrorAuthCode implements ErrorBaseCodeForErrorCode {
 	/**
 	 * 409 CONFLICT - 메일 중복 (auth에서 사용)
 	 */
-	EMAIL_CONFLICT(HttpStatus.CONFLICT, "해당 이메일로 가입할 수 없습니다.", "AUTH03");
+	EMAIL_CONFLICT(HttpStatus.CONFLICT, "해당 이메일로 가입할 수 없습니다.", "AUTH03"),
+	KAKAO_EMAIL_CONFLICT(HttpStatus.CONFLICT, "해당 이메일로 가입된 카카오 계정이 있습니다.", "KAKAO02"),
+	KAKAO_PROVIDER_CONFLICT(HttpStatus.CONFLICT, "이미 등록된 회원입니다.", "KAKAO03");
 
 	// 마지막 항목의 ;을 쉼표로 바꾸고 여기에 마저 추가
 
