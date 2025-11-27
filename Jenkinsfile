@@ -373,6 +373,7 @@ EOSSH
             when {
                 anyOf{
                     branch 'dev'
+                    branch 'feat/CI-CD'
                 }
             }
             steps {
