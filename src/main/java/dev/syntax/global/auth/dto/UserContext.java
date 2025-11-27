@@ -118,4 +118,14 @@ public class UserContext implements UserDetails {
 		return true;
 	}
 
+	/**
+	 * User 엔티티로부터 UserContext를 생성하는 팩토리 메서드
+	 *
+	 * @param user User 엔티티
+	 * @return UserContext 인스턴스
+	 */
+	public static UserContext from(User user) {
+		return new UserContext(user);
+	}
+
 }

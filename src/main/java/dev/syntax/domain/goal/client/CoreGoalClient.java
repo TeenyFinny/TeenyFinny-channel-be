@@ -5,7 +5,6 @@ import dev.syntax.domain.goal.dto.CoreUpdateAccountStatusReq;
 import dev.syntax.domain.goal.dto.CoreUpdateAccountStatusRes;
 import dev.syntax.global.core.CoreApiProperties;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;

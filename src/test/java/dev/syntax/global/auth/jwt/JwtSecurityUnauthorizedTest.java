@@ -26,7 +26,7 @@ import dev.syntax.global.response.error.ErrorAuthCode;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(JwtSecurityUnauthorizedTest.MockConfig.class)
+@Import(JwtSecurityUnauthorizedTest.TestConfig.class)
 class JwtSecurityUnauthorizedTest {
 
 	@Autowired
@@ -39,13 +39,28 @@ class JwtSecurityUnauthorizedTest {
 	private JwtTokenProvider jwtTokenProvider;
 
 	@Autowired
-	private UserContextServiceImpl userContextService; // 🔹 이제 MockBean 아님, MockConfig에서 주입됨
+	private UserContextServiceImpl userContextService;  // 🔹 우리가 직접 만든 Mock 빈이 주입됨
 
 	@TestConfiguration
-	static class MockConfig {
+	static class TestConfig {
+
+		/** 1. UserContextServiceImpl Mock Bean 생성 */
 		@Bean
 		public UserContextServiceImpl userContextService() {
 			return mock(UserContextServiceImpl.class);
+		}
+
+		/** 2. 테스트용 JwtTokenProvider Bean 생성 */
+		@Bean
+		public JwtTokenProvider jwtTokenProvider(UserContextServiceImpl userContextService) {
+			String testSecret = "z6BLCa71yUubJVvxoI1PLcFlec1qiwb+szYXKvGmlIAHwYX1F5WVq2jNP05AyAaQrpQw/iR7/DnkiEHOWtQvRg=="; // base64
+			long expirationDays = 1L;
+
+			return new JwtTokenProvider(
+				testSecret,
+				expirationDays,
+				userContextService
+			);
 		}
 	}
 
@@ -77,8 +92,8 @@ class JwtSecurityUnauthorizedTest {
 		var auth = TestAuthenticationFactory.createAuth();
 		String token = jwtTokenProvider.generateToken(auth);
 
-		// 🔹 Mocking (DB 대신)
-		UserContext context = (UserContext)auth.getPrincipal();
+		// 🔹 DB 없이 UserContext 복구 Mocking
+		UserContext context = (UserContext) auth.getPrincipal();
 		when(userContextService.loadUserById(1L)).thenReturn(context);
 
 		mockMvc.perform(get("/test/secure")

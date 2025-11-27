@@ -65,4 +65,17 @@ public interface UserRepository extends JpaRepository<User, Long> {
 		"LEFT JOIN FETCH p.parent " +
 		"WHERE u.email = :email")
 	Optional<User> findByEmailWithParents(@Param("email") String email);
+
+	/**
+	 * providerId로 사용자를 조회합니다.
+	 * 카카오 OAuth 로그인 시 사용됩니다.
+	 *
+	 * @param providerId 소셜 로그인 제공자 ID (예: kakao_123456789)
+	 * @return User 엔티티
+	 */
+	@Query("SELECT DISTINCT u FROM User u " +
+		"LEFT JOIN FETCH u.children c " +
+		"LEFT JOIN FETCH c.child " +
+		"WHERE u.providerId = :providerId")
+	Optional<User> findByProviderIdWithChildren(@Param("providerId") String providerId);
 }

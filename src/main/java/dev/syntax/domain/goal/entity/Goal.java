@@ -31,7 +31,7 @@ import lombok.NoArgsConstructor;
  * 자녀가 생성하고 부모가 승인하는 형태의 목표 기반 저축 시스템에 사용됩니다.</p>
  */
 @Entity
-@Table(name = "goal")
+@Table(name = "goal_savings")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
