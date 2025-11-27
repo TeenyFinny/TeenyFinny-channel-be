@@ -414,7 +414,7 @@ docker rm -f ${TEST_APP_NAME} || true
 
 cd /home/sw_team_3/backend
 
-docker compose -p sw_team_3 up -d app-local-1
+docker compose -p sw_team_3 up -d
 
 # 5) 상태 확인
 docker ps --filter "name=${TEST_APP_NAME}"
