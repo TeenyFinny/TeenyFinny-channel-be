@@ -195,11 +195,17 @@ if [ "\$health_status" = "UP" ]; then
 fi
 
 # 4) 새 컨테이너 실행 (백그라운드)
+sudo docker stop -f ${env.MAIN_APP_NAME} || true
 sudo docker rm -f ${env.MAIN_APP_NAME} || true
 
-cd /home/sw_team_3/backend
-
-sudo docker compose -p sw_team_3 up -d app-local-1
+sudo docker run -d \
+  --name channel-server \
+  -p 8080:8080 \
+  -e TZ=Asia/Seoul \
+  --restart unless-stopped \
+  -e SPRING_PROFILES_ACTIVE=secret \
+  -v /home/ubuntu/app-config/application-secret.yml:/config/application-secret.yml \
+  teenyfinny/channel:latest
 
 # 5) 상태 확인
 sudo docker ps --filter "name=${env.MAIN_APP_NAME}"
