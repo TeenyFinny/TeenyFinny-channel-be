@@ -1,5 +1,6 @@
 package dev.syntax.domain.transfer.entity;
 
+import dev.syntax.domain.transfer.dto.AutoTransferReq;
 import dev.syntax.domain.transfer.enums.AutoTransferFrequency;
 import dev.syntax.domain.transfer.enums.AutoTransferType;
 import dev.syntax.domain.user.entity.User;
@@ -65,4 +66,11 @@ public class AutoTransfer extends BaseTimeEntity {
      */
     @Column(name = "invest_bank_transfer_id")
     private Long investBankTransferId;
+
+    public void updateAutoTransfer(AutoTransferReq newReq, Long newInvestTransferId){
+        this.ratio = newReq.getRatio();
+        this.transferDate = newReq.getTransferDate();
+        this.transferAmount = newReq.getTotalAmount();
+        this.investBankTransferId = newInvestTransferId;
+    }
 }

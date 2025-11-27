@@ -86,6 +86,7 @@ public enum ErrorBaseCode implements ErrorCode {
 	TX_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 거래내역을 찾을 수 없습니다."),
 	ACCOUNT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 계좌를 찾을 수 없습니다."),
 	CARD_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 카드를 찾을 수 없습니다."),
+	AUTO_TRANSFER_NOT_FOUND(HttpStatus.NOT_FOUND, "자동이체를 찾을 수 없습니다."),
 
 	/**
 	 * 405 METHOD NOT ALLOWED - 허용되지 않은 메서드
@@ -125,6 +126,14 @@ public enum ErrorBaseCode implements ErrorCode {
 	 */
 	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류입니다."),
     CREATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "계좌 생성에 실패했습니다."),
+	USER_CREATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "계정 생성에 실패했습니다."),
+
+	/**
+	 * 카카오 로그인 관련 에러
+	 */
+	TOKEN_ISSUE_FAILED(HttpStatus.BAD_GATEWAY, "카카오 토큰 발급 실패"),
+	USER_INFO_REQUEST_FAILED(HttpStatus.BAD_GATEWAY, "카카오 사용자 정보 조회 실패"),
+	USER_INFO_PARSE_FAILED(HttpStatus.BAD_GATEWAY,"카카오 사용자 정보 파싱 실패"),
 
 	/**
 	 * Core API 관련 에러

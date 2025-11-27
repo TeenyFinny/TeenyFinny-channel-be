@@ -1,12 +1,13 @@
 package dev.syntax.domain.transfer.service;
 
 import dev.syntax.domain.transfer.dto.AutoTransferReq;
+import dev.syntax.domain.transfer.dto.AutoTransferRes;
 import dev.syntax.global.auth.dto.UserContext;
 
 /**
  * 자동이체 생성 인터페이스.
  */
-public interface AutoTransferCreateService {
+public interface AutoTransferService {
 
     /**
      * 자동이체 설정 생성 (부모 -> 자녀).
@@ -17,4 +18,5 @@ public interface AutoTransferCreateService {
      */
     void createAutoTransfer(Long childId, AutoTransferReq req, UserContext ctx);
 
+    AutoTransferRes updateAutoTransfer(Long childId, AutoTransferReq req, UserContext ctx);
 }

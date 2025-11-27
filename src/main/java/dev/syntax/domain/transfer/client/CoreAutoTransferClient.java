@@ -1,5 +1,7 @@
 package dev.syntax.domain.transfer.client;
 
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -17,7 +19,8 @@ public class CoreAutoTransferClient {
     private final RestTemplate coreRestTemplate;
 	private final CoreApiProperties properties;
 
-    private static final String AUTO_TRANSFER_URL = "/core/banking/account/auto-transfer/create";
+    private static final String AUTO_TRANSFER_CREATE_URL = "/core/banking/account/auto-transfer/create";
+    private static final String AUTO_TRANSFER_UPDATE_URL = "/core/banking/account/auto-transfer/{autoTransferId}";
 
     /**
      * Core 자동이체 생성 요청
@@ -27,9 +30,20 @@ public class CoreAutoTransferClient {
      */
     public CoreAutoTransferRes createAutoTransfer(CoreAutoTransferReq req){
         return coreRestTemplate.postForObject(
-                properties.getBaseUrl() + AUTO_TRANSFER_URL,
+                properties.getBaseUrl() + AUTO_TRANSFER_CREATE_URL,
                 req,
                 CoreAutoTransferRes.class
+        );
+    }
+
+    public void updateAutoTransfer(Long autoTransferId, CoreAutoTransferReq req){
+        HttpEntity<CoreAutoTransferReq> entity = new HttpEntity<>(req);
+        coreRestTemplate.exchange(
+                properties.getBaseUrl() + AUTO_TRANSFER_UPDATE_URL,
+                HttpMethod.PUT,
+                entity,
+                Void.class,
+                autoTransferId
         );
     }
 }

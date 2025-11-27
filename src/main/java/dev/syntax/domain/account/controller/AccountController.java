@@ -1,5 +1,6 @@
 package dev.syntax.domain.account.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -7,8 +8,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,7 +27,7 @@ import dev.syntax.domain.card.service.CardInquiryService;
 import dev.syntax.domain.transfer.dto.AutoTransferReq;
 import dev.syntax.domain.transfer.dto.AutoTransferRes;
 import dev.syntax.domain.transfer.enums.AutoTransferType;
-import dev.syntax.domain.transfer.service.AutoTransferCreateService;
+import dev.syntax.domain.transfer.service.AutoTransferService;
 import dev.syntax.domain.transfer.service.AutoTransferInquiryService;
 import dev.syntax.domain.account.service.AccountBalanceService;
 import dev.syntax.global.auth.annotation.CurrentUser;
@@ -57,7 +60,7 @@ public class AccountController {
         private final AccountBalanceService accountSummaryService;
         private final CardInquiryService cardInquiryService;
         private final AutoTransferInquiryService autoTransferInquiryService;
-        private final AutoTransferCreateService autoTransferCreateService;
+        private final AutoTransferService autoTransferService;
 
         /**
          * 📌 [본인] 특정 계좌 잔액 조회
@@ -233,7 +236,7 @@ public class AccountController {
                 return ApiResponseUtil.success(SuccessCode.OK, res);
         }
 
-            /**
+        /**
          * 자동이체 설정 조회 API.
          * <p>
          * 이 경로는 용돈 자동이체만 접근가능하다는 전제 하에 구현하였습니다.
@@ -267,10 +270,19 @@ public class AccountController {
         @PostMapping("/{id}/auto-transfer")
         public ResponseEntity<BaseResponse<?>> createAutoTransfer(
                 @PathVariable("id") Long id,
-                @RequestBody AutoTransferReq req,
+                @Valid @RequestBody AutoTransferReq req,
                 @CurrentUser UserContext ctx) {
-                autoTransferCreateService.createAutoTransfer(id, req, ctx);
-                return ApiResponseUtil.success(SuccessCode.CREATED);
+        autoTransferService.createAutoTransfer(id, req, ctx);
+        return ApiResponseUtil.success(SuccessCode.CREATED);
         }
 
+
+        @PutMapping("/{id}/auto-transfer")
+        public ResponseEntity<BaseResponse<?>> updateAutoTransfer(
+                @PathVariable("id") Long id,
+                @Valid @RequestBody AutoTransferReq req,
+                @CurrentUser UserContext ctx) {
+        AutoTransferRes res= autoTransferService.updateAutoTransfer(id, req, ctx);
+        return ApiResponseUtil.success(SuccessCode.OK, res);
+        }
 }
