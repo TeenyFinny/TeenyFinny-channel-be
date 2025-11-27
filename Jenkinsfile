@@ -229,35 +229,35 @@ sudo docker run -d \
   teenyfinny/channel:latest
 
 # 5) 상태 확인
-sudo docker ps --filter "name=${env.MAIN_APP_NAME}"
-sudo docker logs --tail=50 "${env.MAIN_APP_NAME}" || true
-
-# 6) 새 컨테이너 health 확인 (actuator/health 기준)
+# 5) 배포 후 health check (actuator/health = UP 될 때까지 대기)
 echo "[post-deploy] Waiting for actuator health = UP..."
 
-max_retries=60   # 최대 60번 (대략 2분)
+max_retries=60   # 최대 60번 (2분 정도)
 retry=0
 health_status="UNKNOWN"
 
-while [ "$retry" -lt "$max_retries" ]; do
-  health_status=$(curl -s --connect-timeout 2 --max-time 3 \
+while [ "\$retry" -lt "\$max_retries" ]; do
+  health_status=\$(curl -s --connect-timeout 2 --max-time 3 \
     "http://127.0.0.1:8080/actuator/health" 2>/dev/null | jq -r '.status' 2>/dev/null)
 
-  if [ "$health_status" = "UP" ]; then
+  if [ "\$health_status" = "UP" ]; then
     echo "[post-deploy] Server is UP (actuator/health)."
     break
   fi
 
-  echo "[post-deploy] Current status=${health_status:-UNKNOWN}, retry=$((retry+1))/$max_retries"
-  retry=$((retry+1))
+  echo "[post-deploy] Current status=\${health_status:-UNKNOWN}, retry=\$((retry+1))/\$max_retries"
+  retry=\$((retry+1))
   sleep 2
 done
 
-if [ "$health_status" != "UP" ]; then
+if [ "\$health_status" != "UP" ]; then
   echo "[post-deploy] Server did NOT become healthy within timeout."
-  # 실패로 간주하고 파이프라인 깨고 싶으면 exit 1
-  exit 1
+  exit 1   # 여기서 ssh 종료 → Jenkins stage 실패
 fi
+
+# 6) 상태 확인 (원래 있던 docker ps/logs)
+sudo docker ps --filter "name=${env.MAIN_APP_NAME}"
+sudo docker logs --tail=50 "${env.MAIN_APP_NAME}" || true
 
 EOSSH_PRIV1
 
