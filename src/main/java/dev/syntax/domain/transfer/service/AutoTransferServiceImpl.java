@@ -5,14 +5,12 @@ import dev.syntax.domain.transfer.client.CoreTransferClient;
 import dev.syntax.domain.transfer.entity.AutoTransfer;
 import dev.syntax.domain.transfer.enums.AutoTransferType;
 import dev.syntax.domain.transfer.repository.AutoTransferRepository;
-import dev.syntax.domain.user.entity.User;
-import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorBaseCode;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -22,7 +20,6 @@ import java.util.List;
 public class AutoTransferServiceImpl implements AutoTransferService {
 
     private final AutoTransferRepository autoTransferRepository;
-    private final AccountRepository accountRepository;
     private final CoreTransferClient coreTransferClient;
 
     @Override

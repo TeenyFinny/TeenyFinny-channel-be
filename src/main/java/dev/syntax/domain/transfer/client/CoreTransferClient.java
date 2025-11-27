@@ -1,6 +1,5 @@
 package dev.syntax.domain.transfer.client;
 
-import dev.syntax.domain.goal.dto.CoreTransactionHistoryRes;
 import dev.syntax.global.core.CoreApiProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
