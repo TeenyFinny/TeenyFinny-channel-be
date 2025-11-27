@@ -15,6 +15,7 @@ import dev.syntax.domain.user.entity.User;
 import dev.syntax.domain.user.enums.Role;
 import dev.syntax.domain.user.repository.UserRepository;
 import dev.syntax.global.auth.dto.UserContext;
+import dev.syntax.domain.transfer.enums.AutoTransferType;
 import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorBaseCode;
 import lombok.RequiredArgsConstructor;
@@ -272,4 +273,15 @@ public class AutoTransferServiceImpl implements AutoTransferService {
                 .build();
         return autoTransferRepository.save(transfer);
     }
-}
+     
+    @Override
+    @Transactional
+    public void deleteAutoTransfer(Long accountId, AutoTransferType type) {
+
+        AutoTransfer autoTransfer = autoTransferRepository.findByAccountIdAndType(accountId, type)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.AUTO_TRANSFER_NOT_FOUND));
+
+        coreAutoTransferClient.deleteAutoTransfer(autoTransfer.getPrimaryBankTransferId());
+        autoTransferRepository.delete(autoTransfer);
+    }
+ }  

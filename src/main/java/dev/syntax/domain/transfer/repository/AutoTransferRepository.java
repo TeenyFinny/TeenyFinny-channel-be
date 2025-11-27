@@ -48,5 +48,5 @@ public interface AutoTransferRepository extends JpaRepository<AutoTransfer, Long
      */
     Optional<AutoTransfer> findByUserIdAndType(Long childId, AutoTransferType type);
 
-
+    Optional<AutoTransfer> findByAccountIdAndType(Long accountId, AutoTransferType type);
 }

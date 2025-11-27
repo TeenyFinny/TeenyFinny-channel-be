@@ -2,6 +2,7 @@ package dev.syntax.domain.transfer.service;
 
 import dev.syntax.domain.transfer.dto.AutoTransferReq;
 import dev.syntax.domain.transfer.dto.AutoTransferRes;
+import dev.syntax.domain.transfer.enums.AutoTransferType;
 import dev.syntax.global.auth.dto.UserContext;
 
 /**
@@ -27,4 +28,8 @@ public interface AutoTransferService {
      * @return 수정된 자동이체 정보
      */
     AutoTransferRes updateAutoTransfer(Long childId, AutoTransferReq req, UserContext ctx);
+  
+  
+    void deleteAutoTransfer(Long accountId, AutoTransferType type);
+  
 }

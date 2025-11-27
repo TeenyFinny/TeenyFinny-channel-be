@@ -21,6 +21,7 @@ public class CoreAutoTransferClient {
 
     private static final String AUTO_TRANSFER_CREATE_URL = "/core/banking/account/auto-transfer/create";
     private static final String AUTO_TRANSFER_UPDATE_URL = "/core/banking/account/auto-transfer/{autoTransferId}";
+    private static final String DELETE_AUTO_TRANSFER_URL = "/core/banking/auto-transfer/{autoTransferId}";
 
     /**
      * Core 자동이체 생성 요청
@@ -49,6 +50,13 @@ public class CoreAutoTransferClient {
                 HttpMethod.PUT,
                 entity,
                 Void.class,
+                autoTransferId
+        );
+    }
+
+    public void deleteAutoTransfer(Long autoTransferId) {
+        coreRestTemplate.delete(
+                properties.getBaseUrl() + DELETE_AUTO_TRANSFER_URL,
                 autoTransferId
         );
     }
