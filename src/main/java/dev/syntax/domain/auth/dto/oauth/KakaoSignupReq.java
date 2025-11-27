@@ -1,5 +1,6 @@
 package dev.syntax.domain.auth.dto.oauth;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -10,6 +11,7 @@ import jakarta.validation.constraints.Pattern;
  * @param tempToken      임시 토큰
  * @param role           사용자 역할 (PARENT/CHILD)
  * @param name           이름
+ * @param email			 이메일
  * @param birthDate      생년월일 (YYYY-MM-DD)
  * @param gender         성별 (1: 남, 2: 여)
  * @param phoneNumber    전화번호
@@ -25,6 +27,10 @@ public record KakaoSignupReq(
 
 	@NotBlank(message = "이름은 필수입니다.")
 	String name,
+
+	@NotBlank
+	@Email
+	String email,
 
 	@NotBlank(message = "생년월일은 필수입니다.")
 	@Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "생년월일 형식이 올바르지 않습니다. (YYYY-MM-DD)")
