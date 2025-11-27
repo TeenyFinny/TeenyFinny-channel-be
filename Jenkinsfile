@@ -195,8 +195,8 @@ if [ "\$health_status" = "UP" ]; then
 fi
 
 # 4) 새 컨테이너 실행 (백그라운드)
-sudo docker stop -f ${env.MAIN_APP_NAME} || true
-sudo docker rm -f ${env.MAIN_APP_NAME} || true
+sudo docker stop ${env.MAIN_APP_NAME} || true
+sudo docker rm ${env.MAIN_APP_NAME} || true
 
 sudo docker run -d \
   --name channel-server \
