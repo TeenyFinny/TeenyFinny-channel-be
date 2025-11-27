@@ -15,4 +15,17 @@ public record UserLoginInfo(
 	String role,
 	String email
 ) {
+	/**
+	 * User 엔티티로부터 UserLoginInfo를 생성하는 팩토리 메서드
+	 *
+	 * @param user User 엔티티
+	 * @return UserLoginInfo 인스턴스
+	 */
+	public static UserLoginInfo of(dev.syntax.domain.user.entity.User user) {
+		return UserLoginInfo.builder()
+			.userId(user.getId())
+			.role(user.getRole().name())
+			.email(user.getEmail())
+			.build();
+	}
 }

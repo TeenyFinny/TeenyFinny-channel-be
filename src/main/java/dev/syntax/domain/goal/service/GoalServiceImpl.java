@@ -7,6 +7,10 @@ import java.math.RoundingMode;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import dev.syntax.domain.account.enums.AccountType;
+import dev.syntax.domain.account.repository.AccountRepository;
+import dev.syntax.domain.transfer.enums.AutoTransferType;
+import dev.syntax.domain.transfer.service.AutoTransferService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,6 +55,8 @@ public class GoalServiceImpl implements GoalService {
 	private final CoreGoalClient coreGoalClient;
     private static final DateTimeFormatter GOAL_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss");
 	private final GoalAccountService goalAccountService;
+    private final AutoTransferService autoTransferService;
+    private final AccountRepository accountRepository;
 
     /**
      * UserContext로부터 User 엔티티 조회
@@ -58,7 +64,7 @@ public class GoalServiceImpl implements GoalService {
      * @param userContext 현재 로그인한 사용자 컨텍스트
      * @return User 엔티티
      */
-    private User getUserOrThrow(UserContext userContext) {
+    private User getUser(UserContext userContext) {
         return userContext.getUser();
     }
 
@@ -158,7 +164,7 @@ public class GoalServiceImpl implements GoalService {
     @Transactional
     public GoalCreateRes createGoal(UserContext userContext, GoalCreateReq req) {
 
-        User user = getUserOrThrow(userContext);
+        User user = getUser(userContext);
 
         if (user.getRole() != Role.CHILD) {
             throw new BusinessException(ErrorBaseCode.GOAL_REQUEST_FORBIDDEN);
@@ -200,7 +206,7 @@ public class GoalServiceImpl implements GoalService {
 	@Transactional
 	public GoalUpdateRes updateGoal(UserContext userContext, Long goalId, GoalUpdateReq req) {
 
-		User user = getUserOrThrow(userContext);
+		User user = getUser(userContext);
 		Goal goal = getGoalOrThrow(goalId);
 
 		validateGoalOwner(user, goal);
@@ -219,7 +225,7 @@ public class GoalServiceImpl implements GoalService {
 	@Override
 	public GoalInfoRes getGoalForUpdate(UserContext userContext, Long goalId) {
 
-		User user = getUserOrThrow(userContext);
+		User user = getUser(userContext);
 		Goal goal = getGoalOrThrow(goalId);
 
 		validateGoalOwner(user, goal);
@@ -235,7 +241,7 @@ public class GoalServiceImpl implements GoalService {
 	@Transactional
 	public GoalApproveRes approveGoal(UserContext userContext, Long goalId, boolean approve) {
 
-		User user = getUserOrThrow(userContext);
+		User user = getUser(userContext);
 
 		if (user.getRole() != Role.PARENT) {
 			throw new BusinessException(ErrorBaseCode.GOAL_REQUEST_FORBIDDEN);
@@ -266,7 +272,7 @@ public class GoalServiceImpl implements GoalService {
 	@Transactional(readOnly = true)
 	public GoalDetailRes getGoalDetail(UserContext userContext, Long goalId) {
 
-		User user = getUserOrThrow(userContext);
+		User user = getUser(userContext);
 		Goal goal = getGoalOrThrow(goalId);
 
 		if (user.getRole() == Role.CHILD && !goal.getUser().getId().equals(user.getId())) {
@@ -340,7 +346,7 @@ public class GoalServiceImpl implements GoalService {
 	@Transactional
 	public GoalDeleteRes requestCancel(UserContext userContext, Long goalId) {
 
-		User user = getUserOrThrow(userContext);
+		User user = getUser(userContext);
 		Goal goal = getGoalOrThrow(goalId);
 
 		if (user.getRole() != Role.CHILD) {
@@ -363,13 +369,15 @@ public class GoalServiceImpl implements GoalService {
 	@Transactional
 	public GoalDeleteRes confirmCancel(UserContext userContext, Long goalId) {
 
-		User parent = getUserOrThrow(userContext);
+		User parent = getUser(userContext);
 		if (parent.getRole() != Role.PARENT) {
 			throw new BusinessException(ErrorBaseCode.GOAL_ACCESS_FORBIDDEN);
 		}
 
         Goal goal = getGoalOrThrow(goalId);
         String accountNo = goal.getAccount().getAccountNo();
+        Account allowanceAccount = accountRepository.findByUserIdAndType(goal.getUser().getId(), AccountType.ALLOWANCE)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.ACCOUNT_NOT_FOUND));
 
         validateParentHasChild(userContext, goal);
         validateGoalIsOngoing(goal);
@@ -377,6 +385,7 @@ public class GoalServiceImpl implements GoalService {
 
         goal.updateStatus(GoalStatus.CANCELLED);
         coreGoalClient.updateAccountStatus(accountNo, new CoreUpdateAccountStatusReq("SUSPENDED"));
+        autoTransferService.deleteAutoTransfer(allowanceAccount.getId(), AutoTransferType.GOAL);
 
 		return new GoalDeleteRes(goalId, "목표 계좌가 중도 해지되었습니다.");
 	}
@@ -388,7 +397,7 @@ public class GoalServiceImpl implements GoalService {
 	@Transactional
 	public GoalDeleteRes requestComplete(UserContext userContext, Long goalId) {
 
-		User child = getUserOrThrow(userContext);
+		User child = getUser(userContext);
 		if (child.getRole() != Role.CHILD) {
 			throw new BusinessException(ErrorBaseCode.GOAL_REQUEST_FORBIDDEN);
 		}
@@ -412,20 +421,28 @@ public class GoalServiceImpl implements GoalService {
 	@Transactional
 	public GoalDeleteRes confirmComplete(UserContext userContext, Long goalId) {
 
-		User parent = getUserOrThrow(userContext);
+		User parent = getUser(userContext);
 		if (parent.getRole() != Role.PARENT) {
 			throw new BusinessException(ErrorBaseCode.GOAL_ACCESS_FORBIDDEN);
 		}
 
         Goal goal = getGoalOrThrow(goalId);
-        String accountNo = goal.getAccount().getAccountNo();
+        String goalAccountNo = goal.getAccount().getAccountNo();
+        Account allowanceAccount = accountRepository.findByUserIdAndType(goal.getUser().getId(), AccountType.ALLOWANCE)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.ACCOUNT_NOT_FOUND));
 
         validateParentHasChild(userContext, goal);
         validateGoalIsOngoing(goal);
         validateGoalIsCompleted(goal);
 
+        // 채널 목표 상태 변경
         goal.updateStatus(GoalStatus.COMPLETED);
-        coreGoalClient.updateAccountStatus(accountNo, new CoreUpdateAccountStatusReq("CLOSED"));
+
+        // 코어 목표 적금 계좌 상태 변경
+        coreGoalClient.updateAccountStatus(goalAccountNo, new CoreUpdateAccountStatusReq("CLOSED"));
+
+        // 채널 + 코어 자동 이체 삭제
+        autoTransferService.deleteAutoTransfer(allowanceAccount.getId(), AutoTransferType.GOAL);
 
 		return new GoalDeleteRes(goal.getId(), "목표가 달성 완료되었습니다!");
 	}

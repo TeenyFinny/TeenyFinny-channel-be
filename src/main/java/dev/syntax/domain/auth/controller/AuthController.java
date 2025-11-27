@@ -25,6 +25,7 @@ import dev.syntax.domain.auth.dto.SignupReq;
 import dev.syntax.domain.auth.dto.SimplePasswordVerifyReq;
 import dev.syntax.domain.auth.dto.UpdatePasswordReq;
 import dev.syntax.domain.auth.dto.UpdatePushReq;
+import dev.syntax.domain.auth.dto.oauth.KakaoSignupReq;
 import dev.syntax.domain.auth.service.AuthService;
 import dev.syntax.domain.auth.service.FamilyService;
 import dev.syntax.domain.auth.service.LoginService;
@@ -49,6 +50,7 @@ public class AuthController {
 	private final SignupService signupService;
 	private final LoginService loginService;
 	private final FamilyService familyService;
+	private final dev.syntax.domain.auth.service.KakaoOAuthService kakaoOAuthService;
 
 	/**
 	 * 회원가입을 수행합니다.
@@ -236,4 +238,33 @@ public class AuthController {
 		return ApiResponseUtil.success(SuccessCode.OK, response);
 	}
 
+	/**
+	 * 카카오 로그인 콜백 처리 엔드포인트
+	 *
+	 * @param request 카카오 인증 코드 및 리다이렉트 URI
+	 * @return 기존 사용자: JWT 토큰, 신규 사용자: 임시 토큰
+	 */
+	@PostMapping("/oauth/kakao/login")
+	public ResponseEntity<BaseResponse<?>> kakaoLogin(
+		@Valid @RequestBody dev.syntax.domain.auth.dto.oauth.KakaoLoginReq request
+	) {
+		dev.syntax.domain.auth.dto.oauth.KakaoLoginRes response = kakaoOAuthService.loginWithKakao(request);
+		log.info("[카카오 로그인 요청 처리 완료] isNewUser: {}", response.isNewUser());
+		return ApiResponseUtil.success(SuccessCode.OK, response);
+	}
+
+	/**
+	 * 카카오 신규 회원가입 완료 엔드포인트
+	 *
+	 * @param request 임시 토큰 및 추가 정보
+	 * @return JWT 토큰 및 사용자 정보
+	 */
+	@PostMapping("/oauth/kakao/signup")
+	public ResponseEntity<BaseResponse<?>> kakaoSignup(
+		@Valid @RequestBody KakaoSignupReq request
+	) {
+		LoginRes response = kakaoOAuthService.signupWithKakao(request);
+		log.info("[카카오 회원가입 완료] user_id: {}", response.user().userId());
+		return ApiResponseUtil.success(SuccessCode.CREATED, response);
+	}
 }
