@@ -220,13 +220,13 @@ fi
 
 
 sudo docker run -d \
-  --name ${env.MAIN_APP_NAME}" \
+  --name channel-server \
   -p 8080:8080 \
   -e TZ=Asia/Seoul \
   --restart unless-stopped \
   -e SPRING_PROFILES_ACTIVE=secret \
   -v /home/ubuntu/app-config/application-secret.yml:/config/application-secret.yml \
-  ${env.MAIN_IMAGE_NAME}":latest
+  teenyfinny/channel:latest
 
 # 5) 상태 확인
 sudo docker ps --filter "name=${env.MAIN_APP_NAME}"
