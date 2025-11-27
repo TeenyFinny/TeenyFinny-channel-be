@@ -195,16 +195,29 @@ if [ "\$health_status" = "UP" ]; then
 fi
 
 # 4) 새 컨테이너 실행 (백그라운드)
-# 4) 기존 컨테이너 종료 & 제거
+# 4) 기존 컨테이너 종료 & 삭제 (완료될 때까지 대기)
 if sudo docker ps -a --format '{{.Names}}' | grep -q "^${env.MAIN_APP_NAME}\$"; then
   echo "[docker] Stopping existing container: ${env.MAIN_APP_NAME}"
-  sudo docker stop ${env.MAIN_APP_NAME} || echo "[docker] stop failed (ignored)"
+  sudo docker stop ${env.MAIN_APP_NAME}
+
+  # 완전히 내려갈 때까지 대기 (실행 중 컨테이너 목록에서 사라질 때까지)
+  while sudo docker ps --format '{{.Names}}' | grep -q "^${env.MAIN_APP_NAME}\$"; do
+    echo "[docker] Waiting for container to stop..."
+    sleep 1
+  done
 
   echo "[docker] Removing existing container: ${env.MAIN_APP_NAME}"
-  sudo docker rm -f ${env.MAIN_APP_NAME} || echo "[docker] rm failed (ignored)"
+  sudo docker rm ${env.MAIN_APP_NAME}
+
+  # 완전히 삭제될 때까지 대기 (모든 컨테이너 목록에서 사라질 때까지)
+  while sudo docker ps -a --format '{{.Names}}' | grep -q "^${env.MAIN_APP_NAME}\$"; do
+    echo "[docker] Waiting for container to be removed..."
+    sleep 1
+  done
 else
   echo "[docker] No existing container named ${env.MAIN_APP_NAME}"
 fi
+
 
 sudo docker run -d \
   --name channel-server \
