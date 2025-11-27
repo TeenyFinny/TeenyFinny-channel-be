@@ -1,27 +1,15 @@
 package dev.syntax.domain.auth.service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.UUID;
-
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
+import dev.syntax.domain.account.service.BankAccountService;
 import dev.syntax.domain.auth.client.KakaoOAuthClient;
 import dev.syntax.domain.auth.dto.LoginRes;
 import dev.syntax.domain.auth.dto.UserLoginInfo;
-import dev.syntax.domain.auth.dto.oauth.KakaoLoginReq;
-import dev.syntax.domain.auth.dto.oauth.KakaoLoginRes;
-import dev.syntax.domain.auth.dto.oauth.KakaoSignupReq;
-import dev.syntax.domain.auth.dto.oauth.KakaoTokenRes;
-import dev.syntax.domain.auth.dto.oauth.KakaoUserInfo;
+import dev.syntax.domain.auth.dto.oauth.*;
 import dev.syntax.domain.auth.entity.KakaoTempToken;
 import dev.syntax.domain.auth.repository.KakaoTempTokenRepository;
 import dev.syntax.domain.user.client.CoreUserClient;
+import dev.syntax.domain.user.dto.CoreInitRes;
+import dev.syntax.domain.user.dto.CoreParentInitRes;
 import dev.syntax.domain.user.dto.CoreUserInitReq;
 import dev.syntax.domain.user.entity.User;
 import dev.syntax.domain.user.enums.Role;
@@ -33,6 +21,16 @@ import dev.syntax.global.response.error.ErrorAuthCode;
 import dev.syntax.global.response.error.ErrorBaseCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 /**
  * 카카오 OAuth 인증 서비스 구현체
@@ -48,6 +46,7 @@ public class KakaoOAuthServiceImpl implements KakaoOAuthService {
 	private final PasswordEncoder passwordEncoder;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final CoreUserClient coreUserClient;
+	private final BankAccountService accountService;
 
 	private static final String DEFAULT_TOKEN_TYPE = "Bearer";
 	private static final int TEMP_TOKEN_EXPIRATION_MINUTES = 5; // 10분 → 5분으로 단축
@@ -98,8 +97,8 @@ public class KakaoOAuthServiceImpl implements KakaoOAuthService {
 		}
 
 		// 3. 이메일 중복 확인 (카카오 이메일이 있는 경우)
-		if (tempToken.getKakaoEmail() != null &&
-			userRepository.existsByEmail(tempToken.getKakaoEmail())) {
+		if (request.email() != null &&
+			userRepository.existsByEmail(request.email())) {
 			throw new BusinessException(ErrorAuthCode.KAKAO_EMAIL_CONFLICT);
 		}
 
@@ -117,16 +116,18 @@ public class KakaoOAuthServiceImpl implements KakaoOAuthService {
 				savedUser.getBirthDate()
 			);
 
-			Long coreUserId;
 			if (savedUser.getRole() == Role.PARENT) {
-				coreUserId = coreUserClient.createParentAccount(coreUserReq).coreUserId();
+				CoreParentInitRes coreRes = coreUserClient.createParentAccount(coreUserReq);
+				savedUser.setCoreUserId(coreRes.coreUserId());
+				accountService.createParentAccount(savedUser, coreRes);
+				log.info("[Core 부모 계정 + 계좌 생성 완료] channel_user_id: {}, core_user_id: {}",
+					savedUser.getId(), coreRes.coreUserId());
 			} else {
-				coreUserId = coreUserClient.createChildUser(coreUserReq).coreUserId();
+				CoreInitRes coreRes = coreUserClient.createChildUser(coreUserReq);
+				user.setCoreUserId(coreRes.coreUserId());
+				log.info("[Core 자녀 사용자 생성 완료] channel_user_id: {}, core_user_id: {}",
+						savedUser.getId(), savedUser.getCoreUserId());
 			}
-
-			savedUser.setCoreUserId(coreUserId);
-			log.info("[Core 사용자 생성 완료] channel_user_id: {}, core_user_id: {}",
-				savedUser.getId(), coreUserId);
 		} catch (Exception e) {
 			log.error("[Core 사용자 생성 실패] user_id: {}, error: {}",
 				savedUser.getId(), e.getMessage());
@@ -196,17 +197,12 @@ public class KakaoOAuthServiceImpl implements KakaoOAuthService {
 	 * 카카오 사용자 엔티티 생성
 	 */
 	private User createKakaoUser(KakaoSignupReq request, KakaoTempToken tempToken) {
-		// 이메일: 카카오 이메일 우선, 없으면 providerId 기반 생성
-		String email = tempToken.getKakaoEmail() != null
-			? tempToken.getKakaoEmail()
-			: tempToken.getProviderId() + "@kakao.local";
-
 		// 비밀번호: 카카오 로그인은 비밀번호 불필요하므로 랜덤 생성
 		String randomPassword = UUID.randomUUID().toString();
 
 		return User.builder()
 			.name(request.name())
-			.email(email)
+			.email(request.email())
 			.phoneNumber(request.phoneNumber())
 			.password(passwordEncoder.encode(randomPassword))
 			.simplePassword(passwordEncoder.encode(request.simplePassword()))
