@@ -21,7 +21,7 @@ public class CoreInvestmentClient {
     private static final String STOCKS_URL = "/core/investments/stocks";
     private static final String INVEST_ACCOUNT_PORTFOLIO_URL = "/core/investments/account";
     private static final String INVESTMENT_ACCOUNT_URL = "/core/banking/account/investment";
-    private static final String DASHBOARD_URL = "/core/investments/dashboard";
+    private static final String DASHBOARD_URL = "/core/investments/dashboard/";
     private static final String TRADE_ORDER_BUY_URL = "/core/investments/trade/buy";
     private static final String TRADE_ORDER_SELL_URL = "/core/investments/trade/sell";
 
@@ -51,7 +51,7 @@ public class CoreInvestmentClient {
 
     public InvestDashboardRes getDashboard(String cano) {
         return coreRestTemplate.getForObject(
-                properties.getBaseUrl() + DASHBOARD_URL + "/" + cano,
+                properties.getBaseUrl() + DASHBOARD_URL + cano,
                 InvestDashboardRes.class
         );
     }

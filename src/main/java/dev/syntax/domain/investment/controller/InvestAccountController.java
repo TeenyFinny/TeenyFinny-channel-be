@@ -31,7 +31,7 @@ public class InvestAccountController {
 		return ApiResponseUtil.success(SuccessCode.OK, res);
 	}
 
-	@PostMapping("/account")
+	@PostMapping
 	public ResponseEntity<BaseResponse<?>> createInvestmentAccount(
 			@CurrentUser UserContext userContext
 	) {
