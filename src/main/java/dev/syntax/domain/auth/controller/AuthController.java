@@ -1,35 +1,10 @@
 package dev.syntax.domain.auth.controller;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import dev.syntax.domain.auth.dto.EmailValidationReq;
-import dev.syntax.domain.auth.dto.EmailValidationRes;
-import dev.syntax.domain.auth.dto.IdentityVerifyReq;
-import dev.syntax.domain.auth.dto.IdentityVerifyRes;
-import dev.syntax.domain.auth.dto.LoginReq;
-import dev.syntax.domain.auth.dto.LoginRes;
-import dev.syntax.domain.auth.dto.OtpGenerateRes;
-import dev.syntax.domain.auth.dto.OtpVerifyReq;
-import dev.syntax.domain.auth.dto.OtpVerifyRes;
-import dev.syntax.domain.auth.dto.PasswordVerifyReq;
-import dev.syntax.domain.auth.dto.PasswordVerifyRes;
-import dev.syntax.domain.auth.dto.RefreshTokenRes;
-import dev.syntax.domain.auth.dto.SignupReq;
-import dev.syntax.domain.auth.dto.SimplePasswordVerifyReq;
-import dev.syntax.domain.auth.dto.UpdatePasswordReq;
-import dev.syntax.domain.auth.dto.UpdatePushReq;
+import dev.syntax.domain.auth.dto.*;
+import dev.syntax.domain.auth.dto.oauth.KakaoLoginReq;
+import dev.syntax.domain.auth.dto.oauth.KakaoLoginRes;
 import dev.syntax.domain.auth.dto.oauth.KakaoSignupReq;
-import dev.syntax.domain.auth.service.AuthService;
-import dev.syntax.domain.auth.service.FamilyService;
-import dev.syntax.domain.auth.service.LoginService;
-import dev.syntax.domain.auth.service.SignupService;
+import dev.syntax.domain.auth.service.*;
 import dev.syntax.global.auth.annotation.CurrentUser;
 import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.global.response.ApiResponseUtil;
@@ -38,6 +13,9 @@ import dev.syntax.global.response.SuccessCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @Validated
@@ -50,7 +28,7 @@ public class AuthController {
 	private final SignupService signupService;
 	private final LoginService loginService;
 	private final FamilyService familyService;
-	private final dev.syntax.domain.auth.service.KakaoOAuthService kakaoOAuthService;
+	private final KakaoOAuthService kakaoOAuthService;
 
 	/**
 	 * 회원가입을 수행합니다.
@@ -246,9 +224,9 @@ public class AuthController {
 	 */
 	@PostMapping("/oauth/kakao/login")
 	public ResponseEntity<BaseResponse<?>> kakaoLogin(
-		@Valid @RequestBody dev.syntax.domain.auth.dto.oauth.KakaoLoginReq request
+		@Valid @RequestBody KakaoLoginReq request
 	) {
-		dev.syntax.domain.auth.dto.oauth.KakaoLoginRes response = kakaoOAuthService.loginWithKakao(request);
+		KakaoLoginRes response = kakaoOAuthService.loginWithKakao(request);
 		log.info("[카카오 로그인 요청 처리 완료] isNewUser: {}", response.isNewUser());
 		return ApiResponseUtil.success(SuccessCode.OK, response);
 	}

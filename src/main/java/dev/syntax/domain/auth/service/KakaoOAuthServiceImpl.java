@@ -97,8 +97,8 @@ public class KakaoOAuthServiceImpl implements KakaoOAuthService {
 		}
 
 		// 3. 이메일 중복 확인 (카카오 이메일이 있는 경우)
-		if (tempToken.getKakaoEmail() != null &&
-			userRepository.existsByEmail(tempToken.getKakaoEmail())) {
+		if (request.email() != null &&
+			userRepository.existsByEmail(request.email())) {
 			throw new BusinessException(ErrorAuthCode.KAKAO_EMAIL_CONFLICT);
 		}
 
