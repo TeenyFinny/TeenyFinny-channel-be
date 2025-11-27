@@ -125,6 +125,14 @@ public enum ErrorBaseCode implements ErrorCode {
 	 */
 	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류입니다."),
     CREATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "계좌 생성에 실패했습니다."),
+	USER_CREATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "계정 생성에 실패했습니다."),
+
+	/**
+	 * 카카오 로그인 관련 에러
+	 */
+	TOKEN_ISSUE_FAILED(HttpStatus.BAD_GATEWAY, "카카오 토큰 발급 실패"),
+	USER_INFO_REQUEST_FAILED(HttpStatus.BAD_GATEWAY, "카카오 사용자 정보 조회 실패"),
+	USER_INFO_PARSE_FAILED(HttpStatus.BAD_GATEWAY,"카카오 사용자 정보 조회 실패"),
 
 	/**
 	 * Core API 관련 에러
