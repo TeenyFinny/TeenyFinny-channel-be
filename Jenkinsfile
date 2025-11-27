@@ -20,108 +20,108 @@ pipeline {
                 echo '체크아웃이 완료되었습니다.'
             }
         }
-//
-//         stage('CI : gradle 빌드 수행') {
-//             steps{      // gradlew에 권한을 부여하고 클린 빌드를 수행합니다.
-//                 echo '빌드가 시작되었습니다.'
-//                 echo '해당 단계에서 실패 시 실패 로그를 확인해주세요.'
-//                 sh '''
-// set -euxo pipefail
-// chmod +x ./gradlew
-//
-// ./gradlew clean build
-//                 '''
-//                 echo '빌드가 완료되었습니다.'
-//             }
-//         }
-//
-//         stage('CI : 소나큐브 정적분석') {
-//             steps {     // Jenkins Credential에 저장된 소나큐브 관련 정보를 바탕으로, 정적 분석을 의뢰합니다.
-//                 withSonarQubeEnv('sonarqube-server') {
-//                     echo '정적분석이 시작되었습니다.'
-//                     echo '해당 단계에서 실패 시 소나큐브를 확인해주세요.'
-//                     echo '소나큐브 : 192.168.0.79:8251, ID/PW : 슬랙의 계정 정보 확인'
-//                     sh '''
-// set -euxo pipefail
-// chmod +x ./gradlew
-//
-// ./gradlew sonar -Dsonar.token=$SONAR_AUTH_TOKEN -Dsonar.host.url=$SONAR_HOST_URL
-//                     '''
-//                     echo '정적분석이 완료되었습니다.'
-//                 }
-//             }
-//         }
-//
-//         stage('CI : 퀄리티 체크 수행') {
-//             steps{      // 정적 분석한 리포트를 바탕으로 퀄리티 체크를 수행합니다.
-//                 timeout(time: 1, unit: 'MINUTES') {
-//                     script{
-//                         echo '퀄리티 체크가 시작되었습니다.'
-//                         echo '해당 단계에서 실패 시 소나큐브를 확인해주세요.'
-//                         echo '소나큐브 : 192.168.0.79:8251, ID/PW : 슬랙의 계정 정보 확인'
-//                         def qg = waitForQualityGate()
-//                         echo "Status: ${qg.status}"
-//                         if(qg.status != 'OK') {
-//                             echo "NOT OK Status: ${qg.status}"
-//                             error "Pipeline aborted due to quality gate failure: ${qg.status}"
-//                         } else{
-//                             echo "status: ${qg.status}"
-//                         }
-//                         echo '퀄리티 체크가 완료되었습니다.'
-//                     }
-//                 }
-//             }
-//         }
-//
-//         stage('CD : main 브랜치 이미지 빌드 & 도커 허브 푸시') {
-//             when {
-//                 anyOf{
-//                     branch 'main'
-//                 }
-//             }
-//             steps {
-//                 echo 'main branch : 도커 이미지 빌드 & 푸시가 시작되었습니다.'
-//                 echo 'main branch : 해당 단계에서 실패 시 CI/CD 담당자에게 문의해주세요.'
-//                 withCredentials([usernamePassword(
-//                     credentialsId: 'docker-hub',
-//                     usernameVariable: 'REG_USER',
-//                     passwordVariable: 'REG_PASS'
-//                 )]){
-//                     sh(label: 'Docker build & push (latest)', script: '''
-//                         set -euxo pipefail
-//                         echo $REG_PASS | docker login -u $REG_USER --password-stdin
-//                         docker build -t ${MAIN_IMAGE_NAME}:latest .
-//                         docker push  ${MAIN_IMAGE_NAME}:latest
-//                     ''')
-//                 }
-//                 echo 'main branch : 도커 이미지 빌드 & 푸시가 완료되었습니다.'
-//             }
-//         }
-//
-//         stage('CD : dev 브랜치 이미지 빌드 & 도커 허브 푸시') {
-//             when {
-//                 anyOf{
-//                     branch 'dev'
-//                 }
-//             }
-//             steps {
-//                 echo 'dev branch : 도커 이미지 빌드 & 푸시가 시작되었습니다.'
-//                 echo 'dev branch : 해당 단계에서 실패 시 CI/CD 담당자에게 문의해주세요.'
-//                 withCredentials([usernamePassword(
-//                     credentialsId: 'docker-hub',
-//                     usernameVariable: 'REG_USER',
-//                     passwordVariable: 'REG_PASS'
-//                 )]){
-//                     sh(label: 'Docker build & push (latest)', script: '''
-//                         set -euxo pipefail
-//                         echo $REG_PASS | docker login -u $REG_USER --password-stdin
-//                         docker build -t ${DEV_IMAGE_NAME}:latest .
-//                         docker push  ${DEV_IMAGE_NAME}:latest
-//                     ''')
-//                 }
-//                 echo 'dev branch : 도커 이미지 빌드 & 푸시가 완료되었습니다.'
-//             }
-//         }
+
+        stage('CI : gradle 빌드 수행') {
+            steps{      // gradlew에 권한을 부여하고 클린 빌드를 수행합니다.
+                echo '빌드가 시작되었습니다.'
+                echo '해당 단계에서 실패 시 실패 로그를 확인해주세요.'
+                sh '''
+set -euxo pipefail
+chmod +x ./gradlew
+
+./gradlew clean build
+                '''
+                echo '빌드가 완료되었습니다.'
+            }
+        }
+
+        stage('CI : 소나큐브 정적분석') {
+            steps {     // Jenkins Credential에 저장된 소나큐브 관련 정보를 바탕으로, 정적 분석을 의뢰합니다.
+                withSonarQubeEnv('sonarqube-server') {
+                    echo '정적분석이 시작되었습니다.'
+                    echo '해당 단계에서 실패 시 소나큐브를 확인해주세요.'
+                    echo '소나큐브 : 192.168.0.79:8251, ID/PW : 슬랙의 계정 정보 확인'
+                    sh '''
+set -euxo pipefail
+chmod +x ./gradlew
+
+./gradlew sonar -Dsonar.token=$SONAR_AUTH_TOKEN -Dsonar.host.url=$SONAR_HOST_URL
+                    '''
+                    echo '정적분석이 완료되었습니다.'
+                }
+            }
+        }
+
+        stage('CI : 퀄리티 체크 수행') {
+            steps{      // 정적 분석한 리포트를 바탕으로 퀄리티 체크를 수행합니다.
+                timeout(time: 1, unit: 'MINUTES') {
+                    script{
+                        echo '퀄리티 체크가 시작되었습니다.'
+                        echo '해당 단계에서 실패 시 소나큐브를 확인해주세요.'
+                        echo '소나큐브 : 192.168.0.79:8251, ID/PW : 슬랙의 계정 정보 확인'
+                        def qg = waitForQualityGate()
+                        echo "Status: ${qg.status}"
+                        if(qg.status != 'OK') {
+                            echo "NOT OK Status: ${qg.status}"
+                            error "Pipeline aborted due to quality gate failure: ${qg.status}"
+                        } else{
+                            echo "status: ${qg.status}"
+                        }
+                        echo '퀄리티 체크가 완료되었습니다.'
+                    }
+                }
+            }
+        }
+
+        stage('CD : main 브랜치 이미지 빌드 & 도커 허브 푸시') {
+            when {
+                anyOf{
+                    branch 'main'
+                }
+            }
+            steps {
+                echo 'main branch : 도커 이미지 빌드 & 푸시가 시작되었습니다.'
+                echo 'main branch : 해당 단계에서 실패 시 CI/CD 담당자에게 문의해주세요.'
+                withCredentials([usernamePassword(
+                    credentialsId: 'docker-hub',
+                    usernameVariable: 'REG_USER',
+                    passwordVariable: 'REG_PASS'
+                )]){
+                    sh(label: 'Docker build & push (latest)', script: '''
+                        set -euxo pipefail
+                        echo $REG_PASS | docker login -u $REG_USER --password-stdin
+                        docker build -t ${MAIN_IMAGE_NAME}:latest .
+                        docker push  ${MAIN_IMAGE_NAME}:latest
+                    ''')
+                }
+                echo 'main branch : 도커 이미지 빌드 & 푸시가 완료되었습니다.'
+            }
+        }
+
+        stage('CD : dev 브랜치 이미지 빌드 & 도커 허브 푸시') {
+            when {
+                anyOf{
+                    branch 'dev'
+                }
+            }
+            steps {
+                echo 'dev branch : 도커 이미지 빌드 & 푸시가 시작되었습니다.'
+                echo 'dev branch : 해당 단계에서 실패 시 CI/CD 담당자에게 문의해주세요.'
+                withCredentials([usernamePassword(
+                    credentialsId: 'docker-hub',
+                    usernameVariable: 'REG_USER',
+                    passwordVariable: 'REG_PASS'
+                )]){
+                    sh(label: 'Docker build & push (latest)', script: '''
+                        set -euxo pipefail
+                        echo $REG_PASS | docker login -u $REG_USER --password-stdin
+                        docker build -t ${DEV_IMAGE_NAME}:latest .
+                        docker push  ${DEV_IMAGE_NAME}:latest
+                    ''')
+                }
+                echo 'dev branch : 도커 이미지 빌드 & 푸시가 완료되었습니다.'
+            }
+        }
 
         stage('CD : main 브랜치 이미지를 운영서버에서 배포') {
             when {
