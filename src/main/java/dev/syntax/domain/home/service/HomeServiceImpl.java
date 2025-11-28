@@ -128,9 +128,11 @@ public class HomeServiceImpl implements HomeService {
 		}
 
 		return children.stream()
+			.filter(child -> child != null && child.userId() != null)
 			.collect(Collectors.toMap(
 				CoreChildAccountInfoRes::userId,  // Core의 userId = Channel의 coreUserId
-				child -> sumAccountBalances(child.accounts())
+				child -> sumAccountBalances(child.accounts()),
+				BigDecimal::add
 			));
 	}
 
@@ -148,6 +150,7 @@ public class HomeServiceImpl implements HomeService {
 	 */
 	private List<HomeRes.ChildDto> buildChildDtoList(User parent, Map<Long, BigDecimal> childBalanceMap) {
 		return parent.getChildren().stream()
+			.filter(relationship -> relationship != null && relationship.getChild() != null)
 			.map(relationship -> {
 				User child = relationship.getChild();
 				BigDecimal balance = childBalanceMap.getOrDefault(child.getCoreUserId(), BigDecimal.valueOf(-1));
@@ -177,6 +180,7 @@ public class HomeServiceImpl implements HomeService {
 			return Map.of();
 		}
 		return accounts.stream()
+			.filter(account -> account.accountType() != null)
 			.collect(Collectors.groupingBy(
 				CoreAccountItemRes::accountType,
 				Collectors.reducing(BigDecimal.ZERO, CoreAccountItemRes::balance, BigDecimal::add)
