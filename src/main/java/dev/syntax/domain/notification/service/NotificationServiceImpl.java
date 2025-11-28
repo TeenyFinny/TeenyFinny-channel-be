@@ -46,7 +46,7 @@ public class NotificationServiceImpl implements NotificationService {
      */
     @Override
     public List<NotificationOutput> findNotice(User user) {
-        return notificationRepository.findByTargetUser(user)
+        return notificationRepository.findByTargetUserOrderByIdDesc(user)
                 .stream()
                 .map(NotificationOutput::new)
                 .toList();
@@ -94,7 +94,8 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Transactional
     public void sendGoalCancelRequestNotice(User parent, String childName, String goalName) {
-        String content = childName + "(이)가 '" + goalName + "' 목표 중도 해지를 요청했습니다.";
+        String title = "목표 중도 해지 요청";
+        String content = String.format("%s(이)가 '%s' 목표 중도 해지를 요청했습니다.", childName, goalName);
 
         if (notificationRepository.existsByTargetUserAndTypeAndContent(parent, NotificationType.GOAL, content)) {
             throw new BusinessException(ErrorBaseCode.GOAL_CANCEL_ALREADY_REQUESTED);
@@ -102,7 +103,23 @@ public class NotificationServiceImpl implements NotificationService {
 
         Notification notification = Notification.builder()
                 .targetUser(parent)
-                .title("목표 중도 해지 요청")
+                .title(title)
+                .content(content)
+                .type(NotificationType.GOAL)
+                .build();
+
+        notificationRepository.save(notification);
+    }
+
+    @Override
+    @Transactional
+    public void sendGoalAchievedNotice(User user, String goalName) {
+        String title = "목표 달성 완료!";
+        String content = "가까운 영업점에 방문하여 해지하세요.";
+
+        Notification notification = Notification.builder()
+                .targetUser(user)
+                .title(title)
                 .content(content)
                 .type(NotificationType.GOAL)
                 .build();

@@ -450,4 +450,40 @@ public class GoalServiceImpl implements GoalService {
 
 		return new GoalDeleteRes(goal.getId(), "목표가 달성 완료되었습니다!");
 	}
+
+    @Override
+    @Transactional
+    public void handleTransactionEvent(dev.syntax.domain.goal.dto.GoalTransactionEventReq req) {
+        log.info("Handling transaction event for account: {}", req.getAccountNo());
+
+        goalRepository.findByAccount_AccountNo(req.getAccountNo()).ifPresent(goal -> {
+            if (goal.getStatus() == GoalStatus.ONGOING) {
+                if (req.getBalanceAfter().compareTo(goal.getTargetAmount()) >= 0) {
+                    log.info("Goal achieved for user: {}, goal: {}", goal.getUser().getId(), goal.getName());
+                    notificationService.sendGoalAchievedNotice(goal.getUser(), goal.getName());
+                }
+            }
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Long getOngoingGoalId(UserContext userContext, Long childId) {
+        User parent = getUser(userContext);
+        if (parent.getRole() != Role.PARENT) {
+            throw new BusinessException(ErrorBaseCode.GOAL_ACCESS_FORBIDDEN);
+        }
+
+        if (!userContext.getChildren().contains(childId)) {
+            throw new BusinessException(ErrorBaseCode.GOAL_CHILD_NOT_MATCH);
+        }
+
+        User child = userRepository.findById(childId)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.USER_NOT_FOUND));
+
+        Goal goal = goalRepository.findByUserAndStatus(child, GoalStatus.ONGOING)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_NOT_ONGOING));
+
+        return goal.getId();
+    }
 }

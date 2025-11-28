@@ -199,4 +199,40 @@ public class GoalController {
         GoalDeleteRes result = goalService.confirmComplete(userContext, goalId);
         return ApiResponseUtil.success(SuccessCode.OK, result);
     }
+
+    /**
+     * 거래 이벤트 수신 API (Core -> Channel)
+     *
+     * <p>Core 시스템에서 거래가 발생했을 때 호출되는 웹훅 엔드포인트입니다.
+     * 목표 계좌의 입금으로 인해 목표 금액이 달성되었는지 확인하고 알림을 발송합니다.</p>
+     *
+     * @param req 거래 이벤트 정보 (계좌번호, 잔액 등)
+     * @return 성공 응답
+     */
+    @PostMapping("/transaction-event")
+    public ResponseEntity<BaseResponse<?>> handleTransactionEvent(
+            @RequestBody dev.syntax.domain.goal.dto.GoalTransactionEventReq req
+    ) {
+        goalService.handleTransactionEvent(req);
+        return ApiResponseUtil.success(SuccessCode.OK);
+    }
+
+    /**
+     * 자녀의 진행 중인 목표 ID 조회 API
+     *
+     * <p>부모가 자녀의 진행 중인 목표 ID를 조회합니다.
+     * 알림 클릭 시 해당 목표로 이동하거나 작업을 수행하기 위해 사용됩니다.</p>
+     *
+     * @param userContext 현재 로그인한 사용자 정보 (부모)
+     * @param childId     조회할 자녀 ID
+     * @return 진행 중인 목표 ID
+     */
+    @GetMapping("/child/{childId}/ongoing")
+    public ResponseEntity<BaseResponse<?>> getOngoingGoalId(
+            @CurrentUser UserContext userContext,
+            @PathVariable Long childId
+    ) {
+        Long goalId = goalService.getOngoingGoalId(userContext, childId);
+        return ApiResponseUtil.success(SuccessCode.OK, goalId);
+    }
 }
