@@ -136,7 +136,7 @@ public class AuthController {
 		@CurrentUser UserContext context,
 		@Valid @RequestBody SimplePasswordVerifyReq req
 	) {
-		PasswordVerifyRes response = authService.verifySimplePassword(context.getId(), req);
+		PasswordVerifyRes response = authService.verifySimplePassword(context.getUser().getId(), req);
 		return ApiResponseUtil.success(SuccessCode.OK, response);
 	}
 
