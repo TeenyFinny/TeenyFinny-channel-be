@@ -1,6 +1,8 @@
 package dev.syntax.domain.transfer.dto;
 import java.math.BigDecimal;
 
+import lombok.Builder;
+
 /**
  * Core 서버에 자동이체 생성 요청을 전달하기 위한 DTO.
  *
@@ -21,6 +23,7 @@ import java.math.BigDecimal;
  * @param transferDay    매월 실행될 날짜 (예: 5 → 매월 5일)
  * @param memo           자동이체 구분 메모 (예: "용돈", "투자", "목표")
  */
+@Builder
 public record CoreCreateAutoTransferReq (
 
     Long userId,          
