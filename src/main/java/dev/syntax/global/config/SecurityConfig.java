@@ -64,7 +64,6 @@ public class SecurityConfig {
 	 * SessionCreationPolicy.STATELESS 정책을 설정합니다.
 	 * UsernamePasswordAuthenticationFilter 이전에 JwtAuthenticationFilter를 등록하여
 	 * 모든 요청에서 JWT 유효성 검증을 먼저 수행합니다.
-	 * JWT API 서버에는 맞지 않은 규칙 SonarQube 오탐 발생
 	 *
 	 * @param http HttpSecurity 보안 설정 DSL
 	 * @return SecurityFilterChain 빌드된 보안 필터 체인
