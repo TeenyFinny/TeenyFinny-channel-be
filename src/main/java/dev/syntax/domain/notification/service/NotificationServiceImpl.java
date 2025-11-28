@@ -111,22 +111,6 @@ public class NotificationServiceImpl implements NotificationService {
         notificationRepository.save(notification);
     }
 
-    @Override
-    @Transactional
-    public void sendGoalAchievedNotice(User user, String goalName) {
-        String title = "목표 달성 완료!";
-        String content = "가까운 영업점에 방문하여 해지하세요.";
-
-        Notification notification = Notification.builder()
-                .targetUser(user)
-                .title(title)
-                .content(content)
-                .type(NotificationType.GOAL)
-                .build();
-
-        notificationRepository.save(notification);
-    }
-
     /**
      * 자녀의 목표 완료 요청 알림 생성
      */

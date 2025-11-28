@@ -63,8 +63,6 @@ public interface NotificationService {
      */
     void sendGoalCancelRequestNotice(User parent, String childName, String goalName);
 
-    void sendGoalAchievedNotice(User user, String goalName);
-
     /**
      * 자녀의 목표 완료 요청 알림 생성
      *

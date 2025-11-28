@@ -95,7 +95,7 @@ public interface GoalService {
      */
     GoalDeleteRes confirmComplete(UserContext userContext, Long goalId);
 
-    public void handleTransactionEvent(dev.syntax.domain.goal.dto.GoalTransactionEventReq req);
+//    public void handleTransactionEvent(dev.syntax.domain.goal.dto.GoalTransactionEventReq req);
 
     Long getOngoingGoalId(UserContext userContext, Long childId);
 }

@@ -209,13 +209,13 @@ public class GoalController {
      * @param req 거래 이벤트 정보 (계좌번호, 잔액 등)
      * @return 성공 응답
      */
-    @PostMapping("/transaction-event")
-    public ResponseEntity<BaseResponse<?>> handleTransactionEvent(
-            @RequestBody dev.syntax.domain.goal.dto.GoalTransactionEventReq req
-    ) {
-        goalService.handleTransactionEvent(req);
-        return ApiResponseUtil.success(SuccessCode.OK);
-    }
+//    @PostMapping("/transaction-event")
+//    public ResponseEntity<BaseResponse<?>> handleTransactionEvent(
+//            @RequestBody dev.syntax.domain.goal.dto.GoalTransactionEventReq req
+//    ) {
+//        goalService.handleTransactionEvent(req);
+//        return ApiResponseUtil.success(SuccessCode.OK);
+//    }
 
     /**
      * 자녀의 진행 중인 목표 ID 조회 API
