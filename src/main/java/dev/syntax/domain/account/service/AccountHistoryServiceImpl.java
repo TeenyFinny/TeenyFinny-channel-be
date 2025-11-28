@@ -1,27 +1,34 @@
 package dev.syntax.domain.account.service;
 
+import dev.syntax.domain.account.client.CoreAccountClient;
 import dev.syntax.domain.account.dto.AccountHistoryReq;
 import dev.syntax.domain.account.dto.AccountHistoryRes;
+import dev.syntax.domain.account.dto.core.CoreTransactionHistoryRes;
+import dev.syntax.domain.account.dto.core.CoreTransactionItemRes;
+import dev.syntax.domain.account.dto.core.CoreTransactionDetailItemRes;
 import dev.syntax.domain.account.entity.Account;
 import dev.syntax.domain.account.repository.AccountRepository;
 import dev.syntax.domain.user.enums.Role;
 import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorBaseCode;
+import dev.syntax.global.service.Utils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
  * 계좌 거래내역 조회 서비스 구현체.
  *
  * UserContext를 기반으로 부모/자녀 권한을 체크하고,
- * 코어 뱅킹 서버(CoreBankClient)에서 거래내역을 조회하여
+ * 코어 뱅킹 서버(CoreAccountClient)에서 거래내역을 조회하여
  * 프론트가 요구하는 형태(AccountHistoryRes)로 변환한다.
  */
 @Slf4j
@@ -30,6 +37,7 @@ import java.util.List;
 public class AccountHistoryServiceImpl implements AccountHistoryService {
 
     private final AccountRepository accountRepository;
+    private final CoreAccountClient coreAccountClient;
 
     @Override
     public List<AccountHistoryRes> getHistory(Long userId, AccountHistoryReq req, UserContext ctx) {
@@ -41,19 +49,19 @@ public class AccountHistoryServiceImpl implements AccountHistoryService {
                 .findByUserIdAndType(userId, req.accountType())
                 .orElseThrow(() -> new BusinessException(ErrorBaseCode.NOT_FOUND_ENTITY));
 
-        // 3. 조회 기간 계산
-        LocalDateTime start = LocalDate.of(req.year(), req.month(), 1).atStartOfDay();
-        LocalDateTime end = LocalDate.of(req.year(), req.month(), 1)
-                .withDayOfMonth(LocalDate.of(req.year(), req.month(), 1).lengthOfMonth())
-                .atTime(LocalTime.of(23, 59, 59));
+        log.info("거래내역 조회 → 계좌번호: {}, 년월: {}-{}",
+                account.getAccountNo(), req.year(), req.month());
 
-        log.info("거래내역 조회 → 계좌번호: {}, 기간: {} ~ {}",
-                account.getAccountNo(), start, end);
+        // 3. Core 서버 호출
+        CoreTransactionHistoryRes coreRes = coreAccountClient.getAccountTransactionsByMonth(
+                account.getAccountNo(), req.year(), req.month());
+        log.info("Core 응답: {}", coreRes);
+        if (coreRes == null || coreRes.transactions() == null) {
+            throw new BusinessException(ErrorBaseCode.NOT_FOUND_ENTITY);
+        }
 
-        // 4. Core 서버 Mock 호출
-        List<AccountHistoryRes> mock = mockCoreHistory(account.getAccountNo(), start, end);
-
-        return mock;
+        // 4. 응답 변환 (Core → Channel)
+        return convertToAccountHistoryRes(coreRes.transactions());
     }
 
     private void validateUserAccess(Long targetUserId, UserContext ctx) {
@@ -76,34 +84,25 @@ public class AccountHistoryServiceImpl implements AccountHistoryService {
     }
 
     /**
-     * 코어 서버 mock 응답.
-     * 실제 구현에서는 RestTemplate/WebClient로 코어 호출.
+     * Core 서버 응답을 Channel 응답 형식으로 변환합니다.
+     * <p>
+     * - amount가 양수면 "deposit", 음수면 "withdrawal"
+     * - 금액은 절대값으로 변환하고 천단위 콤마 적용
+     * - 날짜는 "yyyy-MM-dd HH:mm" 형식으로 변환
+     * </p>
      */
-    public List<AccountHistoryRes> mockCoreHistory(String accountNo,
-            LocalDateTime start,
-            LocalDateTime end) {
-
-        return List.of(
-                new AccountHistoryRes(
-                        202501150001L,
-                        "deposit",
-                        "이체",
-                        "50,000",
-                        "150,000",
-                        "2025-01-15 13:22"),
-                new AccountHistoryRes(
-                        202501150002L,
-                        "withdrawal",
-                        "편의점",
-                        "1,500",
-                        "148,500",
-                        "2025-01-15 14:10"),
-                new AccountHistoryRes(
-                        202501160001L,
-                        "withdrawal",
-                        "스타벅스",
-                        "5,300",
-                        "143,200",
-                        "2025-01-16 10:23"));
+    private List<AccountHistoryRes> convertToAccountHistoryRes(List<CoreTransactionItemRes> items) {
+        return items.stream()
+                .map(item -> new AccountHistoryRes(
+                        item.transactionId(),
+                        item.amount().compareTo(BigDecimal.ZERO) >= 0 ? "deposit" : "withdrawal",
+                        item.merchantName(),
+                        Utils.NumberFormattingService(item.amount().abs()), // 프론트에서 문자열 원함
+                        Utils.NumberFormattingService(item.balanceAfter()), // 프론트에서 문자열 원함
+                        item.category().getKoreanName(),
+                        item.transactionDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) // timestamp로 전달
+                ))
+                .toList();
     }
+
 }
