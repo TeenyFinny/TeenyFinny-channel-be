@@ -1,16 +1,17 @@
 package dev.syntax.global.auth.dto;
 
-import dev.syntax.domain.user.entity.User;
-import dev.syntax.domain.user.entity.UserRelationship;
-import lombok.Getter;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import dev.syntax.domain.user.entity.User;
+import dev.syntax.domain.user.entity.UserRelationship;
+import lombok.Getter;
 
 /**
  * UserContext
@@ -85,7 +86,7 @@ public class UserContext implements UserDetails {
 			? user.getParents().get(0).getParent().getId()
 			: null;
 
-		this.familyId = (parentId == null) ? this.id : parentId;
+		this.familyId = parentId;
 
 		this.authorities = Collections.singleton(
 			new SimpleGrantedAuthority("ROLE_" + role)
