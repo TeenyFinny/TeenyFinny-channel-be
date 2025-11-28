@@ -1,15 +1,17 @@
 package dev.syntax.global.filter;
 
+import java.io.IOException;
+
+import org.springframework.boot.availability.ApplicationAvailability;
+import org.springframework.boot.availability.ReadinessState;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.boot.availability.ApplicationAvailability;
-import org.springframework.boot.availability.ReadinessState;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
 
 /**
  * 트래픽 종료(드레이닝) 상태에서 일반 요청을 503(Service Unavailable)로 차단하는 서블릿 필터.
@@ -25,7 +27,7 @@ import java.io.IOException;
  *
  * @since 1.0
  */
-
+@Profile("!test") // 테스트 환경에서는 사용 x
 @Component
 public class ReadinessFilter extends OncePerRequestFilter {
     private final ApplicationAvailability availability;

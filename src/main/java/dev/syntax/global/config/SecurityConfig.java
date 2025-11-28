@@ -1,5 +1,8 @@
 package dev.syntax.global.config;
 
+import java.util.Arrays;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -15,8 +18,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.beans.factory.annotation.Value;
-import java.util.Arrays;
 
 import dev.syntax.global.auth.jwt.JwtAccessDeniedHandler;
 import dev.syntax.global.auth.jwt.JwtAuthenticationEntryPoint;
@@ -71,8 +72,12 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
-			// JWT 기반 인증에서는 CSRF가 필요하지 않음
-			.csrf(csrf -> csrf.disable())
+			// .csrf(csrf -> csrf.disable())
+			.csrf(csrf -> csrf
+				.ignoringRequestMatchers("/**")   // JWT 기반 API 서버는 모든 요청에서 CSRF 미사용
+				.disable()
+			)
+
 			// CORS 설정 적용
 			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
