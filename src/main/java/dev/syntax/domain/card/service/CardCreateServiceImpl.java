@@ -66,8 +66,7 @@ public class CardCreateServiceImpl implements CardCreateService {
         Card card = cardFactory.create(account, req);
         cardRepository.save(card);
 
-        return new CardInfoRes(card.getId(), CardUtils.formatCardNumber(card.getNumber()), card.getName(), card.getCvc(),
-                CardUtils.formatExpiredAt(card.getExpiredAt()));
+        return new CardInfoRes(card.getId(), CardUtils.formatCardNumber(card.getNumber()), card.getName(), card.getCvc(), card.getExpiredAt());
     }
 
     private void validateAccess(UserContext ctx, Long childId) {

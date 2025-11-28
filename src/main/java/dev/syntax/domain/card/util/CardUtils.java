@@ -24,20 +24,4 @@ public final class CardUtils {
         }
         return number.replaceAll("(.{4})", "$1 ").trim();
     }
-
-    /**
-     * 카드 만료일을 DB 저장 형식(yyMM)에서 프론트 표시 형식(MM/yy)으로 변환합니다.
-     * <p>
-     * 예: "2512" -> "12/25"
-     * </p>
-     *
-     * @param yyMM 원본 만료일 문자열 (yyMM 형식, 4자리)
-     * @return MM/yy 형식으로 변환된 만료일
-     */
-    public static String formatExpiredAt(String yyMM) {
-        if (yyMM == null || yyMM.length() != 4) return yyMM;
-        String yy = yyMM.substring(0, 2);
-        String mm = yyMM.substring(2, 4);
-        return mm + "/" + yy;
-    }
 }
