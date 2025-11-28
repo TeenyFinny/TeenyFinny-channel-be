@@ -153,7 +153,7 @@ public class HomeServiceImpl implements HomeService {
 			.filter(relationship -> relationship != null && relationship.getChild() != null)
 			.map(relationship -> {
 				User child = relationship.getChild();
-				BigDecimal balance = childBalanceMap.getOrDefault(child.getCoreUserId(), BigDecimal.valueOf(-1));
+				BigDecimal balance = childBalanceMap.getOrDefault(child.getCoreUserId(), BigDecimal.ZERO);
 
 				return HomeRes.ChildDto.builder()
 					.userId(child.getId())

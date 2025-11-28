@@ -1,5 +1,12 @@
 package dev.syntax.domain.auth.service;
 
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import dev.syntax.domain.auth.dto.OtpGenerateRes;
 import dev.syntax.domain.auth.dto.OtpVerifyReq;
 import dev.syntax.domain.auth.dto.OtpVerifyRes;
@@ -12,12 +19,6 @@ import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorAuthCode;
 import dev.syntax.global.response.error.ErrorBaseCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.security.SecureRandom;
-import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +27,6 @@ public class FamilyServiceImpl implements FamilyService {
 
     private final UserRepository userRepository;
     private final UserRelationshipRepository relationshipRepository;
-    private final AuthService authService;
     private static final SecureRandom RANDOM = new SecureRandom();
     private static final long OTP_EXPIRATION_MINUTES = 1;
 
@@ -108,14 +108,9 @@ public class FamilyServiceImpl implements FamilyService {
         
         relationshipRepository.save(updatedRelationship);
 
-        // 가족 관계가 변경되었으므로 User 다시 조회하여 최신 UserContext 생성 후 JWT 토큰 생성
-        // refreshToken() 호출로 토큰 재발급 책임 단일화
-        String newAccessToken = authService.refreshToken(userId).accessToken();
-
         return OtpVerifyRes.builder()
                 .userId(child.getId())
                 .parentId(parent.getId())
-                .accessToken(newAccessToken)
                 .build();
     }
 }
