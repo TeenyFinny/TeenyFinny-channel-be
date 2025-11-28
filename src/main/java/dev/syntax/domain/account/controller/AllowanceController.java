@@ -78,7 +78,7 @@ public class AllowanceController {
 
     /**
      * 📌 카드 발급 API
-     * POST /allowance/card
+     * POST /allowance/cards
      */
     @PostMapping("/cards")
     public ResponseEntity<BaseResponse<?>> createCard(
