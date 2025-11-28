@@ -135,10 +135,14 @@ public class AccountController {
          */
         @GetMapping("/history")
         public ResponseEntity<BaseResponse<?>> getMyHistory(
-                        @CurrentUser UserContext user,
-                        @RequestBody AccountHistoryReq req) {
-                return ApiResponseUtil.success(SuccessCode.OK,
-                                accountHistoryService.getHistory(user.getId(), req, user));
+                @CurrentUser UserContext user,
+                @RequestParam AccountType accountType,
+                @RequestParam int year,
+                @RequestParam int month) {
+
+        AccountHistoryReq req = new AccountHistoryReq(accountType, year, month);
+        return ApiResponseUtil.success(SuccessCode.OK,
+                accountHistoryService.getHistory(user.getId(), req, user));
         }
 
         /**
@@ -161,11 +165,15 @@ public class AccountController {
          */
         @GetMapping("/{childId}/history")
         public ResponseEntity<BaseResponse<?>> getChildHistory(
-                        @CurrentUser UserContext user,
-                        @PathVariable Long childId,
-                        @RequestBody AccountHistoryReq req) {
-                return ApiResponseUtil.success(SuccessCode.OK,
-                                accountHistoryService.getHistory(childId, req, user));
+                @CurrentUser UserContext user,
+                @PathVariable Long childId,
+                @RequestParam AccountType accountType,
+                @RequestParam int year,
+                @RequestParam int month) {
+
+        AccountHistoryReq req = new AccountHistoryReq(accountType, year, month);
+        return ApiResponseUtil.success(SuccessCode.OK,
+                accountHistoryService.getHistory(childId, req, user));
         }
 
         /**
