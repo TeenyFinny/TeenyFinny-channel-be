@@ -215,6 +215,15 @@ public class AccountController {
                                 accountHistoryDetailService.getDetail(transactionId, user));
         }
 
+        @GetMapping("/{childId}/history/{transactionId}")
+        public ResponseEntity<BaseResponse<?>> getChildDetail(
+                        @CurrentUser UserContext user,
+                        @PathVariable Long transactionId) {
+
+                return ApiResponseUtil.success(SuccessCode.OK,
+                                accountHistoryDetailService.getDetail(transactionId, user));
+        }
+
             /**
          * 자녀 본인 카드 조회
          * GET /account/card
