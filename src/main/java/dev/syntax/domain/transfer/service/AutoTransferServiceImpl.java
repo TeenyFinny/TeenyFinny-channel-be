@@ -6,8 +6,9 @@ import dev.syntax.domain.account.repository.AccountRepository;
 import dev.syntax.domain.transfer.client.CoreAutoTransferClient;
 import dev.syntax.domain.transfer.dto.AutoTransferReq;
 import dev.syntax.domain.transfer.dto.AutoTransferRes;
-import dev.syntax.domain.transfer.dto.CoreAutoTransferReq;
-import dev.syntax.domain.transfer.dto.CoreAutoTransferRes;
+import dev.syntax.domain.transfer.dto.CoreAllowanceUpdateAutoTransferReq;
+import dev.syntax.domain.transfer.dto.CoreCreateAutoTransferReq;
+import dev.syntax.domain.transfer.dto.CoreCreateAutoTransferRes;
 import dev.syntax.domain.transfer.entity.AutoTransfer;
 import dev.syntax.domain.transfer.repository.AutoTransferRepository;
 import dev.syntax.domain.transfer.utils.AutoTransferUtils;
@@ -17,6 +18,7 @@ import dev.syntax.domain.user.repository.UserRepository;
 import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.domain.transfer.enums.AutoTransferType;
 import dev.syntax.global.exception.BusinessException;
+import dev.syntax.global.response.error.ErrorAuthCode;
 import dev.syntax.global.response.error.ErrorBaseCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -76,9 +78,9 @@ public class AutoTransferServiceImpl implements AutoTransferService {
         BigDecimal allowanceAmount = amounts[0];
         BigDecimal investAmount = amounts[1];
 
-        CoreAutoTransferReq allowanceReq = createCoreReq(childId, parentAccount.getId(), allowanceAccount.getId(),
+        CoreCreateAutoTransferReq allowanceReq = createCoreReq(childId, parentAccount.getId(), allowanceAccount.getId(),
                 allowanceAmount, req.getTransferDate());
-        CoreAutoTransferRes coreAllowanceRes = coreAutoTransferClient.createAutoTransfer(allowanceReq);
+        CoreCreateAutoTransferRes coreAllowanceRes = coreAutoTransferClient.createAutoTransfer(allowanceReq);
 
         if (coreAllowanceRes == null || coreAllowanceRes.autoTransferId() == null) {
             throw new BusinessException(ErrorBaseCode.CREATE_FAILED);
@@ -86,14 +88,26 @@ public class AutoTransferServiceImpl implements AutoTransferService {
 
         Long investTransferId = null;
         if (req.getRatio() > 0) {
-            CoreAutoTransferReq investReq = createCoreReq(childId, parentAccount.getId(), investAccount.getId(),
-                    investAmount, req.getTransferDate());
-            CoreAutoTransferRes coreInvestRes = coreAutoTransferClient.createAutoTransfer(investReq);
+            try {
+                CoreCreateAutoTransferReq investReq = createCoreReq(childId, parentAccount.getId(),
+                        investAccount.getId(),
+                        investAmount, req.getTransferDate());
+                CoreCreateAutoTransferRes coreInvestRes = coreAutoTransferClient.createAutoTransfer(investReq);
 
-            if (coreInvestRes == null || coreInvestRes.autoTransferId() == null) {
+                if (coreInvestRes == null || coreInvestRes.autoTransferId() == null) {
+                    throw new BusinessException(ErrorBaseCode.CREATE_FAILED);
+                }
+                investTransferId = coreInvestRes.autoTransferId();
+            } catch (Exception e) {
+                // 투자 자동이체 생성 실패 시, 이미 생성된 용돈 자동이체 롤백 (삭제)
+                log.error("투자 자동이체 생성 실패로 인한 롤백 수행: allowanceTransferId={}", coreAllowanceRes.autoTransferId());
+                try {
+                    coreAutoTransferClient.deleteAutoTransfer(coreAllowanceRes.autoTransferId());
+                } catch (Exception rollbackEx) {
+                    log.error("롤백 실패: allowanceTransferId={}", coreAllowanceRes.autoTransferId(), rollbackEx);
+                }
                 throw new BusinessException(ErrorBaseCode.CREATE_FAILED);
             }
-            investTransferId = coreInvestRes.autoTransferId();
         }
 
         saveAutoTransfer(child, allowanceAccount, req, coreAllowanceRes.autoTransferId(), investTransferId);
@@ -134,55 +148,62 @@ public class AutoTransferServiceImpl implements AutoTransferService {
         BigDecimal allowanceAmount = amounts[0];
         BigDecimal investAmount = amounts[1];
 
-        // 1. Update Allowance
-        CoreAutoTransferReq allowanceReq = createCoreReq(childId, parentAccount.getId(), allowanceAccount.getId(),
-                allowanceAmount, req.getTransferDate());
-        // 여기서 코어는 200 OK만 반환, Body 없음 → 예외 없으면 성공
-        coreAutoTransferClient.updateAutoTransfer(existingTransfer.getPrimaryBankTransferId(), allowanceReq);
+        CoreAllowanceUpdateAutoTransferReq allowanceReq = updateCoreReq(allowanceAmount, req.getTransferDate());
+        CoreAllowanceUpdateAutoTransferReq investReq = updateCoreReq(investAmount, req.getTransferDate());
 
-        // 2. Update Invest
         Long investTransferId = existingTransfer.getInvestBankTransferId();
-        Long newInvestTransferId = investTransferId; // 기본값: 기존 ID 유지
+        Long newInvestTransferId = investTransferId;
 
-        if (investTransferId != null) {
-            // 예전에 투자 자동이체가 있었던 경우
-            if (req.getRatio() > 0) {
-                // 투자 비율 여전히 > 0 → 코어에서 update
-                CoreAutoTransferReq investReq = createCoreReq(
-                        childId,
-                        parentAccount.getId(),
-                        investAccount.getId(),
-                        investAmount,
-                        req.getTransferDate());
-                coreAutoTransferClient.updateAutoTransfer(investTransferId, investReq);
-            } else {
-                // 이제 투자 비율 0 → 더 이상 투자 자동이체 필요 없음
-                newInvestTransferId = null;
-                // 필요하다면: 코어에 "해지" API 호출도 가능 (지금 설계엔 없으니 채널에서만 null 처리)
-            }
-        } else {
-            // 예전에는 투자 자동이체가 없었음
-            if (req.getRatio() > 0) {
-                // 새롭게 투자 자동이체 생성 필요
-                CoreAutoTransferReq investReq = createCoreReq(
-                        childId,
-                        parentAccount.getId(),
-                        investAccount.getId(),
-                        investAmount,
-                        req.getTransferDate());
-                CoreAutoTransferRes res = coreAutoTransferClient.createAutoTransfer(investReq);
-                if (res == null || res.autoTransferId() == null) {
-                    throw new BusinessException(ErrorBaseCode.CREATE_FAILED);
+        try {
+            // 용돈 자동이체 수정
+            coreAutoTransferClient.updateAutoTransfer(
+                    existingTransfer.getPrimaryBankTransferId(),
+                    allowanceReq);
+
+            // 투자 자동이체 처리
+            if (investTransferId != null) {
+                if (req.getRatio() > 0) {
+                    // 투자 업데이트
+                    coreAutoTransferClient.updateAutoTransfer(
+                            investTransferId,
+                            investReq);
+                } else {
+                    // 투자 해지
+                    coreAutoTransferClient.deleteAutoTransfer(investTransferId);
+                    newInvestTransferId = null;
                 }
-                newInvestTransferId = res.autoTransferId();
+            } else if (req.getRatio() > 0) {
+                // 신규 투자 자동이체 생성
+                CoreCreateAutoTransferReq newInvestReq = createCoreReq(
+                        childId, parentAccount.getId(), investAccount.getId(), investAmount, req.getTransferDate());
+                CoreCreateAutoTransferRes investRes = coreAutoTransferClient.createAutoTransfer(newInvestReq);
+
+                if (investRes == null || investRes.autoTransferId() == null) {
+                    throw new BusinessException(ErrorBaseCode.AUTO_TRANSFER_CREATE_FAILED);
+                }
+                newInvestTransferId = investRes.autoTransferId();
             }
+
+        } catch (Exception e) {
+            log.error("자동이체 수정 중 오류 발생 - 롤백 진행", e);
+
+            // 투자 실패 시 용돈 수정 롤백
+            try {
+                coreAutoTransferClient.updateAutoTransfer(
+                        existingTransfer.getPrimaryBankTransferId(),
+                        updateCoreReq(existingTransfer.getTransferAmount(), existingTransfer.getTransferDate()));
+            } catch (Exception rollbackEx) {
+                log.error("용돈 롤백 실패 - id={}", existingTransfer.getPrimaryBankTransferId(), rollbackEx);
+            }
+
+            throw new BusinessException(ErrorBaseCode.AUTO_TRANSFER_UPDATE_FAILED);
         }
 
-        // 7) 채널 DB 엔티티 수정
+        // 모든 Core 작업 성공 시에만 DB 반영
         existingTransfer.updateAutoTransfer(req, newInvestTransferId);
         autoTransferRepository.save(existingTransfer);
 
-        // 8) 응답 리턴
+        // 응답 리턴
         return AutoTransferRes.of(
                 existingTransfer.getId(),
                 existingTransfer.getTransferAmount(),
@@ -190,6 +211,18 @@ public class AutoTransferServiceImpl implements AutoTransferService {
                 existingTransfer.getRatio());
     }
 
+
+    @Override
+    @Transactional
+    public void deleteAutoTransfer(Long accountId, AutoTransferType type) {
+
+        AutoTransfer autoTransfer = autoTransferRepository.findByAccountIdAndType(accountId, type)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.AUTO_TRANSFER_NOT_FOUND));
+
+        coreAutoTransferClient.deleteAutoTransfer(autoTransfer.getPrimaryBankTransferId());
+        autoTransferRepository.delete(autoTransfer);
+    }
+    
     /**
      * 부모 권한 및 자녀 관계를 검증합니다.
      *
@@ -245,8 +278,13 @@ public class AutoTransferServiceImpl implements AutoTransferService {
      * @param date    이체일
      * @return CoreAutoTransferReq 객체
      */
-    private CoreAutoTransferReq createCoreReq(Long childId, Long fromId, Long toId, BigDecimal amount, Integer date) {
-        return new CoreAutoTransferReq(childId, fromId, toId, amount, date, "용돈");
+    private CoreCreateAutoTransferReq createCoreReq(Long childId, Long fromId, Long toId, BigDecimal amount,
+            Integer date) {
+        return new CoreCreateAutoTransferReq(childId, fromId, toId, amount, date, "용돈");
+    }
+
+    private CoreAllowanceUpdateAutoTransferReq updateCoreReq(BigDecimal amount, Integer date) {
+        return new CoreAllowanceUpdateAutoTransferReq(amount, date);
     }
 
     /**
@@ -273,15 +311,4 @@ public class AutoTransferServiceImpl implements AutoTransferService {
                 .build();
         return autoTransferRepository.save(transfer);
     }
-     
-    @Override
-    @Transactional
-    public void deleteAutoTransfer(Long accountId, AutoTransferType type) {
-
-        AutoTransfer autoTransfer = autoTransferRepository.findByAccountIdAndType(accountId, type)
-                .orElseThrow(() -> new BusinessException(ErrorBaseCode.AUTO_TRANSFER_NOT_FOUND));
-
-        coreAutoTransferClient.deleteAutoTransfer(autoTransfer.getPrimaryBankTransferId());
-        autoTransferRepository.delete(autoTransfer);
-    }
- }  
+}
