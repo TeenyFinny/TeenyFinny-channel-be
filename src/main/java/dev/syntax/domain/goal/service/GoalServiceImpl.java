@@ -486,4 +486,12 @@ public class GoalServiceImpl implements GoalService {
 
         return goal.getId();
     }
+    @Override
+    @Transactional(readOnly = true)
+    public Long getMyOngoingGoalId(UserContext userContext) {
+        User user = getUser(userContext);
+        Goal goal = goalRepository.findByUserAndStatus(user, GoalStatus.ONGOING)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_NOT_ONGOING));
+        return goal.getId();
+    }
 }

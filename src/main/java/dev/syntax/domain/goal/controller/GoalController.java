@@ -235,4 +235,20 @@ public class GoalController {
         Long goalId = goalService.getOngoingGoalId(userContext, childId);
         return ApiResponseUtil.success(SuccessCode.OK, goalId);
     }
+
+    /**
+     * 내 진행 중인 목표 ID 조회 API
+     *
+     * <p>현재 로그인한 사용자의 진행 중인 목표 ID를 조회합니다.</p>
+     *
+     * @param userContext 현재 로그인한 사용자 정보
+     * @return 진행 중인 목표 ID
+     */
+    @GetMapping("/ongoing")
+    public ResponseEntity<BaseResponse<?>> getMyOngoingGoalId(
+            @CurrentUser UserContext userContext
+    ) {
+        Long goalId = goalService.getMyOngoingGoalId(userContext);
+        return ApiResponseUtil.success(SuccessCode.OK, goalId);
+    }
 }

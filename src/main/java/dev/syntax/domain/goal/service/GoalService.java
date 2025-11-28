@@ -98,4 +98,6 @@ public interface GoalService {
 //    public void handleTransactionEvent(dev.syntax.domain.goal.dto.GoalTransactionEventReq req);
 
     Long getOngoingGoalId(UserContext userContext, Long childId);
+
+    Long getMyOngoingGoalId(UserContext userContext);
 }
