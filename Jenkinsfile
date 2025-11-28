@@ -58,7 +58,7 @@ chmod +x ./gradlew
                     script{
                         echo '퀄리티 체크가 시작되었습니다.'
                         echo '해당 단계에서 실패 시 소나큐브를 확인해주세요.'
-                        echo '소나큐브 : 192.168.0.79:8251, ID/PW : 슬랙의 계정 정보 확인'
+                        echo '소나큐브 : sonarqube.teenyfinny.store, ID/PW : 슬랙의 계정 정보 확인'
                         def qg = waitForQualityGate()
                         echo "Status: ${qg.status}"
                         if(qg.status != 'OK') {
