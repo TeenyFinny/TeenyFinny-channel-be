@@ -64,12 +64,13 @@ public class SecurityConfig {
 	 * SessionCreationPolicy.STATELESS 정책을 설정합니다.
 	 * UsernamePasswordAuthenticationFilter 이전에 JwtAuthenticationFilter를 등록하여
 	 * 모든 요청에서 JWT 유효성 검증을 먼저 수행합니다.
+	 * JWT API 서버에는 맞지 않은 규칙 SonarQube 오탐 발생으로 인한 어노테이션 추가하였습니다.
 	 *
 	 * @param http HttpSecurity 보안 설정 DSL
 	 * @return SecurityFilterChain 빌드된 보안 필터 체인
 	 * @throws Exception 설정 중 발생할 수 있는 예외
 	 */
-	@SuppressWarnings("squid:S5122") // JWT API 서버에는 맞지 않은 규칙이라 SonarQube 오탐 발생 
+	@SuppressWarnings("squid:S5122") // JWT API 서버에는 맞지 않은 규칙이라 SonarQube 오탐 발생
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
