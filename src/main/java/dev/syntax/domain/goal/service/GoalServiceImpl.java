@@ -222,8 +222,7 @@ public class GoalServiceImpl implements GoalService {
 
         goal.updatePayDay(payDayForUpdate);
 
-        // TODO: core 자동이체 구현되면 coreGoalClient 연결하기
-        coreGoalClient.updateAutoTransferDay(autoTransfer.getId(), payDayForUpdate);
+        coreGoalClient.updateAutoTransferDay(autoTransfer.getPrimaryBankTransferId(), payDayForUpdate);
 
 		return new GoalUpdateRes(goal);
 	}
