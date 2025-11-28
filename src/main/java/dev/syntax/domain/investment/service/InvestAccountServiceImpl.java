@@ -67,4 +67,14 @@ public class InvestAccountServiceImpl implements InvestAccountService {
         return new InvestAccountRes(cano);
     }
 
+    @Override
+    public boolean checkAccount(Long userId) {
+        // 1. 채널 DB 확인
+        boolean existsInChannel = accountRepository.findByUserIdAndType(userId, AccountType.INVEST).isPresent();
+        if (existsInChannel) return true;
+
+        // 2. Core Banking Mock 확인 (데이터 불일치 가능성 대비)
+        return coreInvestmentClient.checkAccount(userId);
+    }
+
 }

@@ -20,4 +20,11 @@ public class StocksServiceImpl implements StocksService{
 
         return res;
     }
+
+    @Override
+    public StocksRes getStock(String code) {
+        StocksRes res = coreInvestmentClient.getStock(code);
+        log.info(res.toString());
+        return res;
+    }
 }

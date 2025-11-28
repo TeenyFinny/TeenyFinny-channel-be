@@ -7,4 +7,5 @@ public interface InvestAccountService {
     String getCanoByUserId(Long userId);
     InvestAccountPortfolioRes getInvestAccount(String cano);
     InvestAccountRes createInvestmentAccount(Long userId);
+    boolean checkAccount(Long userId);
 }
