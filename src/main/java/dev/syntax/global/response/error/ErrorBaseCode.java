@@ -50,7 +50,7 @@ public enum ErrorBaseCode implements ErrorCode {
 	GOAL_ALREADY_ONGOING(HttpStatus.BAD_REQUEST, "이미 진행 중인 목표가 있어요."),
 	GOAL_NOT_ONGOING(HttpStatus.BAD_REQUEST, "진행 중인 목표가 아닙니다."),
 	GOAL_NOT_COMPLETED(HttpStatus.BAD_REQUEST, "아직 목표에 도달하지 않았어요."),
-    GOAL_IS_COMPLETED(HttpStatus.BAD_REQUEST, "이미 목표에 도달했어요!"),
+    GOAL_IS_COMPLETED(HttpStatus.BAD_REQUEST, "이미 달성한 목표예요!"),
     INVEST_ACCOUNT_REQUIRED(HttpStatus.BAD_REQUEST, "투자 계좌가 없어 투자 이체를 설정할 수 없습니다."),
 	INVALID_RATIO_VALUE(HttpStatus.BAD_REQUEST, "비율 값이 잘못되었습니다."),
 	INVALID_REQUEST(HttpStatus.BAD_REQUEST, "입력값이 유효하지 않습니다."),
@@ -98,6 +98,7 @@ public enum ErrorBaseCode implements ErrorCode {
 	 */
 	CONFLICT(HttpStatus.CONFLICT, "이미 존재하는 리소스입니다."),
 	GOAL_ALREADY_DECIDED(HttpStatus.CONFLICT, "이미 승인 또는 거절된 목표입니다."),
+	GOAL_CANCEL_ALREADY_REQUESTED(HttpStatus.CONFLICT, "이미 목표 중도 해지 요청을 보냈습니다."),
 	CARD_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 카드입니다."),
 	DUPLICATE_REPORT(HttpStatus.CONFLICT, "해당 월의 리포트가 이미 존재합니다."),
 	AUTO_TRANSFER_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 자동이체가 설정되어 있습니다."),

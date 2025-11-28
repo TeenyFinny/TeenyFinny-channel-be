@@ -93,11 +93,17 @@ public class NotificationServiceImpl implements NotificationService {
      */
     @Override
     @Transactional
-    public void sendGoalCancelRequestNotice(User parent, String childName) {
+    public void sendGoalCancelRequestNotice(User parent, String childName, String goalName) {
+        String content = childName + "(이)가 '" + goalName + "' 목표 중도 해지를 요청했습니다.";
+
+        if (notificationRepository.existsByTargetUserAndTypeAndContent(parent, NotificationType.GOAL, content)) {
+            throw new BusinessException(ErrorBaseCode.GOAL_CANCEL_ALREADY_REQUESTED);
+        }
+
         Notification notification = Notification.builder()
                 .targetUser(parent)
                 .title("목표 중도 해지 요청")
-                .content(childName + "(이)가 목표 중도 해지를 요청했습니다.")
+                .content(content)
                 .type(NotificationType.GOAL)
                 .build();
 

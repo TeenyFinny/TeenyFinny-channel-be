@@ -363,9 +363,10 @@ public class GoalServiceImpl implements GoalService {
 
 		validateGoalOwner(user, goal);
 		validateGoalIsOngoing(goal);
+		validateGoalIsNotCompleted(goal);
 
 		User parent = getParent(userContext);
-		notificationService.sendGoalCancelRequestNotice(parent, user.getName());
+		notificationService.sendGoalCancelRequestNotice(parent, user.getName(), goal.getName());
 
 		return new GoalDeleteRes(goalId, "중도 해지 요청이 부모에게 전달되었습니다.");
 	}

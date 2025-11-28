@@ -14,4 +14,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     Boolean existsByTargetUserAndIsRead(User user, Boolean isRead);
 
     List<Notification> findByTargetUser(User targetUser);
+
+    boolean existsByTargetUserAndTypeAndContent(User targetUser, dev.syntax.domain.notification.enums.NotificationType type, String content);
 }
