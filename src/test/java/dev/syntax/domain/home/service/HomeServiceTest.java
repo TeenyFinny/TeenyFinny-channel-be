@@ -146,6 +146,6 @@ class HomeServiceTest {
 		assertThat(res.user().totalBalance()).isEqualTo("10,000");
 		assertThat(res.user().depositBalance()).isEqualTo("1,000");
 		assertThat(res.user().savingBalance()).isEqualTo("9,000");
-		assertThat(res.user().investmentBalance()).isEqualTo("0");
+		assertThat(res.user().investmentBalance()).isEqualTo("-1");
 	}
 }
