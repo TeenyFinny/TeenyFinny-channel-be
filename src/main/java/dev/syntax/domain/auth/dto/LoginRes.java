@@ -24,13 +24,7 @@ public record LoginRes(
 		return LoginRes.builder()
 			.tokenType(DEFAULT_TOKEN_TYPE)
 			.accessToken(accessToken)
-			.user(
-				UserLoginInfo.builder()
-					.userId(userContext.getId())
-					.role(userContext.getRole())
-					.email(userContext.getEmail())
-					.build()
-			)
+			.user(UserLoginInfo.of(userContext))
 			.build();
 	}
 }
