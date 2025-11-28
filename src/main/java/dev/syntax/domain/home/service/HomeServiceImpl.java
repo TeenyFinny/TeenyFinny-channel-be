@@ -1,5 +1,16 @@
 package dev.syntax.domain.home.service;
 
+import static dev.syntax.domain.account.enums.AccountType.*;
+import static dev.syntax.global.service.Utils.*;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import dev.syntax.domain.account.client.CoreAccountClient;
 import dev.syntax.domain.account.dto.core.CoreAccountItemRes;
 import dev.syntax.domain.account.dto.core.CoreChildAccountInfoRes;
@@ -10,16 +21,6 @@ import dev.syntax.domain.user.entity.User;
 import dev.syntax.domain.user.enums.Role;
 import dev.syntax.global.auth.dto.UserContext;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import static dev.syntax.domain.account.enums.AccountType.*;
-import static dev.syntax.global.service.Utils.NumberFormattingService;
 
 /**
  * 홈 화면 서비스 구현체
@@ -201,7 +202,7 @@ public class HomeServiceImpl implements HomeService {
 	 * 특정 계좌 타입의 잔액을 포맷팅하여 반환합니다.
 	 * <p>
 	 * 해당 타입의 잔액이 없으면 "0"을 반환합니다.
-	 * 계좌가 없을 경우 "-1"을 반환합니다.
+	 * 단, 계좌가 없을 경우 "-1"을 반환합니다.
 	 * </p>
 	 *
 	 * @param balancesByType 계좌 타입별 잔액 맵
@@ -209,7 +210,9 @@ public class HomeServiceImpl implements HomeService {
 	 * @return 포맷팅된 잔액 문자열 (예: "120,000")
 	 */
 	private String formatBalance(Map<AccountType, BigDecimal> balancesByType, AccountType accountType) {
-		if (!balancesByType.containsKey(accountType)) return "-1";
-		return NumberFormattingService(balancesByType.getOrDefault(accountType, BigDecimal.ZERO));
+		if (!balancesByType.containsKey(accountType)) {
+			return "-1";
+		}
+		return NumberFormattingService(balancesByType.get(accountType));
 	}
 }
