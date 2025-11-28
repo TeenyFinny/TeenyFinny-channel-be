@@ -5,8 +5,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import dev.syntax.domain.transfer.dto.CoreAutoTransferReq;
-import dev.syntax.domain.transfer.dto.CoreAutoTransferRes;
+import dev.syntax.domain.transfer.dto.CoreAllowanceUpdateAutoTransferReq;
+import dev.syntax.domain.transfer.dto.CoreCreateAutoTransferReq;
+import dev.syntax.domain.transfer.dto.CoreCreateAutoTransferRes;
 import dev.syntax.global.core.CoreApiProperties;
 import lombok.RequiredArgsConstructor;
 
@@ -19,8 +20,8 @@ public class CoreAutoTransferClient {
     private final RestTemplate coreRestTemplate;
 	private final CoreApiProperties properties;
 
-    private static final String AUTO_TRANSFER_CREATE_URL = "/core/banking/account/auto-transfer/create";
-    private static final String AUTO_TRANSFER_UPDATE_URL = "/core/banking/account/auto-transfer/{autoTransferId}";
+    private static final String AUTO_TRANSFER_CREATE_URL = "/core/banking/auto-transfer/create";
+    private static final String AUTO_TRANSFER_UPDATE_URL = "/core/banking/auto-transfer/{autoTransferId}";
     private static final String DELETE_AUTO_TRANSFER_URL = "/core/banking/auto-transfer/{autoTransferId}";
 
     /**
@@ -29,11 +30,11 @@ public class CoreAutoTransferClient {
      * @param req 자동이체 생성 요청 정보
      * @return CoreAutoTransferRes (autoTransferId)
      */
-    public CoreAutoTransferRes createAutoTransfer(CoreAutoTransferReq req){
+    public CoreCreateAutoTransferRes createAutoTransfer(CoreCreateAutoTransferReq req){
         return coreRestTemplate.postForObject(
                 properties.getBaseUrl() + AUTO_TRANSFER_CREATE_URL,
                 req,
-                CoreAutoTransferRes.class
+                CoreCreateAutoTransferRes.class
         );
     }
 
@@ -43,8 +44,8 @@ public class CoreAutoTransferClient {
      * @param autoTransferId 수정할 자동이체 ID
      * @param req            수정할 자동이체 정보
      */
-    public void updateAutoTransfer(Long autoTransferId, CoreAutoTransferReq req){
-        HttpEntity<CoreAutoTransferReq> entity = new HttpEntity<>(req);
+    public void updateAutoTransfer(Long autoTransferId, CoreAllowanceUpdateAutoTransferReq req){
+        HttpEntity<CoreAllowanceUpdateAutoTransferReq> entity = new HttpEntity<>(req);
         coreRestTemplate.exchange(
                 properties.getBaseUrl() + AUTO_TRANSFER_UPDATE_URL,
                 HttpMethod.PUT,

@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -26,6 +27,7 @@ import dev.syntax.domain.card.dto.CardInfoRes;
 import dev.syntax.domain.card.service.CardInquiryService;
 import dev.syntax.domain.transfer.dto.AutoTransferReq;
 import dev.syntax.domain.transfer.dto.AutoTransferRes;
+import dev.syntax.domain.transfer.dto.DeleteAutoTransferReq;
 import dev.syntax.domain.transfer.enums.AutoTransferType;
 import dev.syntax.domain.transfer.service.AutoTransferService;
 import dev.syntax.domain.transfer.service.AutoTransferInquiryService;
@@ -295,5 +297,26 @@ public class AccountController {
                 @CurrentUser UserContext ctx) {
         AutoTransferRes res= autoTransferService.updateAutoTransfer(id, req, ctx);
         return ApiResponseUtil.success(SuccessCode.OK, res);
+        }
+
+        /**
+         * 자동이체 설정 삭제 API.
+         * <p>
+         * 부모가 자녀의 자동이체 설정을 삭제합니다.
+         * 용돈 자동이체와 투자 자동이체를 모두 Core에서 삭제한 후 채널 DB에서 삭제합니다.
+         * </p>
+         *
+         * @param id  자녀 ID (URL 경로 변수)
+         * @param req 삭제할 자동이체 ID를 포함한 요청 정보
+         * @param ctx 인증된 사용자 컨텍스트 (부모 권한 확인용)
+         * @return 삭제 성공 응답 (200 OK)
+         */
+        @DeleteMapping("/{id}/auto-transfer")
+        public ResponseEntity<BaseResponse<?>> deleteAutoTransfer(
+                @PathVariable("id") Long id,
+                @Valid @RequestBody DeleteAutoTransferReq req,
+                @CurrentUser UserContext ctx) {
+        autoTransferService.deleteAutoTransfer(req.autoTransferId(), AutoTransferType.ALLOWANCE); // 이 엔드포인트에 접근하는 경우는 용돈만 가능하기 때문에 하드코딩
+        return ApiResponseUtil.success(SuccessCode.OK);
         }
 }

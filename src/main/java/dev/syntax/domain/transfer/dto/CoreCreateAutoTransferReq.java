@@ -21,7 +21,7 @@ import java.math.BigDecimal;
  * @param transferDay    매월 실행될 날짜 (예: 5 → 매월 5일)
  * @param memo           자동이체 구분 메모 (예: "용돈", "투자", "목표")
  */
-public record CoreAutoTransferReq (
+public record CoreCreateAutoTransferReq (
 
     Long userId,          
     Long fromAccountId,   

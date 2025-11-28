@@ -127,6 +127,9 @@ public enum ErrorBaseCode implements ErrorCode {
 	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류입니다."),
     CREATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "계좌 생성에 실패했습니다."),
 	USER_CREATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "계정 생성에 실패했습니다."),
+	AUTO_TRANSFER_CREATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "자동이체 생성에 실패했습니다."),
+	AUTO_TRANSFER_UPDATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "자동이체 수정에 실패했습니다."),
+	AUTO_TRANSFER_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "자동이체 삭제에 실패했습니다."),
 
 	/**
 	 * 카카오 로그인 관련 에러
