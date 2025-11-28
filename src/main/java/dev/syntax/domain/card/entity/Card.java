@@ -42,7 +42,7 @@ public class Card extends BaseEntity {
     @Column(name = "cvc", nullable = false, length = 3)
     private String cvc;
 
-    @Column(name = "expired_at", nullable = false, length = 4)
+    @Column(name = "expired_at", nullable = false, length = 5)
     private String expiredAt;
 
     @Column(name = "password", nullable = false)
