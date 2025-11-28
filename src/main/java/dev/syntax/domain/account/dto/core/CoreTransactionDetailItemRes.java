@@ -1,7 +1,5 @@
 package dev.syntax.domain.account.dto.core;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import dev.syntax.domain.report.enums.Category;
 
 /**

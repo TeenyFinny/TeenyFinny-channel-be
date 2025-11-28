@@ -13,7 +13,7 @@ import java.util.List;
  * @param balance 현재 계좌 잔액
  */
 public record CoreTransactionHistoryRes(
-        List<CoreTransactionItemRes> items,
+        List<CoreTransactionItemRes> transactions,
         BigDecimal balance
 ) {
 }
