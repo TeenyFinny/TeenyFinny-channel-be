@@ -7,26 +7,30 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dev.syntax.global.auth.dto.UserContext;
+import dev.syntax.global.auth.jwt.test.SecurityTestController;
 import dev.syntax.global.auth.jwt.test.TestAuthenticationFactory;
 import dev.syntax.global.auth.service.UserContextServiceImpl;
 import dev.syntax.global.response.AuthErrorResponse;
 import dev.syntax.global.response.BaseResponse;
 import dev.syntax.global.response.error.ErrorAuthCode;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+@WebMvcTest(controllers = SecurityTestController.class)
 @Import(JwtSecurityUnauthorizedTest.TestConfig.class)
+@ActiveProfiles("test")
 class JwtSecurityUnauthorizedTest {
 
 	@Autowired
@@ -39,28 +43,51 @@ class JwtSecurityUnauthorizedTest {
 	private JwtTokenProvider jwtTokenProvider;
 
 	@Autowired
-	private UserContextServiceImpl userContextService;  // 🔹 우리가 직접 만든 Mock 빈이 주입됨
+	private UserContextServiceImpl userContextService;
 
 	@TestConfiguration
 	static class TestConfig {
 
-		/** 1. UserContextServiceImpl Mock Bean 생성 */
 		@Bean
 		public UserContextServiceImpl userContextService() {
 			return mock(UserContextServiceImpl.class);
 		}
 
-		/** 2. 테스트용 JwtTokenProvider Bean 생성 */
 		@Bean
 		public JwtTokenProvider jwtTokenProvider(UserContextServiceImpl userContextService) {
-			String testSecret = "z6BLCa71yUubJVvxoI1PLcFlec1qiwb+szYXKvGmlIAHwYX1F5WVq2jNP05AyAaQrpQw/iR7/DnkiEHOWtQvRg=="; // base64
-			long expirationDays = 1L;
+			String testSecret =
+				"z6BLCa71yUubJVvxoI1PLcFlec1qiwb+szYXKvGmlIAHwYX1F5WVq2jNP05AyAaQrpQw/iR7/DnkiEHOWtQvRg==";
+			return new JwtTokenProvider(testSecret, 1L, userContextService);
+		}
 
-			return new JwtTokenProvider(
-				testSecret,
-				expirationDays,
-				userContextService
-			);
+		@Bean
+		public JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint(ObjectMapper objectMapper) {
+			return new JwtAuthenticationEntryPoint(objectMapper);
+		}
+
+		@Bean
+		public SecurityFilterChain testSecurityFilterChain(
+			HttpSecurity http,
+			JwtTokenProvider jwtTokenProvider,
+			JwtAuthenticationEntryPoint entryPoint
+		) throws Exception {
+
+			http
+				.csrf(csrf -> csrf.disable())
+
+				.exceptionHandling(ex -> ex
+					.authenticationEntryPoint(entryPoint)
+				)
+
+				.authorizeHttpRequests(auth -> auth
+					.requestMatchers("/test/**").authenticated()
+					.anyRequest().permitAll()
+				)
+
+				.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
+					UsernamePasswordAuthenticationFilter.class);
+
+			return http.build();
 		}
 	}
 
