@@ -80,7 +80,7 @@ public class AllowanceController {
      * 📌 카드 발급 API
      * POST /allowance/card
      */
-    @PostMapping("/card")
+    @PostMapping("/cards")
     public ResponseEntity<BaseResponse<?>> createCard(
             @CurrentUser UserContext ctx,
             @RequestBody CardCreateReq req) {
