@@ -83,7 +83,7 @@ public class AutoTransferServiceImpl implements AutoTransferService {
         CoreCreateAutoTransferRes coreAllowanceRes = coreAutoTransferClient.createAutoTransfer(allowanceReq);
 
         if (coreAllowanceRes == null || coreAllowanceRes.autoTransferId() == null) {
-            throw new BusinessException(ErrorBaseCode.CREATE_FAILED);
+            throw new BusinessException(ErrorBaseCode.AUTO_TRANSFER_CREATE_FAILED);
         }
 
         Long investTransferId = null;
@@ -95,7 +95,7 @@ public class AutoTransferServiceImpl implements AutoTransferService {
                 CoreCreateAutoTransferRes coreInvestRes = coreAutoTransferClient.createAutoTransfer(investReq);
 
                 if (coreInvestRes == null || coreInvestRes.autoTransferId() == null) {
-                    throw new BusinessException(ErrorBaseCode.CREATE_FAILED);
+                    throw new BusinessException(ErrorBaseCode.AUTO_TRANSFER_CREATE_FAILED);
                 }
                 investTransferId = coreInvestRes.autoTransferId();
             } catch (Exception e) {
@@ -106,7 +106,7 @@ public class AutoTransferServiceImpl implements AutoTransferService {
                 } catch (Exception rollbackEx) {
                     log.error("롤백 실패: allowanceTransferId={}", coreAllowanceRes.autoTransferId(), rollbackEx);
                 }
-                throw new BusinessException(ErrorBaseCode.CREATE_FAILED);
+                throw new BusinessException(ErrorBaseCode.AUTO_TRANSFER_CREATE_FAILED);
             }
         }
 
@@ -219,6 +219,9 @@ public class AutoTransferServiceImpl implements AutoTransferService {
         AutoTransfer autoTransfer = autoTransferRepository.findByAccountIdAndType(accountId, type)
                 .orElseThrow(() -> new BusinessException(ErrorBaseCode.AUTO_TRANSFER_NOT_FOUND));
 
+        if(type.equals(AutoTransferType.ALLOWANCE) && autoTransfer.getRatio() > 0) { // 비율이 1 이상인데 타입이 용돈인 경우에는 투자도 삭제되도록
+            coreAutoTransferClient.deleteAutoTransfer(autoTransfer.getInvestBankTransferId());
+        }
         coreAutoTransferClient.deleteAutoTransfer(autoTransfer.getPrimaryBankTransferId());
         autoTransferRepository.delete(autoTransfer);
     }
