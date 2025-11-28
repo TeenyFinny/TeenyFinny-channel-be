@@ -56,7 +56,7 @@ public class CardInquiryServiceImpl implements CardInquiryService {
                 CardUtils.formatCardNumber(card.getNumber()),
                 card.getName(),
                 card.getCvc(),
-                CardUtils.formatExpiredAt(card.getExpiredAt())
+                card.getExpiredAt()
         );
     }
 
