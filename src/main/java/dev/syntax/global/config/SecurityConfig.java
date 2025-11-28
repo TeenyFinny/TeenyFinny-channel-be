@@ -69,14 +69,16 @@ public class SecurityConfig {
 	 * @return SecurityFilterChain 빌드된 보안 필터 체인
 	 * @throws Exception 설정 중 발생할 수 있는 예외
 	 */
+	@SuppressWarnings("squid:S5122") // JWT API 서버에는 맞지 않은 규칙이라 SonarQube 오탐 발생 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
 			// .csrf(csrf -> csrf.disable())
 			.csrf(csrf -> csrf
-				.requireCsrfProtectionMatcher(request -> false)
+				.ignoringRequestMatchers("/**")   // JWT 기반 API 서버는 모든 요청에서 CSRF 미사용
 				.disable()
 			)
+
 			// CORS 설정 적용
 			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
