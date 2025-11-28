@@ -136,7 +136,7 @@ public class AccountController {
         @GetMapping("/history")
         public ResponseEntity<BaseResponse<?>> getMyHistory(
                         @CurrentUser UserContext user,
-                        @ModelAttribute AccountHistoryReq req) {
+                        @RequestBody AccountHistoryReq req) {
                 return ApiResponseUtil.success(SuccessCode.OK,
                                 accountHistoryService.getHistory(user.getId(), req, user));
         }
@@ -163,7 +163,7 @@ public class AccountController {
         public ResponseEntity<BaseResponse<?>> getChildHistory(
                         @CurrentUser UserContext user,
                         @PathVariable Long childId,
-                        @ModelAttribute AccountHistoryReq req) {
+                        @RequestBody AccountHistoryReq req) {
                 return ApiResponseUtil.success(SuccessCode.OK,
                                 accountHistoryService.getHistory(childId, req, user));
         }
