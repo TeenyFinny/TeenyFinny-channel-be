@@ -38,43 +38,47 @@ public class GoalAccountServiceImpl implements GoalAccountService {
 	private final AutoTransferRepository autoTransferRepository;
 	private final GoalRepository goalRepository;
 	private final CoreAutoTransferClient coreAutoTransferClient;
-	
+
 	/**
-	 * 목표 계좌를 생성합니다.
+	 * 목표 계좌를 생성하고 Goal 엔티티와 연동합니다.
 	 *
 	 * <p>주요 처리 과정:</p>
 	 * <ol>
-	 *     <li>사용자 조회: userId로 User 엔티티 조회, 없으면 실패 반환</li>
-	 *     <li>진행 중인 목표 존재 여부 검증: 이미 진행 중이면 실패 반환</li>
-	 *     <li>코어 서버에 목표 계좌 생성 요청</li>
-	 *     <li>계좌 정보 DB 저장</li>
-	 *     <li>Goal에 Account 연동</li>
-	 *     <li>자녀 용돈 계좌에서 목표 계좌로 자동이체 등록 (Core)</li>
-	 *     <li>자동이체 정보 Channel DB 저장</li>
-	 *     <li>처리 도중 예외가 발생하면 false 반환, 정상 처리 시 true 반환</li>
+	 *     <li>Core 서버에 목표 계좌 생성 요청</li>
+	 *     <li>생성된 계좌 정보를 Channel DB에 저장</li>
+	 *     <li>저장된 계좌를 Goal 엔티티와 연동</li>
+	 *     <li>자녀 용돈 계좌 → 목표 계좌 자동이체 등록 (별도 private 메소드에서 처리)</li>
 	 * </ol>
 	 *
-	 * @param goal 목표
-	 * @return Goal 계좌 생성 완료된 목표
+	 * <p>자동이체 등록 과정은 registerAutoTransfer() 내부에서 다음을 수행합니다:</p>
+	 * <ul>
+	 *     <li>자녀 용돈 계좌 조회</li>
+	 *     <li>Core 자동이체 등록 요청</li>
+	 *     <li>자동이체 정보를 Channel DB에 저장</li>
+	 *     <li>Channel 저장 실패 시 Core 자동이체 롤백</li>
+	 * </ul>
+	 *
+	 * @param goal 목표 엔티티
+	 * @return 계좌 생성 및 자동이체 연동이 완료된 Goal 엔티티
 	 */
+
 	@Transactional
 	public Goal createGoalAccount(Goal goal) {
-		// 앞에서 모든 검증 마침
+		// 1. Core 목표 계좌 생성 요청
 		CoreGoalAccountReq req = CoreGoalAccountReq.builder()
 			.childCoreId(goal.getUser().getCoreUserId())
 			.name(goal.getName())
 			.build();
 
-		// core에 계좌 생성 요청
 		CoreAccountItemRes coreRes = coreAccountClient.createGoalAccount(req);
-		log.info("[CORE] 목표 계좌 생성 완료: userId={}, accountNumber={}", goal.getUser().getId(),
-			coreRes.accountNumber());
+		log.info("[CORE] 목표 계좌 생성 완료: userId={}, accountNumber={}",
+			goal.getUser().getId(), coreRes.accountNumber());
 
 		if (coreRes.accountNumber() == null) {
 			throw new BusinessException(ErrorBaseCode.CREATE_FAILED);
 		}
 
-		// 채널 DB에 계좌 정보 저장
+		// 2. 채널 DB 계좌 저장
 		Account account = Account.builder()
 			.user(goal.getUser())
 			.type(AccountType.GOAL)
@@ -82,48 +86,85 @@ public class GoalAccountServiceImpl implements GoalAccountService {
 			.build();
 		accountRepository.save(account);
 
-		// goal에 Account 연동 완료
+		// 3. Goal과 계좌 연동
 		goal.updateAccount(account);
 		goalRepository.save(goal);
 
-		// 자녀의 용돈 계좌 조회 (출금 계좌)
-		Account allowanceAccount = accountRepository.findByUserIdAndType(goal.getUser().getId(), AccountType.ALLOWANCE)
-			.orElseThrow(() -> new BusinessException(ErrorBaseCode.ACCOUNT_NOT_FOUND));
+		// 4. 자동이체 등록 (private 메소드로 분리)
+		registerAutoTransfer(goal, account);
 
-		// 자동이체 정보 core에 등록
+		log.info("[CHANNEL] 목표 계좌 생성 완료: userId={}, goalId={}, accountId={}, goalName={}",
+			goal.getUser().getId(), goal.getId(), account.getId(), goal.getName());
+
+		return goal;
+	}
+
+	// 자동 이체 플로우
+	private void registerAutoTransfer(Goal goal, Account goalAccount) {
+		// 1. 용돈 계좌 조회
+		Account allowanceAccount = findAllowanceAccount(goal);
+
+		// 2. Core 자동이체 등록
+		CoreCreateAutoTransferRes transferRes =
+			createAutoTransferOnCore(goal, goalAccount, allowanceAccount);
+
+		// 3. Channel DB 자동이체 저장
+		saveAutoTransferChannel(goal, goalAccount, transferRes);
+	}
+
+	// 용돈 계좌 조회
+	private Account findAllowanceAccount(Goal goal) {
+		return accountRepository.findByUserIdAndType(goal.getUser().getId(), AccountType.ALLOWANCE)
+			.orElseThrow(() -> new BusinessException(ErrorBaseCode.ACCOUNT_NOT_FOUND));
+	}
+
+	// core 자동이체 등록
+	private CoreCreateAutoTransferRes createAutoTransferOnCore(
+		Goal goal, Account goalAccount, Account allowanceAccount) {
+
 		CoreCreateAutoTransferReq autoTransferReq = CoreCreateAutoTransferReq.builder()
 			.userId(goal.getUser().getCoreUserId())
 			.fromAccountId(allowanceAccount.getId())
-			.toAccountId(account.getId())
+			.toAccountId(goalAccount.getId())
 			.amount(goal.getMonthlyAmount())
 			.transferDay(goal.getPayDay())
 			.memo(AccountType.GOAL.name())
 			.build();
 
 		CoreCreateAutoTransferRes transferRes = coreAutoTransferClient.createAutoTransfer(autoTransferReq);
-		
+
 		if (transferRes == null || transferRes.autoTransferId() == null) {
 			throw new BusinessException(ErrorBaseCode.CREATE_FAILED);
 		}
 
-		log.info("[CORE] 목표 자동이체 등록 완료: userId={}, autoTransferId={}", goal.getUser().getId(),
-			transferRes.autoTransferId());
+		log.info("[CORE] 목표 자동이체 등록 완료: userId={}, autoTransferId={}",
+			goal.getUser().getId(), transferRes.autoTransferId());
 
-		// 자동이체 정보 채널 DB에 저장
-		AutoTransfer autoTransfer = AutoTransfer.builder()
-			.user(goal.getUser())
-			.account(account)
-			.transferAmount(goal.getMonthlyAmount())
-			.type(AutoTransferType.GOAL)
-			.frequency(AutoTransferFrequency.MONTHLY)
-			.primaryBankTransferId(transferRes.autoTransferId())
-			.transferDate(goal.getPayDay())
-			.build();
-		autoTransferRepository.save(autoTransfer);
+		return transferRes;
+	}
 
-		log.info("[CHANNEL] 목표 계좌 생성 완료: userId={}, goalId={}, accountId={}, goalName={}", goal.getUser().getId(),
-			goal.getId(), account.getId(), goal.getName());
+	// channel DB에 저장
+	private void saveAutoTransferChannel(
+		Goal goal, Account goalAccount, CoreCreateAutoTransferRes transferRes) {
 
-		return goal;
+		try {
+			AutoTransfer autoTransfer = AutoTransfer.builder()
+				.user(goal.getUser())
+				.account(goalAccount)
+				.transferAmount(goal.getMonthlyAmount())
+				.type(AutoTransferType.GOAL)
+				.frequency(AutoTransferFrequency.MONTHLY)
+				.primaryBankTransferId(transferRes.autoTransferId())
+				.transferDate(goal.getPayDay())
+				.build();
+
+			autoTransferRepository.save(autoTransfer);
+
+		} catch (Exception e) {
+			log.warn("[COMPENSATION] 채널 DB 자동이체 저장 실패 → Core 자동이체 롤백 시도. autoTransferId={}",
+				transferRes.autoTransferId());
+			coreAutoTransferClient.deleteAutoTransfer(transferRes.autoTransferId());
+			throw e; // 트랜잭션 롤백 유도
+		}
 	}
 }
