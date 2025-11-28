@@ -317,13 +317,8 @@ public class GoalServiceImpl implements GoalService {
 			.toList();
 
 		// 목표 기간 계산
-		if (goal.getMonthlyAmount().compareTo(BigDecimal.ZERO) <= 0) {
-			throw new BusinessException(ErrorBaseCode.GOAL_INVALID_AMOUNT);
-		}
-		int period = goal.getTargetAmount()
-			.divide(goal.getMonthlyAmount(), RoundingMode.CEILING)
-			.intValue();
-
+		int period = depositTransactions.size();
+		
 		// 진행률 계산
 		int progress = 0;
 		if (goal.getTargetAmount().compareTo(BigDecimal.ZERO) > 0) {
