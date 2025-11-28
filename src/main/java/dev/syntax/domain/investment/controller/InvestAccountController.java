@@ -1,19 +1,19 @@
 package dev.syntax.domain.investment.controller;
 
+import dev.syntax.domain.investment.dto.req.CreateInvestAccountReq;
 import dev.syntax.domain.investment.dto.res.InvestAccountPortfolioRes;
 import dev.syntax.domain.investment.dto.res.InvestAccountRes;
 import dev.syntax.domain.investment.service.InvestAccountService;
 import dev.syntax.global.auth.annotation.CurrentUser;
+
+import org.springframework.web.bind.annotation.RequestBody;
 import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.global.response.ApiResponseUtil;
 import dev.syntax.global.response.BaseResponse;
 import dev.syntax.global.response.SuccessCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -33,9 +33,10 @@ public class InvestAccountController {
 
 	@PostMapping
 	public ResponseEntity<BaseResponse<?>> createInvestmentAccount(
-			@CurrentUser UserContext userContext
+			@CurrentUser UserContext userContext,
+            @RequestBody CreateInvestAccountReq req
 	) {
-		InvestAccountRes res = investAccountService.createInvestmentAccount(userContext.getId());
+		InvestAccountRes res = investAccountService.createInvestmentAccount(req.childId());
 		return ApiResponseUtil.success(SuccessCode.CREATED, res);
 	}
 }
