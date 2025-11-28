@@ -18,9 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -49,13 +46,9 @@ public class AccountHistoryServiceImpl implements AccountHistoryService {
                 .findByUserIdAndType(userId, req.accountType())
                 .orElseThrow(() -> new BusinessException(ErrorBaseCode.NOT_FOUND_ENTITY));
 
-        log.info("거래내역 조회 → 계좌번호: {}, 년월: {}-{}",
-                account.getAccountNo(), req.year(), req.month());
-
         // 3. Core 서버 호출
         CoreTransactionHistoryRes coreRes = coreAccountClient.getAccountTransactionsByMonth(
                 account.getAccountNo(), req.year(), req.month());
-        log.info("Core 응답: {}", coreRes);
         if (coreRes == null || coreRes.transactions() == null) {
             throw new BusinessException(ErrorBaseCode.NOT_FOUND_ENTITY);
         }
