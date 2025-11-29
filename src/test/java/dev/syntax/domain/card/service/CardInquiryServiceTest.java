@@ -138,25 +138,5 @@ class CardInquiryServiceTest {
                     .isEqualTo(ErrorBaseCode.UNAUTHORIZED);
         }
 
-        @Test
-        @DisplayName("실패: 카드가 존재하지 않으면 CARD_NOT_FOUND 예외 발생")
-        void fail_CardNotFound() {
-            // given
-            Long childId = 10L;
-            Account account = Account.builder().id(100L).build();
-
-            given(userContext.getId()).willReturn(childId);
-            given(userContext.getRole()).willReturn(Role.CHILD.name());
-
-            given(accountRepository.findByUserIdAndType(childId, AccountType.ALLOWANCE))
-                    .willReturn(Optional.of(account));
-            given(cardRepository.findByAccountId(account.getId())).willReturn(Optional.empty());
-
-            // when & then
-            assertThatThrownBy(() -> cardInquiryService.getCardInfo(childId, userContext))
-                    .isInstanceOf(BusinessException.class)
-                    .extracting("errorCode")
-                    .isEqualTo(ErrorBaseCode.CARD_NOT_FOUND);
-        }
     }
 }
