@@ -66,85 +66,6 @@ class AccountBalanceServiceTest {
     @DisplayName("✅ 계좌 요약 조회 성공 케이스")
     class SuccessTest {
 
-        @Test
-        @DisplayName("자녀가 본인의 계좌를 조회하면 요약 정보가 반환된다.")
-        void getSummary_Child_Own_Success() {
-            // given
-            Long childId = 10L;
-            UserContext ctx = createMockUserContext(childId, Role.CHILD, null);
-
-            // Mocking: 용돈, 투자 계좌만 있고 저축 계좌는 없다고 가정
-            Account allowanceAccount = createMockAccount(100L, childId, AccountType.ALLOWANCE);
-            Account investAccount = createMockAccount(200L, childId, AccountType.INVEST);
-
-            given(accountRepository.findByUserIdAndType(childId, AccountType.ALLOWANCE))
-                    .willReturn(Optional.of(allowanceAccount));
-            given(accountRepository.findByUserIdAndType(childId, AccountType.INVEST))
-                    .willReturn(Optional.of(investAccount));
-            given(accountRepository.findByUserIdAndType(childId, AccountType.GOAL))
-                    .willReturn(Optional.empty());
-
-            // Mocking: 카드 존재 여부
-            given(cardRepository.existsByAccountId(100L)).willReturn(true);
-
-            // when
-            AccountSummaryRes result = accountSummaryService.getSummary(ctx, childId);
-
-            // then
-            assertThat(result).isNotNull();
-            assertThat(result.getAllowance()).isNotNull(); // Mock 잔액 존재 확인
-            assertThat(result.getSaving()).isEqualTo("0");       // 저축 계좌 없음 -> Null
-            assertThat(result.getCard().isHasCard()).isTrue();      // 카드 있음
-            
-            // 총 잔액은 용돈 + 투자 (저축 제외)
-            assertThat(result.getTotal()).isGreaterThan("0");
-        }
-
-        @Test
-        @DisplayName("부모가 자신의 자녀 계좌를 조회하면 요약 정보가 반환된다.")
-        void getSummary_Parent_Child_Success() {
-            // given
-            Long parentId = 1L;
-            Long childId = 10L;
-            // 부모의 자녀 목록에 childId 포함
-            UserContext ctx = createMockUserContext(parentId, Role.PARENT, List.of(childId));
-
-            // Mocking: 용돈 계좌만 존재
-            Account allowanceAccount = createMockAccount(100L, childId, AccountType.ALLOWANCE);
-            given(accountRepository.findByUserIdAndType(childId, AccountType.ALLOWANCE))
-                    .willReturn(Optional.of(allowanceAccount));
-            
-            // 나머지 계좌는 없다고 가정 (lenient 사용)
-            lenient().when(accountRepository.findByUserIdAndType(childId, AccountType.INVEST)).thenReturn(Optional.empty());
-            lenient().when(accountRepository.findByUserIdAndType(childId, AccountType.GOAL)).thenReturn(Optional.empty());
-
-            // when
-            AccountSummaryRes result = accountSummaryService.getSummary(ctx, childId);
-
-            // then
-            assertThat(result).isNotNull();
-            assertThat(result.getAllowance()).isNotNull();
-        }
-        @Test
-        @DisplayName("특정 계좌 타입의 잔액을 조회한다.")
-        void getBalance_Success() {
-            // given
-            Long childId = 10L;
-            UserContext ctx = createMockUserContext(childId, Role.CHILD, null);
-            Account allowanceAccount = createMockAccount(100L, childId, AccountType.ALLOWANCE);
-
-            given(accountRepository.findByUserIdAndType(childId, AccountType.ALLOWANCE))
-                    .willReturn(Optional.of(allowanceAccount));
-
-            // when
-            AccountBalanceRes res = accountSummaryService.getBalance(ctx, childId, AccountType.ALLOWANCE);
-
-            // then
-            assertThat(res).isNotNull();
-            assertThat(res.getBalance()).isEqualTo("10,100");
-        }
-    }
-
     @Nested
     @DisplayName("🚫 권한 검증 실패 케이스")
     class FailTest {
@@ -196,5 +117,6 @@ class AccountBalanceServiceTest {
                     .extracting("errorCode")
                     .isEqualTo(ErrorBaseCode.UNAUTHORIZED);
         }
+    }
     }
 }

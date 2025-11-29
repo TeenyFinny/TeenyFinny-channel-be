@@ -49,7 +49,7 @@ public class AccountBalanceServiceImpl implements AccountBalanceService {
 
         for (CoreAccountItemRes acc : accounts) {
             AccountType type = acc.accountType();
-            BigDecimal balance = BigDecimal.valueOf(0);
+            BigDecimal balance = acc.balance();
 
             switch (type) {
                 case ALLOWANCE -> allowance = balance;
