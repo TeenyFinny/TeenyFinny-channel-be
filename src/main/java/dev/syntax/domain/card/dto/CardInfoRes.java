@@ -9,6 +9,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class CardInfoRes {
+    boolean hasCard;
 
     /**
      * 생성된 카드의 고유 ID (PK).
