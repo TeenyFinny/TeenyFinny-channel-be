@@ -135,10 +135,14 @@ public class AccountController {
          */
         @GetMapping("/history")
         public ResponseEntity<BaseResponse<?>> getMyHistory(
-                        @CurrentUser UserContext user,
-                        @ModelAttribute AccountHistoryReq req) {
-                return ApiResponseUtil.success(SuccessCode.OK,
-                                accountHistoryService.getHistory(user.getId(), req, user));
+                @CurrentUser UserContext user,
+                @RequestParam AccountType accountType,
+                @RequestParam int year,
+                @RequestParam int month) {
+
+        AccountHistoryReq req = new AccountHistoryReq(accountType, year, month);
+        return ApiResponseUtil.success(SuccessCode.OK,
+                accountHistoryService.getHistory(user.getId(), req, user));
         }
 
         /**
@@ -161,11 +165,15 @@ public class AccountController {
          */
         @GetMapping("/{childId}/history")
         public ResponseEntity<BaseResponse<?>> getChildHistory(
-                        @CurrentUser UserContext user,
-                        @PathVariable Long childId,
-                        @ModelAttribute AccountHistoryReq req) {
-                return ApiResponseUtil.success(SuccessCode.OK,
-                                accountHistoryService.getHistory(childId, req, user));
+                @CurrentUser UserContext user,
+                @PathVariable Long childId,
+                @RequestParam AccountType accountType,
+                @RequestParam int year,
+                @RequestParam int month) {
+
+        AccountHistoryReq req = new AccountHistoryReq(accountType, year, month);
+        return ApiResponseUtil.success(SuccessCode.OK,
+                accountHistoryService.getHistory(childId, req, user));
         }
 
         /**
@@ -208,6 +216,15 @@ public class AccountController {
          */
         @GetMapping("/history/{transactionId}")
         public ResponseEntity<BaseResponse<?>> getDetail(
+                        @CurrentUser UserContext user,
+                        @PathVariable Long transactionId) {
+
+                return ApiResponseUtil.success(SuccessCode.OK,
+                                accountHistoryDetailService.getDetail(transactionId, user));
+        }
+
+        @GetMapping("/{childId}/history/{transactionId}")
+        public ResponseEntity<BaseResponse<?>> getChildDetail(
                         @CurrentUser UserContext user,
                         @PathVariable Long transactionId) {
 

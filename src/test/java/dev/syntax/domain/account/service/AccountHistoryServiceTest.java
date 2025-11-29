@@ -1,7 +1,10 @@
 package dev.syntax.domain.account.service;
 
+import dev.syntax.domain.account.client.CoreAccountClient;
 import dev.syntax.domain.account.dto.AccountHistoryReq;
 import dev.syntax.domain.account.dto.AccountHistoryRes;
+import dev.syntax.domain.account.dto.core.CoreTransactionHistoryRes;
+import dev.syntax.domain.account.dto.core.CoreTransactionDetailItemRes;
 import dev.syntax.domain.account.entity.Account;
 import dev.syntax.domain.account.enums.AccountType;
 import dev.syntax.domain.account.repository.AccountRepository;
@@ -14,15 +17,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,55 +39,10 @@ class AccountHistoryServiceTest {
     private AccountRepository accountRepository;
 
     @Mock
+    private CoreAccountClient coreAccountClient;
+
+    @Mock
     private UserContext userContext;
-
-    /**
-     * ===============================
-     *  1. 거래내역 정상 조회 테스트
-     * ===============================
-     */
-    @Test
-    @DisplayName("거래내역 조회 - 정상적으로 월별 거래내역이 반환된다")
-    void getHistory_success() {
-        // given
-        Long userId = 10L;
-        AccountHistoryReq req = new AccountHistoryReq(AccountType.ALLOWANCE, 2025, 1);
-
-        Account account = Account.builder()
-                .accountNo("123-456")
-                .build();
-
-        // 권한: 자녀가 본인 계좌 조회
-        given(userContext.getId()).willReturn(userId);
-        given(userContext.getRole()).willReturn(Role.CHILD.name());
-
-        // 계좌 존재
-        given(accountRepository.findByUserIdAndType(eq(userId), eq(AccountType.ALLOWANCE)))
-                .willReturn(Optional.of(account));
-
-        // mockCoreHistory() 스파이로 감싸서 실제 mock 데이터 기반 테스트
-        AccountHistoryServiceImpl spyService = Mockito.spy(service);
-
-        LocalDateTime start = LocalDateTime.of(2025, 1, 1, 0, 0);
-        LocalDateTime end = LocalDateTime.of(2025, 1, 31, 23, 59, 59);
-
-        List<AccountHistoryRes> mockData = List.of(
-                new AccountHistoryRes(1L, "deposit", "이체", "50,000", "150,000", "2025-01-10 12:00"),
-                new AccountHistoryRes(2L, "withdrawal", "편의점", "1,500", "148,500", "2025-01-15 14:00")
-        );
-
-        Mockito.doReturn(mockData)
-                .when(spyService)
-                .mockCoreHistory("123-456", start, end);
-
-        // when
-        List<AccountHistoryRes> result = spyService.getHistory(userId, req, userContext);
-
-        // then
-        assertThat(result).hasSize(2);
-        assertThat(result.get(0).id()).isEqualTo(1L);
-        assertThat(result.get(0).amount()).isEqualTo("50,000");
-    }
 
     /**
      * ===============================
@@ -94,11 +53,12 @@ class AccountHistoryServiceTest {
     @DisplayName("거래내역 조회 - 해당 월에 거래가 없으면 빈 리스트 반환")
     void getHistory_emptyList() {
         Long userId = 10L;
+        String accountNo = "123-456";
 
         AccountHistoryReq req = new AccountHistoryReq(AccountType.ALLOWANCE, 2025, 2);
 
         Account account = Account.builder()
-                .accountNo("123-456")
+                .accountNo(accountNo)
                 .build();
 
         given(userContext.getId()).willReturn(userId);
@@ -107,17 +67,16 @@ class AccountHistoryServiceTest {
         given(accountRepository.findByUserIdAndType(eq(userId), eq(AccountType.ALLOWANCE)))
                 .willReturn(Optional.of(account));
 
-        AccountHistoryServiceImpl spyService = Mockito.spy(service);
+        // Core 서버 응답 Mock (빈 리스트)
+        CoreTransactionHistoryRes coreRes = new CoreTransactionHistoryRes(List.of(), new BigDecimal("0"));
 
-        LocalDateTime start = LocalDateTime.of(2025, 2, 1, 0, 0);
-        LocalDateTime end = LocalDateTime.of(2025, 2, 28, 23, 59, 59);
+        given(coreAccountClient.getAccountTransactionsByMonth(accountNo, 2025, 2))
+                .willReturn(coreRes);
 
-        Mockito.doReturn(List.of())
-                .when(spyService)
-                .mockCoreHistory("123-456", start, end);
+        // when
+        List<AccountHistoryRes> result = service.getHistory(userId, req, userContext);
 
-        List<AccountHistoryRes> result = spyService.getHistory(userId, req, userContext);
-
+        // then
         assertThat(result).isEmpty();
     }
 

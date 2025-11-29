@@ -7,6 +7,9 @@ import dev.syntax.domain.account.dto.core.CoreAccountItemRes;
 import dev.syntax.domain.account.dto.core.CoreCreateAccountReq;
 import dev.syntax.domain.account.dto.core.CoreGoalAccountReq;
 import dev.syntax.domain.account.dto.core.CoreInvestmentAccountRes;
+import dev.syntax.domain.account.dto.core.CoreTransactionHistoryDetailRes;
+import dev.syntax.domain.account.dto.core.CoreTransactionDetailItemRes;
+import dev.syntax.domain.account.dto.core.CoreTransactionHistoryRes;
 import dev.syntax.domain.account.dto.core.CoreUserAccountListRes;
 import dev.syntax.global.core.CoreApiProperties;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +30,6 @@ public class CoreAccountClient {
 	private static final String ACCOUNT_URL = "/core/banking/account";
 	private static final String INVESTMENT_ACCOUNT_URL = "/core/banking/account/investment";
 	private static final String ALLOWANCE_ACCOUNT_URL = "/core/banking/account/create";
-
 	/**
 	 * Core 서버에서 사용자의 전체 계좌 정보를 조회합니다.
 	 * <p>
@@ -77,6 +79,51 @@ public class CoreAccountClient {
 			properties.getBaseUrl() + ALLOWANCE_ACCOUNT_URL,
 			req,
 			CoreAccountItemRes.class
+		);
+	}
+
+	/**
+	 * Core 서버에서 특정 계좌의 년/월별 거래내역을 조회합니다.
+	 *
+	 * @param accountNumber 계좌번호
+	 * @param year 조회할 년도
+	 * @param month 조회할 월
+	 * @return 거래 내역 및 잔액 정보
+	 */
+	public CoreTransactionHistoryRes getAccountTransactionsByMonth(
+			String accountNumber, int year, int month) {
+
+		String url = properties.getBaseUrl() +
+				"/core/transaction/account/{accountNo}/{year}/{month}";
+
+		return coreRestTemplate.getForObject(
+				url,
+				CoreTransactionHistoryRes.class,
+				accountNumber,
+				year,
+				month
+		);
+	}
+
+
+	/**
+	 * Core 서버에서 특정 거래의 상세 정보를 조회합니다.
+	 * <p>
+	 * 거래 ID로 단일 거래를 조회하여 거래 타입, 카테고리, 승인 금액 등
+	 * 상세 정보를 반환합니다.
+	 * </p>
+	 *
+	 * @param transactionId 조회할 거래 ID
+	 * @return 거래 상세 정보
+	 */
+	public CoreTransactionDetailItemRes getTransactionDetail(Long transactionId) {
+		String url = properties.getBaseUrl() +
+				"/core/transaction/detail/{transactionId}";
+
+		return coreRestTemplate.getForObject(
+				url,
+				CoreTransactionDetailItemRes.class,
+				transactionId
 		);
 	}
 }
