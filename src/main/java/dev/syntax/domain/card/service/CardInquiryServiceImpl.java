@@ -1,6 +1,8 @@
 package dev.syntax.domain.card.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +21,7 @@ import dev.syntax.global.response.error.ErrorBaseCode;
 /**
  * 카드 조회 서비스 구현체.
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -39,8 +42,8 @@ public class CardInquiryServiceImpl implements CardInquiryService {
     public CardInfoRes getCardInfo(Long targetUserId, UserContext ctx) {
 
         //  1. 권한 검증
+        log.info("targetUserId: {} - ctx: {}", targetUserId, ctx.getId());
         validateAccess(targetUserId, ctx);
-
         //  2. 용돈 계좌 조회
         Account account = accountRepository
                 .findByUserIdAndType(targetUserId, AccountType.ALLOWANCE)
@@ -48,10 +51,16 @@ public class CardInquiryServiceImpl implements CardInquiryService {
 
         //  3. 카드 조회
         Card card = cardRepository.findByAccountId(account.getId())
-                .orElseThrow(() -> new BusinessException(ErrorBaseCode.CARD_NOT_FOUND));
+                .orElse(null);
 
-        //  4. DTO 변환
+        //  4. 카드가 없으면 hasCard=false로 응답
+        if (card == null) {
+            return new CardInfoRes(false, null, null, null, null, null);
+        }
+
+        //  5. 카드가 있으면 정보 반환
         return new CardInfoRes(
+                true,
                 card.getId(),
                 CardUtils.formatCardNumber(card.getNumber()),
                 card.getName(),
@@ -62,6 +71,7 @@ public class CardInquiryServiceImpl implements CardInquiryService {
 
     private void validateAccess(Long targetUserId, UserContext ctx) {
 
+        log.info("targetUserId: {} - ctx: {} - role: {}", targetUserId, ctx.getId(), ctx.getRole());
         // 자녀 본인 조회 허용
         if (ctx.getRole().equals(Role.CHILD.name()) && ctx.getId().equals(targetUserId)) {
             return;
