@@ -4,9 +4,8 @@ import lombok.Data;
 
 @Data
 public class InvestTradeOrderReq {
-	private String cano;
 	private String productCode;
 	private String productName;
 	private int quantity;
-	private long price;
+	private String price;
 }

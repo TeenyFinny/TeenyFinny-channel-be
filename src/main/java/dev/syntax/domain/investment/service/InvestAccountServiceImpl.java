@@ -11,6 +11,7 @@ import dev.syntax.domain.user.repository.UserRepository;
 import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorBaseCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class InvestAccountServiceImpl implements InvestAccountService {
     private final CoreInvestmentClient coreInvestmentClient;
     private final AccountRepository accountRepository;
@@ -65,6 +67,16 @@ public class InvestAccountServiceImpl implements InvestAccountService {
 
         // DTO 반환
         return new InvestAccountRes(cano);
+    }
+
+    @Override
+    public boolean checkAccount(Long userId) {
+        // 1. 채널 DB 확인
+        boolean existsInChannel = accountRepository.findByUserIdAndType(userId, AccountType.INVEST).isPresent();
+        if (existsInChannel) return true;
+
+        // 2. Core Banking Mock 확인 (데이터 불일치 가능성 대비)
+        return coreInvestmentClient.checkAccount(userId);
     }
 
 }

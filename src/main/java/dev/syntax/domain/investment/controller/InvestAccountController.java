@@ -23,7 +23,7 @@ public class InvestAccountController {
 
 	@GetMapping
 	public ResponseEntity<BaseResponse<?>> getInvestAccountPortfolio (
-					@CurrentUser UserContext userContext
+			@CurrentUser UserContext userContext
 	) {
 		String cano = investAccountService.getCanoByUserId(userContext.getId());
 		InvestAccountPortfolioRes res = investAccountService.getInvestAccount(cano);
@@ -34,8 +34,16 @@ public class InvestAccountController {
 	@PostMapping
 	public ResponseEntity<BaseResponse<?>> createInvestmentAccount(
 			@CurrentUser UserContext userContext
-	) {
+			) {
 		InvestAccountRes res = investAccountService.createInvestmentAccount(userContext.getId());
 		return ApiResponseUtil.success(SuccessCode.CREATED, res);
 	}
+
+	@GetMapping("/check-account")
+    public ResponseEntity<BaseResponse<?>> checkAccount(
+			@CurrentUser UserContext userContext
+    ) {
+        boolean hasAccount = investAccountService.checkAccount(userContext.getId());
+        return ApiResponseUtil.success(SuccessCode.OK, hasAccount);
+    }
 }
