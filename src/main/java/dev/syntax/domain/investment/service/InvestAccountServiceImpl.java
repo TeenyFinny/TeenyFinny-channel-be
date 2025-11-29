@@ -11,6 +11,7 @@ import dev.syntax.domain.user.repository.UserRepository;
 import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorBaseCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class InvestAccountServiceImpl implements InvestAccountService {
     private final CoreInvestmentClient coreInvestmentClient;
     private final AccountRepository accountRepository;

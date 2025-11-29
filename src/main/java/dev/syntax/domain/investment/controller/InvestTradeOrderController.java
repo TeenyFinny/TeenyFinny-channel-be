@@ -5,6 +5,7 @@ import dev.syntax.domain.investment.dto.res.InvestTradeOrderRes;
 import dev.syntax.domain.investment.service.InvestAccountService;
 import dev.syntax.domain.investment.service.InvestTradeOrderService;
 import dev.syntax.global.auth.annotation.CurrentUser;
+import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.global.response.ApiResponseUtil;
 import dev.syntax.global.response.BaseResponse;
 import dev.syntax.global.response.SuccessCode;
@@ -26,21 +27,21 @@ public class InvestTradeOrderController {
 
     @PostMapping("/buy")
     public ResponseEntity<BaseResponse<?>> buyStocks(
-            @CurrentUser Long userId,
+            @CurrentUser UserContext userContext,
             @RequestBody InvestTradeOrderReq buyReq
     ) {
-        String cano = investAccountService.getCanoByUserId(userId);
+        String cano = investAccountService.getCanoByUserId(userContext.getId());
         log.info("cano : {}", cano);
-        InvestTradeOrderRes response = tradeOrderService.buy(userId, cano, buyReq);
+        InvestTradeOrderRes response = tradeOrderService.buy(userContext.getId(), cano, buyReq);
         return ApiResponseUtil.success(SuccessCode.OK, response);
     }
     @PostMapping("/sell")
     public ResponseEntity<BaseResponse<?>> sellStocks(
-            @CurrentUser Long userId,
+            @CurrentUser UserContext userContext,
             @RequestBody InvestTradeOrderReq sellReq
     ) {
-        String cano = investAccountService.getCanoByUserId(userId);
-        InvestTradeOrderRes response = tradeOrderService.sell(userId, cano, sellReq);
+        String cano = investAccountService.getCanoByUserId(userContext.getId());
+        InvestTradeOrderRes response = tradeOrderService.sell(userContext.getId(), cano, sellReq);
         return ApiResponseUtil.success(SuccessCode.OK, response);
     }
 }

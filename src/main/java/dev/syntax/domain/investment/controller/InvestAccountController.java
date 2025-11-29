@@ -4,6 +4,7 @@ import dev.syntax.domain.investment.dto.res.InvestAccountPortfolioRes;
 import dev.syntax.domain.investment.dto.res.InvestAccountRes;
 import dev.syntax.domain.investment.service.InvestAccountService;
 import dev.syntax.global.auth.annotation.CurrentUser;
+import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.global.response.ApiResponseUtil;
 import dev.syntax.global.response.BaseResponse;
 import dev.syntax.global.response.SuccessCode;
@@ -22,9 +23,9 @@ public class InvestAccountController {
 
 	@GetMapping
 	public ResponseEntity<BaseResponse<?>> getInvestAccountPortfolio (
-			@CurrentUser Long userId
+			@CurrentUser UserContext userContext
 	) {
-		String cano = investAccountService.getCanoByUserId(userId);
+		String cano = investAccountService.getCanoByUserId(userContext.getId());
 		InvestAccountPortfolioRes res = investAccountService.getInvestAccount(cano);
 
 		return ApiResponseUtil.success(SuccessCode.OK, res);
@@ -32,17 +33,17 @@ public class InvestAccountController {
 
 	@PostMapping
 	public ResponseEntity<BaseResponse<?>> createInvestmentAccount(
-			@CurrentUser Long userId
-	) {
-		InvestAccountRes res = investAccountService.createInvestmentAccount(userId);
+			@CurrentUser UserContext userContext
+			) {
+		InvestAccountRes res = investAccountService.createInvestmentAccount(userContext.getId());
 		return ApiResponseUtil.success(SuccessCode.CREATED, res);
 	}
 
 	@GetMapping("/check-account")
     public ResponseEntity<BaseResponse<?>> checkAccount(
-            @CurrentUser Long userId
+			@CurrentUser UserContext userContext
     ) {
-        boolean hasAccount = investAccountService.checkAccount(userId);
+        boolean hasAccount = investAccountService.checkAccount(userContext.getId());
         return ApiResponseUtil.success(SuccessCode.OK, hasAccount);
     }
 }
