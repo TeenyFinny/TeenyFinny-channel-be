@@ -13,7 +13,7 @@ public class InvestTradeOrderServiceImpl implements InvestTradeOrderService{
     private final CoreInvestmentClient coreInvestmentClient;
 
     @Override
-    public InvestTradeOrderRes buy(Long userId, String cano, InvestTradeOrderReq req) {
+    public InvestTradeOrderRes buy(String cano, InvestTradeOrderReq req) {
         return coreInvestmentClient.tradeOrderBuy(
                 new CoreInvestTradeOrderReq(cano, req.getProductCode(), req.getProductName(),
                         req.getQuantity(), req.getPrice())
@@ -21,7 +21,7 @@ public class InvestTradeOrderServiceImpl implements InvestTradeOrderService{
     }
 
     @Override
-    public InvestTradeOrderRes sell(Long userId, String cano, InvestTradeOrderReq req) {
+    public InvestTradeOrderRes sell(String cano, InvestTradeOrderReq req) {
         return coreInvestmentClient.tradeOrderSell(
                 new CoreInvestTradeOrderReq(cano, req.getProductCode(), req.getProductName(),
                         req.getQuantity(), req.getPrice())

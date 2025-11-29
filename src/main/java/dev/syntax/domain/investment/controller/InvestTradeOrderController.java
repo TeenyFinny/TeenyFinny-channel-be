@@ -31,8 +31,7 @@ public class InvestTradeOrderController {
             @RequestBody InvestTradeOrderReq buyReq
     ) {
         String cano = investAccountService.getCanoByUserId(userContext.getId());
-        log.info("cano : {}", cano);
-        InvestTradeOrderRes response = tradeOrderService.buy(userContext.getId(), cano, buyReq);
+        InvestTradeOrderRes response = tradeOrderService.buy(cano, buyReq);
         return ApiResponseUtil.success(SuccessCode.OK, response);
     }
     @PostMapping("/sell")
@@ -41,7 +40,7 @@ public class InvestTradeOrderController {
             @RequestBody InvestTradeOrderReq sellReq
     ) {
         String cano = investAccountService.getCanoByUserId(userContext.getId());
-        InvestTradeOrderRes response = tradeOrderService.sell(userContext.getId(), cano, sellReq);
+        InvestTradeOrderRes response = tradeOrderService.sell(cano, sellReq);
         return ApiResponseUtil.success(SuccessCode.OK, response);
     }
 }
