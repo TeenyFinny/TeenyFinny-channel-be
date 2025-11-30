@@ -92,18 +92,6 @@ public class AccountController {
         }
 
         /**
-         * 📌 본인 계좌 요약 조회 (자녀/부모 공통)
-         *
-         * GET /account/summary
-         */
-        @GetMapping("/summary")
-        public ResponseEntity<BaseResponse<?>> getMySummary(
-                        @CurrentUser UserContext user) {
-
-                return ApiResponseUtil.success(SuccessCode.OK, accountSummaryService.getSummary(user, user.getId()));
-        }
-
-        /**
          * 📌 부모 → 자녀 계좌 요약 조회
          *
          * GET /account/{childId}/summary
