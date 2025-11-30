@@ -1,11 +1,14 @@
 package dev.syntax.domain.auth.service;
 
 import dev.syntax.domain.auth.dto.EmailValidationReq;
+import dev.syntax.domain.auth.dto.FindEmailReq;
+import dev.syntax.domain.auth.dto.FindEmailRes;
 import dev.syntax.domain.auth.dto.IdentityVerifyReq;
 import dev.syntax.domain.auth.dto.IdentityVerifyRes;
 import dev.syntax.domain.auth.dto.PasswordVerifyReq;
 import dev.syntax.domain.auth.dto.PasswordVerifyRes;
 import dev.syntax.domain.auth.dto.RefreshTokenRes;
+import dev.syntax.domain.auth.dto.ResetPasswordReq;
 import dev.syntax.domain.auth.dto.SimplePasswordVerifyReq;
 import dev.syntax.domain.auth.dto.UpdatePasswordReq;
 import dev.syntax.domain.auth.dto.UpdatePushReq;
@@ -108,5 +111,28 @@ public interface AuthService {
 	 * @return 인증 결과
 	 */
 	IdentityVerifyRes verifyIdentityMock(IdentityVerifyReq request);
+
+	/**
+	 * 전화번호, 생년월일, 이름으로 이메일을 찾습니다.
+	 * <p>
+	 * 일치하는 사용자가 없으면 {@link BusinessException}을 발생시킵니다.
+	 *
+	 * @param request ID 찾기 요청 DTO
+	 * @return 찾은 이메일 주소
+	 * @throws BusinessException 일치하는 사용자가 없을 경우 발생
+	 */
+	FindEmailRes findEmail(FindEmailReq request);
+
+	/**
+	 * 비밀번호 재설정 링크를 이메일로 발송합니다.
+	 * <p>
+	 * 이메일, 전화번호, 생년월일, 이름이 모두 일치하는 사용자가 있는지 확인하고,
+	 * 일치하면 비밀번호 재설정 링크를 이메일로 발송합니다.
+	 * 일치하는 사용자가 없으면 {@link BusinessException}을 발생시킵니다.
+	 *
+	 * @param request 비밀번호 재설정 요청 DTO
+	 * @throws BusinessException 일치하는 사용자가 없을 경우 발생
+	 */
+	void resetPassword(ResetPasswordReq request);
 }
 

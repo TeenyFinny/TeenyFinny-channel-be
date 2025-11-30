@@ -78,4 +78,45 @@ public interface UserRepository extends JpaRepository<User, Long> {
 		"LEFT JOIN FETCH c.child " +
 		"WHERE u.providerId = :providerId")
 	Optional<User> findByProviderIdWithChildren(@Param("providerId") String providerId);
+
+	/**
+	 * 전화번호, 생년월일, 이름으로 사용자를 조회합니다.
+	 * ID 찾기 시 사용됩니다.
+	 *
+	 * @param phoneNumber 전화번호
+	 * @param birthDate 생년월일 (LocalDate)
+	 * @param name 이름
+	 * @return User 엔티티
+	 */
+	@Query("SELECT u FROM User u " +
+		"WHERE u.phoneNumber = :phoneNumber " +
+		"AND u.birthDate = :birthDate " +
+		"AND u.name = :name")
+	Optional<User> findByPhoneNumberAndBirthDateAndName(
+		@Param("phoneNumber") String phoneNumber,
+		@Param("birthDate") java.time.LocalDate birthDate,
+		@Param("name") String name
+	);
+
+	/**
+	 * 이메일, 전화번호, 생년월일, 이름으로 사용자를 조회합니다.
+	 * 비밀번호 재설정 시 사용됩니다.
+	 *
+	 * @param email 이메일
+	 * @param phoneNumber 전화번호
+	 * @param birthDate 생년월일 (LocalDate)
+	 * @param name 이름
+	 * @return User 엔티티
+	 */
+	@Query("SELECT u FROM User u " +
+		"WHERE u.email = :email " +
+		"AND u.phoneNumber = :phoneNumber " +
+		"AND u.birthDate = :birthDate " +
+		"AND u.name = :name")
+	Optional<User> findByEmailAndPhoneNumberAndBirthDateAndName(
+		@Param("email") String email,
+		@Param("phoneNumber") String phoneNumber,
+		@Param("birthDate") java.time.LocalDate birthDate,
+		@Param("name") String name
+	);
 }
