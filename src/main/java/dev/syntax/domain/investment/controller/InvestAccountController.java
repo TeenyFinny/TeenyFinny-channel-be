@@ -2,7 +2,6 @@ package dev.syntax.domain.investment.controller;
 
 import dev.syntax.domain.investment.dto.req.CreateInvestAccountReq;
 import dev.syntax.domain.investment.dto.res.InvestAccountPortfolioRes;
-import dev.syntax.domain.investment.dto.res.InvestAccountRes;
 import dev.syntax.domain.investment.service.InvestAccountService;
 import dev.syntax.global.auth.annotation.CurrentUser;
 
@@ -36,7 +35,7 @@ public class InvestAccountController {
 			@CurrentUser UserContext userContext,
             @RequestBody CreateInvestAccountReq req
 	) {
-		InvestAccountRes res = investAccountService.createInvestmentAccount(req.childId());
-		return ApiResponseUtil.success(SuccessCode.CREATED, res);
+		investAccountService.createInvestmentAccount(req.childId());
+		return ApiResponseUtil.success(SuccessCode.CREATED);
 	}
 }

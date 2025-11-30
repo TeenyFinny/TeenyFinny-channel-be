@@ -5,7 +5,6 @@ import dev.syntax.domain.account.enums.AccountType;
 import dev.syntax.domain.account.repository.AccountRepository;
 import dev.syntax.domain.investment.client.CoreInvestmentClient;
 import dev.syntax.domain.investment.dto.res.InvestAccountPortfolioRes;
-import dev.syntax.domain.investment.dto.res.InvestAccountRes;
 import dev.syntax.domain.user.entity.User;
 import dev.syntax.domain.user.repository.UserRepository;
 import dev.syntax.global.exception.BusinessException;
@@ -37,7 +36,7 @@ public class InvestAccountServiceImpl implements InvestAccountService {
 
     @Override
     @Transactional
-    public InvestAccountRes createInvestmentAccount(Long userId) {
+    public void createInvestmentAccount(Long userId) {
         // 채널 DB에 투자 계좌가 이미 존재하는지 확인
         accountRepository.findByUserIdAndType(userId, AccountType.INVEST).ifPresent(account -> {
             throw new BusinessException(ErrorBaseCode.CONFLICT);
@@ -62,9 +61,6 @@ public class InvestAccountServiceImpl implements InvestAccountService {
                 .build();
 
         accountRepository.save(account);
-
-        // DTO 반환
-        return new InvestAccountRes(cano);
     }
 
 }
