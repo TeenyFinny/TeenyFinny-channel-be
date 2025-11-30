@@ -18,7 +18,7 @@ public interface AccountBalanceService {
      * 계좌 요약 정보 조회.
      *
      * @param ctx          로그인한 사용자 컨텍스트 (권한 검증용)
-     * @param targetUserId 조회 대상 사용자 ID (본인 또는 자녀)
+     * @param targetUserId 조회 대상 사용자 ID (자녀 ID)
      * @return 계좌 요약 정보 응답 DTO (총 자산, 유형별 잔액, 카드 정보)
      */
     AccountSummaryRes getSummary(UserContext ctx, Long targetUserId);
