@@ -130,17 +130,14 @@ public class AccountBalanceServiceImpl implements AccountBalanceService {
      * 대상 사용자 계좌 목록 추출 (CoreUserId 기준)
      */
     private List<CoreAccountItemRes> extractTargetAccounts(CoreUserAccountListRes res, Long targetCoreUserId) {
-        // 자녀 계좌 목록에서 검색
-        if (res.children() != null) {
-            for (var child : res.children()) {
-                if (child.userId().equals(targetCoreUserId)) {
-                    return child.accounts();
-                }
-            }
+        if (res.children() == null) {
+            return List.of();
         }
-        
-        // 검색 실패 시 빈 리스트 반환 (부모 계좌 반환 X)
-        return List.of(); 
+        return res.children().stream()
+                .filter(child -> child.userId().equals(targetCoreUserId))
+                .findFirst()
+                .map(child -> Optional.ofNullable(child.accounts()).orElse(List.of()))
+                .orElse(List.of());
     }
 
     /**
@@ -167,23 +164,6 @@ public class AccountBalanceServiceImpl implements AccountBalanceService {
             return "-1";
         }
         return format(balancesByType.get(accountType));
-    }
-
-    /**
-     * 자녀별 계좌 타입별 잔액 맵 생성 (HomeService 로직)
-     */
-    private Map<Long, Map<AccountType, BigDecimal>> buildChildAccountBalancesMap(List<CoreChildAccountInfoRes> children) {
-        if (children == null) {
-            return Map.of();
-        }
-
-        return children.stream()
-                .filter(child -> child != null && child.userId() != null)
-                .collect(Collectors.toMap(
-                        CoreChildAccountInfoRes::userId,
-                        child -> groupBalancesByAccountType(child.accounts()),
-                        (m1, m2) -> m1
-                ));
     }
 
     /**
