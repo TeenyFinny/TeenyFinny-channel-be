@@ -1,12 +1,11 @@
 package dev.syntax.domain.user.repository;
 
-import java.util.Optional;
-
+import dev.syntax.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import dev.syntax.domain.user.entity.User;
+import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
@@ -78,4 +77,36 @@ public interface UserRepository extends JpaRepository<User, Long> {
 		"LEFT JOIN FETCH c.child " +
 		"WHERE u.providerId = :providerId")
 	Optional<User> findByProviderIdWithChildren(@Param("providerId") String providerId);
+
+	/**
+	 * 전화번호, 생년월일, 이름으로 사용자를 조회합니다.
+	 * ID 찾기 시 사용됩니다.
+	 *
+	 * @param phoneNumber 전화번호
+	 * @param birthDate 생년월일 (LocalDate)
+	 * @param name 이름
+	 * @return User 엔티티
+	 */
+	Optional<User> findByPhoneNumberAndBirthDateAndName(
+			@Param("phoneNumber") String phoneNumber,
+			@Param("birthDate") java.time.LocalDate birthDate,
+			@Param("name") String name
+	);
+
+	/**
+	 * 이메일, 전화번호, 생년월일, 이름으로 사용자를 조회합니다.
+	 * 비밀번호 재설정 시 사용됩니다.
+	 *
+	 * @param email 이메일
+	 * @param phoneNumber 전화번호
+	 * @param birthDate 생년월일 (LocalDate)
+	 * @param name 이름
+	 * @return User 엔티티
+	 */
+	Optional<User> findByEmailAndPhoneNumberAndBirthDateAndName(
+			@Param("email") String email,
+			@Param("phoneNumber") String phoneNumber,
+			@Param("birthDate") java.time.LocalDate birthDate,
+			@Param("name") String name
+	);
 }
