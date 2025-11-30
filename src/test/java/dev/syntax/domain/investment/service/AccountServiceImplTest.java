@@ -34,7 +34,7 @@ class AccountServiceImplTest {
     @Test
     void 투자계좌생성_성공() {
         Long userId = 1L;
-        CoreInvestmentAccountRes mockRes = new CoreInvestmentAccountRes("12345678",1L,new BigDecimal(0));
+        CoreInvestmentAccountRes mockRes = new CoreInvestmentAccountRes("12345678", 1L, 0L);
 
         when(coreRestTemplate.postForObject(
                 properties.getBaseUrl() + "/core/banking/account/investment?userId=" + userId,
