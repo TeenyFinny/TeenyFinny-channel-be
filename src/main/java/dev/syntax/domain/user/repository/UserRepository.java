@@ -1,12 +1,11 @@
 package dev.syntax.domain.user.repository;
 
-import java.util.Optional;
-
+import dev.syntax.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import dev.syntax.domain.user.entity.User;
+import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
@@ -88,14 +87,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	 * @param name 이름
 	 * @return User 엔티티
 	 */
-	@Query("SELECT u FROM User u " +
-		"WHERE u.phoneNumber = :phoneNumber " +
-		"AND u.birthDate = :birthDate " +
-		"AND u.name = :name")
 	Optional<User> findByPhoneNumberAndBirthDateAndName(
-		@Param("phoneNumber") String phoneNumber,
-		@Param("birthDate") java.time.LocalDate birthDate,
-		@Param("name") String name
+			@Param("phoneNumber") String phoneNumber,
+			@Param("birthDate") java.time.LocalDate birthDate,
+			@Param("name") String name
 	);
 
 	/**
@@ -108,15 +103,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	 * @param name 이름
 	 * @return User 엔티티
 	 */
-	@Query("SELECT u FROM User u " +
-		"WHERE u.email = :email " +
-		"AND u.phoneNumber = :phoneNumber " +
-		"AND u.birthDate = :birthDate " +
-		"AND u.name = :name")
 	Optional<User> findByEmailAndPhoneNumberAndBirthDateAndName(
-		@Param("email") String email,
-		@Param("phoneNumber") String phoneNumber,
-		@Param("birthDate") java.time.LocalDate birthDate,
-		@Param("name") String name
+			@Param("email") String email,
+			@Param("phoneNumber") String phoneNumber,
+			@Param("birthDate") java.time.LocalDate birthDate,
+			@Param("name") String name
 	);
 }

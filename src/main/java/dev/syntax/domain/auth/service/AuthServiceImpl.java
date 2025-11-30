@@ -211,17 +211,12 @@ public class AuthServiceImpl implements AuthService {
 	 * @throws BusinessException 형식이 올바르지 않거나 유효하지 않은 날짜인 경우
 	 */
 	private java.time.LocalDate parseBirthDate(String birthDateStr) {
-		if (birthDateStr == null || birthDateStr.length() != 8) {
+		if (birthDateStr == null) {
 			throw new BusinessException(ErrorAuthCode.INVALID_FORMAT);
 		}
-
 		try {
-			int year = Integer.parseInt(birthDateStr.substring(0, 4));
-			int month = Integer.parseInt(birthDateStr.substring(4, 6));
-			int day = Integer.parseInt(birthDateStr.substring(6, 8));
-
-			return java.time.LocalDate.of(year, month, day);
-		} catch (NumberFormatException | java.time.DateTimeException e) {
+			return java.time.LocalDate.parse(birthDateStr, java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd"));
+		} catch (java.time.format.DateTimeParseException e) {
 			log.warn("[생년월일 파싱 실패] birthDateStr: {}", birthDateStr);
 			throw new BusinessException(ErrorAuthCode.INVALID_FORMAT);
 		}
