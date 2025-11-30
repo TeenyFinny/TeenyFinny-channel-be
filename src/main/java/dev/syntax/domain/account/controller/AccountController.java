@@ -95,6 +95,7 @@ public class AccountController {
          * 📌 부모 → 자녀 계좌 요약 조회
          *
          * GET /account/{childId}/summary
+         * 특정 자녀의 계좌 목록 및 잔액 조회 
          */
         @GetMapping("/{childId}/summary")
         public ResponseEntity<BaseResponse<?>> getChildSummary(
