@@ -9,6 +9,7 @@ import java.util.List;
 
 import dev.syntax.domain.account.enums.AccountType;
 import dev.syntax.domain.account.repository.AccountRepository;
+import dev.syntax.domain.goal.dto.*;
 import dev.syntax.domain.transfer.entity.AutoTransfer;
 import dev.syntax.domain.transfer.enums.AutoTransferType;
 import dev.syntax.domain.transfer.repository.AutoTransferRepository;
@@ -18,16 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dev.syntax.domain.account.entity.Account;
 import dev.syntax.domain.goal.client.CoreGoalClient;
-import dev.syntax.domain.goal.dto.CoreTransactionHistoryRes;
-import dev.syntax.domain.goal.dto.CoreUpdateAccountStatusReq;
-import dev.syntax.domain.goal.dto.GoalApproveRes;
-import dev.syntax.domain.goal.dto.GoalCreateReq;
-import dev.syntax.domain.goal.dto.GoalCreateRes;
-import dev.syntax.domain.goal.dto.GoalDeleteRes;
-import dev.syntax.domain.goal.dto.GoalDetailRes;
-import dev.syntax.domain.goal.dto.GoalInfoRes;
-import dev.syntax.domain.goal.dto.GoalUpdateReq;
-import dev.syntax.domain.goal.dto.GoalUpdateRes;
 import dev.syntax.domain.goal.entity.Goal;
 import dev.syntax.domain.goal.enums.GoalStatus;
 import dev.syntax.domain.goal.repository.GoalRepository;
@@ -485,6 +476,27 @@ public class GoalServiceImpl implements GoalService {
                 .orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_NOT_ONGOING));
 
         return goal.getId();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public GoalPendingRes getPendingGoal(UserContext userContext, Long childId) {
+        User parent = getUser(userContext);
+        if (parent.getRole() != Role.PARENT) {
+            throw new BusinessException(ErrorBaseCode.GOAL_ACCESS_FORBIDDEN);
+        }
+
+        if (!userContext.getChildren().contains(childId)) {
+            throw new BusinessException(ErrorBaseCode.GOAL_CHILD_NOT_MATCH);
+        }
+
+        User child = userRepository.findById(childId)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.USER_NOT_FOUND));
+
+        Goal goal = goalRepository.findByUserAndStatus(child, GoalStatus.PENDING)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_NOT_FOUND));
+
+        return new GoalPendingRes(goal);
     }
     @Override
     @Transactional(readOnly = true)
