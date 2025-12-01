@@ -41,7 +41,7 @@ public class InvestAccountController {
 
         // 1) 부모인지 체크
         if (!"PARENT".equals(userContext.getRole())) {
-            throw new BusinessException(ErrorBaseCode.FORBIDDEN); // 자녀는 계좌 개설 불가
+            throw new BusinessException(ErrorBaseCode.PARENT_ONLY_FEATURE); // 자녀는 계좌 개설 불가
         }
 
         // 2) 요청한 childId가 현재 부모의 자녀인지 검증
