@@ -1,24 +1,24 @@
 package dev.syntax.domain.quiz.service;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.Collections;
+import java.util.Optional;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
 import dev.syntax.domain.quiz.dto.QuizInfoRes;
 import dev.syntax.domain.quiz.dto.QuizProgressRes;
 import dev.syntax.domain.quiz.entity.QuizInfo;
 import dev.syntax.domain.quiz.entity.QuizProgress;
 import dev.syntax.domain.quiz.repository.QuizInfoRepository;
 import dev.syntax.domain.quiz.repository.QuizProgressRepository;
-import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.domain.user.entity.User;
 import dev.syntax.domain.user.enums.Role;
-
+import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.global.exception.BusinessException;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-import java.util.Collections;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class QuizServiceTest {
 
@@ -220,7 +220,7 @@ class QuizServiceTest {
         try {
             service.createQuizProgress(context);
         } catch (BusinessException e) {
-            assertEquals("이미 존재하는 리소스입니다.", e.getMessage());
+            assertEquals("이미 존재합니다.", e.getMessage());
         }
     }
 }
