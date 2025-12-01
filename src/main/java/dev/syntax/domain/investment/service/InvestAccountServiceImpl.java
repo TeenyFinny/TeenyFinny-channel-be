@@ -5,7 +5,6 @@ import dev.syntax.domain.account.enums.AccountType;
 import dev.syntax.domain.account.repository.AccountRepository;
 import dev.syntax.domain.investment.client.CoreInvestmentClient;
 import dev.syntax.domain.investment.dto.res.InvestAccountPortfolioRes;
-import dev.syntax.domain.investment.dto.res.InvestAccountRes;
 import dev.syntax.domain.user.entity.User;
 import dev.syntax.domain.user.repository.UserRepository;
 import dev.syntax.global.exception.BusinessException;
@@ -39,7 +38,7 @@ public class InvestAccountServiceImpl implements InvestAccountService {
 
     @Override
     @Transactional
-    public InvestAccountRes createInvestmentAccount(Long userId) {
+    public void createInvestmentAccount(Long userId) {
         // 채널 DB에 투자 계좌가 이미 존재하는지 확인
         accountRepository.findByUserIdAndType(userId, AccountType.INVEST).ifPresent(account -> {
             throw new BusinessException(ErrorBaseCode.CONFLICT);
@@ -54,19 +53,45 @@ public class InvestAccountServiceImpl implements InvestAccountService {
         String cano = coreResponse.getAccountNumber();
 
         // 채널 DB에 계좌 정보 저장
+        try {
+            saveInvestmentAccountToChannel(userId, cano);
+
+        } catch (Exception firstEx) {
+            // 저장 실패 시
+
+            // 4. 코어에 계좌가 정상적으로 존재하는지 재확인
+            InvestAccountPortfolioRes coreAccount;
+            try {
+                coreAccount = coreInvestmentClient.getInvestAccount(cano); // ← 수정: cano 기반 조회
+            } catch (Exception e) {
+                throw new BusinessException(ErrorBaseCode.CREATE_FAILED); // 코어 조회 자체 실패
+            }
+
+            if (coreAccount == null || coreAccount.cano() == null) {
+                // 코어에도 없으면 생성 자체가 실패한 것이므로 종료
+                throw new BusinessException(ErrorBaseCode.CREATE_FAILED);
+            }
+
+            // 5. 코어 계좌는 존재 → 채널 DB 저장 재시도
+            try {
+                saveInvestmentAccountToChannel(userId, coreAccount.cano());
+            } catch (Exception secondEx) {
+                throw new BusinessException(ErrorBaseCode.CREATE_FAILED);
+            }
+        }
+    }
+
+    private void saveInvestmentAccountToChannel(Long userId, String accountNo) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorBaseCode.USER_NOT_FOUND));
 
         Account account = Account.builder()
                 .user(user)
                 .type(AccountType.INVEST)
-                .accountNo(cano)
+                .accountNo(accountNo)
                 .build();
 
         accountRepository.save(account);
-
-        // DTO 반환
-        return new InvestAccountRes(cano);
     }
 
     @Override
