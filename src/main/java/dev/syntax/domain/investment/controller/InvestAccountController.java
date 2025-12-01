@@ -5,6 +5,8 @@ import dev.syntax.domain.investment.dto.res.InvestAccountPortfolioRes;
 import dev.syntax.domain.investment.service.InvestAccountService;
 import dev.syntax.global.auth.annotation.CurrentUser;
 
+import dev.syntax.global.exception.BusinessException;
+import dev.syntax.global.response.error.ErrorBaseCode;
 import org.springframework.web.bind.annotation.RequestBody;
 import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.global.response.ApiResponseUtil;
@@ -35,7 +37,18 @@ public class InvestAccountController {
 			@CurrentUser UserContext userContext,
             @RequestBody CreateInvestAccountReq req
 	) {
-		investAccountService.createInvestmentAccount(req.childId());
+        Long childId = req.childId();
+
+        // 1) 부모인지 체크
+        if (!"PARENT".equals(userContext.getRole())) {
+            throw new BusinessException(ErrorBaseCode.PARENT_ONLY_FEATURE); // 자녀는 계좌 개설 불가
+        }
+
+        // 2) 요청한 childId가 현재 부모의 자녀인지 검증
+        if (!userContext.getChildren().contains(childId)) {
+            throw new BusinessException(ErrorBaseCode.INVALID_CHILD);
+        }
+		investAccountService.createInvestmentAccount(childId);
 		return ApiResponseUtil.success(SuccessCode.CREATED);
 	}
 
