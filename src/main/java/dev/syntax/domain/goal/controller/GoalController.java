@@ -1,5 +1,7 @@
 package dev.syntax.domain.goal.controller;
 
+import dev.syntax.domain.goal.dto.*;
+import dev.syntax.domain.goal.entity.Goal;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -234,6 +236,24 @@ public class GoalController {
     ) {
         Long goalId = goalService.getOngoingGoalId(userContext, childId);
         return ApiResponseUtil.success(SuccessCode.OK, goalId);
+    }
+
+    /**
+     * 자녀의 승인 대기 중인 목표 ID 조회 API
+     *
+     * <p>부모가 자녀의 승인 대기 중인 목표 ID를 조회합니다.</p>
+     *
+     * @param userContext 현재 로그인한 사용자 정보 (부모)
+     * @param childId     조회할 자녀 ID
+     * @return 승인 대기 중인 목표 ID
+     */
+    @GetMapping("/child/{childId}/pending")
+    public ResponseEntity<BaseResponse<?>> getPendingGoalId(
+            @CurrentUser UserContext userContext,
+            @PathVariable Long childId
+    ) {
+        GoalPendingRes result = goalService.getPendingGoal(userContext, childId);
+        return ApiResponseUtil.success(SuccessCode.OK, result);
     }
 
     /**
