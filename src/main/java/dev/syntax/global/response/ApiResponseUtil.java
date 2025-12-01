@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
  * {@link ResponseEntity}와 {@link BaseResponse} 조합을 캡슐화합니다.
  * </p>
  */
+
 public class ApiResponseUtil {
     /**
      * 데이터 없이 성공 메시지만 포함한 응답을 생성합니다.
@@ -32,7 +33,7 @@ public class ApiResponseUtil {
      */
     public static ResponseEntity<BaseResponse<?>> success(final SuccessCode successCode) {
         return ResponseEntity.status(successCode.getHttpStatus())
-                .body(BaseResponse.of(successCode));
+                .body(SuccessResponse.of(null));
     }
 
     /**
@@ -61,7 +62,7 @@ public class ApiResponseUtil {
      */
     public static <T> ResponseEntity<BaseResponse<?>> success(final SuccessCode successCode, final T data) {
         return ResponseEntity.status(successCode.getHttpStatus())
-                .body(BaseResponse.of(successCode, data));
+                .body(SuccessResponse.of(data));
     }
 
     /**
@@ -88,7 +89,7 @@ public class ApiResponseUtil {
      */
     public static ResponseEntity<BaseResponse<?>> failure(final ErrorCode errorBaseCode) {
         return ResponseEntity.status(errorBaseCode.getHttpStatus())
-                .body(BaseResponse.of(errorBaseCode));
+                .body(BaseErrorResponse.of(errorBaseCode));
     }
 
     /**
@@ -115,6 +116,6 @@ public class ApiResponseUtil {
     public static ResponseEntity<BaseResponse<?>> failure(final ErrorAuthCode errorCode) {
         return ResponseEntity
                 .status(errorCode.getHttpStatus())
-                .body(BaseResponse.of(errorCode));
+                .body(AuthErrorResponse.of(errorCode));
     }
 }

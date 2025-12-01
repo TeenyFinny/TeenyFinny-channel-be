@@ -16,3 +16,10 @@ spring:
 logging:
   level:
     org.hibernate.SQL: debug
+jwt:
+  secret: F/S8drusqj/TYGB3JUhhq031516Dz0rLIMS4aIPmbjBuF7K/hSXM0gaO7LDjXjxXXEVbLUPtjpmmutGh4gRXcg== # 더미값
+  expiration-days: 30
+core:
+  api:
+    api-key: L7M+3WBIx5XjuP59S1UrNAY1u1EaM+74ZzsYXZ1TOz56Fej++khECjbIU/ypBvN3P2r9UQddIc9i7B3REbTrow= # 더미값
+    base-url: http://localhost:80 # core test용

@@ -30,28 +30,51 @@ import org.springframework.http.HttpStatus;
 public enum ErrorAuthCode implements ErrorBaseCodeForErrorCode {
 
     /**
-     * 401 UNAUTHORIZED - 리소스 접근 권한
+     * 400 BAD_REQUEST - 잘못된 요청
      */
-    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증되지 않은 사용자입니다.", "AUTH01");
+    INVALID_IDENTITY_FORMAT(HttpStatus.BAD_REQUEST, "본인 인증 요청 형식이 올바르지 않습니다.", "AUTH06"),
+	INVALID_FORMAT(HttpStatus.BAD_REQUEST, "요청 형식이 올바르지 않습니다.", "AUTH07"),
+    /**
+	 * 401 UNAUTHORIZED - 인증 실패
+	 */
+	UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증되지 않은 사용자입니다.", "AUTH01"),
+	FAMILY_OTP_MISMATCH(HttpStatus.UNAUTHORIZED, "OTP 코드를 확인해주세요.", "FAM01"),
+	FAMILY_OTP_TIMEOUT(HttpStatus.UNAUTHORIZED, "OTP 코드가 만료되었습니다.", "FAM02"),
+    PASSWORD_MISMATCH(HttpStatus.UNAUTHORIZED, "패스워드를 확인해주세요.", "AUTH04"),
+    SIMPLE_PASSWORD_MISMATCH(HttpStatus.UNAUTHORIZED, "간편비밀번호가 일치하지 않습니다.", "AUTH05"),
+	TOKEN_VALIDATION_FAILED(HttpStatus.UNAUTHORIZED, "카카오 인증이 실패했습니다.", "KAKAO01"),
 
-    // 마지막 항목의 ;을 쉼표로 바꾸고 여기에 마저 추가
+     /**
+	 * 403 FORBIDDEN - 권한 부족
+	 */
+	ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다.", "AUTH02"),
 
-    private final HttpStatus httpStatus;
-    private final String message;
-    private final String errorCode;
+	/**
+	 * 409 CONFLICT - 메일 중복 (auth에서 사용)
+	 */
+	EMAIL_CONFLICT(HttpStatus.CONFLICT, "해당 이메일로 가입할 수 없습니다.", "AUTH03"),
+	KAKAO_EMAIL_CONFLICT(HttpStatus.CONFLICT, "해당 이메일로 가입된 카카오 계정이 있습니다.", "KAKAO02"),
+	KAKAO_PROVIDER_CONFLICT(HttpStatus.CONFLICT, "이미 등록된 회원입니다.", "KAKAO03"),
+	CORE_INIT_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "회원가입 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.", "AUTH07");
 
-    @Override
-    public HttpStatus getHttpStatus() {
-        return httpStatus;
-    }
+	// 마지막 항목의 ;을 쉼표로 바꾸고 여기에 마저 추가
 
-    @Override
-    public String getErrorCode() {
-        return errorCode;
-    }
+	private final HttpStatus httpStatus;
+	private final String message;
+	private final String errorCode;
 
-    @Override
-    public String getMessage() {
-        return message;
-    }
+	@Override
+	public HttpStatus getHttpStatus() {
+		return httpStatus;
+	}
+
+	@Override
+	public String getErrorCode() {
+		return errorCode;
+	}
+
+	@Override
+	public String getMessage() {
+		return message;
+	}
 }

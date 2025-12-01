@@ -19,9 +19,4 @@ public class BaseEntity {
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "DATETIME(6)")
     private LocalDateTime createdAt;
-
-    // 엔티티 수정 시각 자동 저장
-    @LastModifiedDate
-    @Column(name = "updated_at", nullable = false, columnDefinition = "DATETIME(6)")
-    private LocalDateTime updatedAt;
 }

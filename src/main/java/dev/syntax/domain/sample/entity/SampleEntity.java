@@ -1,6 +1,7 @@
 package dev.syntax.domain.sample.entity;
 
 import dev.syntax.global.common.BaseEntity;
+import dev.syntax.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,7 +12,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-public class SampleEntity extends BaseEntity {
+public class SampleEntity extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
