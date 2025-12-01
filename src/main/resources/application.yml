@@ -15,7 +15,7 @@ management:
     web:
       base-path: /actuator
       exposure:
-        include: health, metrics, info, drain
+        include: health, metrics, info, drain, prometheus
   endpoint:
     health:
       show-details: never
@@ -26,3 +26,7 @@ management:
       enabled: true
     readinessstate:
       enabled: true
+
+  metrics:
+    tags:
+      application: ${spring.application.name:teenyfinny-channel}
