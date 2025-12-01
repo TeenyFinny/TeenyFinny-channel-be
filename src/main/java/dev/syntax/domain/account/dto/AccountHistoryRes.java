@@ -38,7 +38,7 @@ package dev.syntax.domain.account.dto;
  */
 public record AccountHistoryRes(
         Long transactionId,
-        String type,
+        String code,
         String merchant,
         String amount,
         String balanceAfter,

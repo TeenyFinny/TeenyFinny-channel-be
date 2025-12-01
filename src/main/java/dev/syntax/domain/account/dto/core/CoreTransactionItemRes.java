@@ -18,6 +18,7 @@ import dev.syntax.domain.report.enums.Category;
  * @param amount 거래 금액 (양수 = 입금, 음수 = 출금)
  * @param transactionDate 거래 일시
  * @param balanceAfter 거래 후 잔액
+ * @param transactionType 거래 유형 (예: "deposit", "withdrawal")
  */
 public record CoreTransactionItemRes(
         Long transactionId,
@@ -26,6 +27,7 @@ public record CoreTransactionItemRes(
         String code,
         LocalDateTime transactionDate,
         Category category,
-        BigDecimal balanceAfter
+        BigDecimal balanceAfter,
+        String transactionType
 ) {
 }

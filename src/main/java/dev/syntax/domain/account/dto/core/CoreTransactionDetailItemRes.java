@@ -25,6 +25,7 @@ public record CoreTransactionDetailItemRes(
         String type,
         Category category,
         String approveAmount,
-        String balanceAfter
+        String balanceAfter,
+        String code
 ) {
 }
