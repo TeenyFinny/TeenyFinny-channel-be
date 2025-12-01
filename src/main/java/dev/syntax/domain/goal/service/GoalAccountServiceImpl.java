@@ -1,8 +1,5 @@
 package dev.syntax.domain.goal.service;
 
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import dev.syntax.domain.account.client.CoreAccountClient;
 import dev.syntax.domain.account.dto.core.CoreAccountItemRes;
 import dev.syntax.domain.account.dto.core.CoreGoalAccountReq;
@@ -13,8 +10,8 @@ import dev.syntax.domain.account.repository.AccountRepository;
 import dev.syntax.domain.goal.entity.Goal;
 import dev.syntax.domain.goal.repository.GoalRepository;
 import dev.syntax.domain.transfer.client.CoreAutoTransferClient;
-import dev.syntax.domain.transfer.dto.CoreCreateAutoTransferReq;
 import dev.syntax.domain.transfer.dto.CoreCreateAutoTransferRes;
+import dev.syntax.domain.transfer.dto.CoreGoalAutoTransferCreateReq;
 import dev.syntax.domain.transfer.entity.AutoTransfer;
 import dev.syntax.domain.transfer.enums.AutoTransferFrequency;
 import dev.syntax.domain.transfer.enums.AutoTransferType;
@@ -23,6 +20,8 @@ import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorBaseCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * GoalAccountServiceImpl
@@ -87,6 +86,9 @@ public class GoalAccountServiceImpl implements GoalAccountService {
 			.build();
 		accountRepository.save(account);
 
+		log.info("[CHANNEL] 목표 계좌 생성 완료: userId={}, goalId={}, accountId={}, goalName={}",
+				goal.getUser().getId(), goal.getId(), account.getId(), goal.getName());
+
 		// 3. Goal과 계좌 연동
 		goal.updateAccount(account);
 		goalRepository.save(goal);
@@ -94,45 +96,31 @@ public class GoalAccountServiceImpl implements GoalAccountService {
 		// 4. 자동이체 등록 (private 메소드로 분리)
 		registerAutoTransfer(goal, account);
 
-		log.info("[CHANNEL] 목표 계좌 생성 완료: userId={}, goalId={}, accountId={}, goalName={}",
-			goal.getUser().getId(), goal.getId(), account.getId(), goal.getName());
+		log.info("[CHANNEL] 목표 계좌 자동이체 등록 완료");
 
 		return goal;
 	}
 
 	// 자동 이체 플로우
 	private void registerAutoTransfer(Goal goal, Account goalAccount) {
-		// 1. 용돈 계좌 조회
-		Account allowanceAccount = findAllowanceAccount(goal);
+		// 1. Core 자동이체 등록 (용돈 → 목표를 Core가 알아서 판단)
+		CoreCreateAutoTransferRes transferRes = createAutoTransferOnCore(goal);
 
-		// 2. Core 자동이체 등록
-		CoreCreateAutoTransferRes transferRes =
-			createAutoTransferOnCore(goal, goalAccount, allowanceAccount);
-
-		// 3. Channel DB 자동이체 저장
+		// 2. Channel DB 자동이체 저장
 		saveAutoTransferChannel(goal, goalAccount, transferRes);
 	}
 
-	// 용돈 계좌 조회
-	private Account findAllowanceAccount(Goal goal) {
-		return accountRepository.findByUserIdAndType(goal.getUser().getId(), AccountType.ALLOWANCE)
-			.orElseThrow(() -> new BusinessException(ErrorBaseCode.ACCOUNT_NOT_FOUND));
-	}
-
 	// core 자동이체 등록
-	private CoreCreateAutoTransferRes createAutoTransferOnCore(
-		Goal goal, Account goalAccount, Account allowanceAccount) {
+	private CoreCreateAutoTransferRes createAutoTransferOnCore(Goal goal) {
 
-		CoreCreateAutoTransferReq autoTransferReq = CoreCreateAutoTransferReq.builder()
-			.userId(goal.getUser().getCoreUserId())
-			.fromAccountId(allowanceAccount.getId())
-			.toAccountId(goalAccount.getId())
+		CoreGoalAutoTransferCreateReq autoTransferReq = CoreGoalAutoTransferCreateReq.builder()
+			.childCoreId(goal.getUser().getCoreUserId())   // 자녀 coreUserId
 			.amount(goal.getMonthlyAmount())
 			.transferDay(goal.getPayDay())
-			.memo(AccountType.GOAL.name())
 			.build();
 
-		CoreCreateAutoTransferRes transferRes = coreAutoTransferClient.createAutoTransfer(autoTransferReq);
+		CoreCreateAutoTransferRes transferRes =
+				coreAutoTransferClient.createGoalAutoTransfer(autoTransferReq);
 
 		if (transferRes == null || transferRes.autoTransferId() == null) {
 			throw new BusinessException(ErrorBaseCode.CREATE_FAILED);
@@ -147,7 +135,6 @@ public class GoalAccountServiceImpl implements GoalAccountService {
 	// channel DB에 저장
 	private void saveAutoTransferChannel(
 		Goal goal, Account goalAccount, CoreCreateAutoTransferRes transferRes) {
-
 		try {
 			AutoTransfer autoTransfer = AutoTransfer.builder()
 				.user(goal.getUser())
