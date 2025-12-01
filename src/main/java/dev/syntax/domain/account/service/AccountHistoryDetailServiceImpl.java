@@ -84,18 +84,6 @@ public class AccountHistoryDetailServiceImpl implements AccountHistoryDetailServ
         if (coreDetail == null) {
             throw new BusinessException(ErrorBaseCode.NOT_FOUND_ENTITY);
         }
-
-        log.info("=== Core Detail Response ===");
-        log.info("merchantName: {}", coreDetail.merchantName());
-        log.info("amount: {}", coreDetail.amount());
-        log.info("transactionDate: {}", coreDetail.transactionDate());
-        log.info("type: {}", coreDetail.type());
-        log.info("code: {}", coreDetail.code());
-        log.info("category: {}", coreDetail.category());
-        log.info("approveAmount: {}", coreDetail.approveAmount());
-        log.info("balanceAfter: {}", coreDetail.balanceAfter());
-        log.info("===========================");
-
         // 응답 변환 (Core → Channel)
         return convertToAccountHistoryDetailRes(coreDetail);
     }
@@ -121,8 +109,10 @@ public class AccountHistoryDetailServiceImpl implements AccountHistoryDetailServ
     }
 
     private String convertPaymentMethod(String type) {
-        if ("PAY_IN_FULL".equals(type)) return "일시불";
-        if ("INSTALLMENT".equals(type)) return "할부";
-        return "";
+        return switch (type) {
+            case "PAY_IN_FULL" -> "일시불";
+            case "INSTALLMENT" -> "할부";
+            default -> ""; // 또는 예외 처리
+        };
     }
 }
