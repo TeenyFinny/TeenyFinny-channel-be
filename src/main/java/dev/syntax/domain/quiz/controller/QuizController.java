@@ -114,12 +114,8 @@ public class QuizController {
             @PathVariable Long childId
     ) {
 
-        // 1. 자녀 권한 검증
-//        if (!context.getChildIds().contains(childId)) {
-//            log.warn("권한 없는 자녀 접근 시도: parentId={}, childId={}", context.getId(), childId);
-//            throw new BusinessException(ErrorBaseCode.INVALID_CHILD);
-//        }
-    
+        // 1. TODO:자녀 권한 검증
+
         // 2. 해당 자녀의 request_completed 상태 조회
         boolean requestCompleted = quizService.isRequestCompleted(childId);
 
