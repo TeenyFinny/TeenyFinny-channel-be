@@ -3,6 +3,7 @@ package dev.syntax.domain.quiz.service;
 import dev.syntax.domain.quiz.dto.QuizInfoRes;
 import dev.syntax.domain.quiz.dto.QuizProgressRes;
 import dev.syntax.domain.quiz.dto.QuizProgressUpdateReq;
+import dev.syntax.domain.quiz.dto.RequestCompletedRes;
 import dev.syntax.global.auth.dto.UserContext;
 
 /**
@@ -22,4 +23,6 @@ public interface QuizService {
     boolean isRequestCompleted(Long childId);
 
     QuizInfoRes getQuizInfo(Long quizId);
+
+    RequestCompletedRes updateRequestCompleted(UserContext context,Long id);
 }
