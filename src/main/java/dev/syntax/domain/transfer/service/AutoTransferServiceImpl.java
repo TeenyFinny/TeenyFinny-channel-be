@@ -214,9 +214,9 @@ public class AutoTransferServiceImpl implements AutoTransferService {
 
     @Override
     @Transactional
-    public void deleteAutoTransfer(Long accountId, AutoTransferType type) {
+    public void deleteAutoTransfer(Long autoTransferId, AutoTransferType type) {
 
-        AutoTransfer autoTransfer = autoTransferRepository.findByAccountIdAndType(accountId, type)
+        AutoTransfer autoTransfer = autoTransferRepository.findById(autoTransferId)
                 .orElseThrow(() -> new BusinessException(ErrorBaseCode.AUTO_TRANSFER_NOT_FOUND));
 
         if(type.equals(AutoTransferType.ALLOWANCE) && autoTransfer.getRatio() > 0) { // 비율이 1 이상인데 타입이 용돈인 경우에는 투자도 삭제되도록

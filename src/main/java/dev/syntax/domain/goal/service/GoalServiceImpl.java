@@ -423,8 +423,8 @@ public class GoalServiceImpl implements GoalService {
 
         Goal goal = getGoalOrThrow(goalId);
         String goalAccountNo = goal.getAccount().getAccountNo();
-        Account allowanceAccount = accountRepository.findByUserIdAndType(goal.getUser().getId(), AccountType.ALLOWANCE)
-                .orElseThrow(() -> new BusinessException(ErrorBaseCode.ACCOUNT_NOT_FOUND));
+        AutoTransfer autoTransfer = autoTransferRepository.findByUserIdAndType(goal.getUser().getId(), AutoTransferType.GOAL)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.AUTO_TRANSFER_NOT_FOUND));
 
         validateParentHasChild(userContext, goal);
         validateGoalIsOngoing(goal);
@@ -437,7 +437,7 @@ public class GoalServiceImpl implements GoalService {
         coreGoalClient.updateAccountStatus(goalAccountNo, new CoreUpdateAccountStatusReq("CLOSED"));
 
         // 채널 + 코어 자동 이체 삭제
-        autoTransferService.deleteAutoTransfer(allowanceAccount.getId(), AutoTransferType.GOAL);
+        autoTransferService.deleteAutoTransfer(autoTransfer.getId(), AutoTransferType.GOAL);
 
 		return new GoalDeleteRes(goal.getId(), "목표가 달성 완료되었습니다!");
 	}

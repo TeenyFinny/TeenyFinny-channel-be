@@ -30,6 +30,6 @@ public interface AutoTransferService {
     AutoTransferRes updateAutoTransfer(Long childId, AutoTransferReq req, UserContext ctx);
   
   
-    void deleteAutoTransfer(Long accountId, AutoTransferType type);
+    void deleteAutoTransfer(Long autoTransferId, AutoTransferType type);
   
 }
