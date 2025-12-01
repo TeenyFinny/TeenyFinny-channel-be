@@ -212,6 +212,7 @@ public class GoalServiceImpl implements GoalService {
 		validatePayDay(payDayForUpdate);
 
         goal.updatePayDay(payDayForUpdate);
+		autoTransfer.updateAutoTransferDay(payDayForUpdate);
 
         coreGoalClient.updateAutoTransferDay(autoTransfer.getPrimaryBankTransferId(), payDayForUpdate);
 
