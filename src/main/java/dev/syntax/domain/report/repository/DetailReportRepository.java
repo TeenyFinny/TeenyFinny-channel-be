@@ -1,6 +1,7 @@
 package dev.syntax.domain.report.repository;
 
 import dev.syntax.domain.report.entity.DetailReport;
+import dev.syntax.domain.report.entity.SummaryReport;
 
 import java.util.List;
 
@@ -17,5 +18,7 @@ public interface DetailReportRepository extends JpaRepository<DetailReport, Long
      * @param reportId 요약 리포트 ID
      * @return 상세 리포트 목록
      */
-    List<DetailReport> findByReportId(Long reportId);
+    List<DetailReport> findByReport(SummaryReport report);
+
+    void deleteByReport(SummaryReport report);
 }

@@ -35,6 +35,9 @@ public class SummaryReport extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Column(name = "year", nullable = false)
+    private Integer year;
+
     @Column(name = "month", nullable = false)
     private Integer month;
 
