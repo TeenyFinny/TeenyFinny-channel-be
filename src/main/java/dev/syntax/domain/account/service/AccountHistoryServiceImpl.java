@@ -5,8 +5,8 @@ import dev.syntax.domain.account.dto.AccountHistoryReq;
 import dev.syntax.domain.account.dto.AccountHistoryRes;
 import dev.syntax.domain.account.dto.core.CoreTransactionHistoryRes;
 import dev.syntax.domain.account.dto.core.CoreTransactionItemRes;
-import dev.syntax.domain.account.dto.core.CoreTransactionDetailItemRes;
 import dev.syntax.domain.account.entity.Account;
+import dev.syntax.domain.account.enums.AccountType;
 import dev.syntax.domain.account.repository.AccountRepository;
 import dev.syntax.domain.user.enums.Role;
 import dev.syntax.global.auth.dto.UserContext;
@@ -43,12 +43,13 @@ public class AccountHistoryServiceImpl implements AccountHistoryService {
 
         // 2. 계좌 존재 확인
         Account account = accountRepository
-                .findByUserIdAndType(userId, req.accountType())
+                .findByUserIdAndType(userId, AccountType.ALLOWANCE)
                 .orElseThrow(() -> new BusinessException(ErrorBaseCode.NOT_FOUND_ENTITY));
 
         // 3. Core 서버 호출
-        CoreTransactionHistoryRes coreRes = coreAccountClient.getAccountTransactionsByMonth(
-                account.getAccountNo(), req.year(), req.month());
+        // 3. Core 서버 호출
+        CoreTransactionHistoryRes coreRes = coreAccountClient.getAccountTransactionsByPeriod(
+                account.getAccountNo(), req.startDate(), req.endDate());
         if (coreRes == null || coreRes.transactions() == null) {
             throw new BusinessException(ErrorBaseCode.NOT_FOUND_ENTITY);
         }

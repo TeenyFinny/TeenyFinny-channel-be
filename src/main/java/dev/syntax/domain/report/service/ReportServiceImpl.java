@@ -81,8 +81,11 @@ public class ReportServiceImpl implements ReportService {
             log.info("ALW 계좌 감지: {}", acc.accountNumber());
 
             // 2. 거래내역 조회
-            CoreTransactionHistoryRes txRes = coreAccountClient.getAccountTransactionsByMonth(
-                    acc.accountNumber(), currentYear, month); // Changed type and kept 'month' as per original logic
+            LocalDate startDate = LocalDate.of(currentYear, month, 1);
+            LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+
+            CoreTransactionHistoryRes txRes = coreAccountClient.getAccountTransactionsByPeriod(
+                    acc.accountNumber(), startDate, endDate);
 
             if (txRes != null && txRes.transactions() != null) {
                 log.info("거래 {}건 조회됨", txRes.transactions().size());

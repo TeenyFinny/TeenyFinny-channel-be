@@ -7,12 +7,12 @@ import dev.syntax.domain.account.dto.core.CoreAccountItemRes;
 import dev.syntax.domain.account.dto.core.CoreCreateAccountReq;
 import dev.syntax.domain.account.dto.core.CoreGoalAccountReq;
 import dev.syntax.domain.account.dto.core.CoreInvestmentAccountRes;
-import dev.syntax.domain.account.dto.core.CoreTransactionHistoryDetailRes;
 import dev.syntax.domain.account.dto.core.CoreTransactionDetailItemRes;
 import dev.syntax.domain.account.dto.core.CoreTransactionHistoryRes;
 import dev.syntax.domain.account.dto.core.CoreUserAccountListRes;
 import dev.syntax.global.core.CoreApiProperties;
 import lombok.RequiredArgsConstructor;
+import java.time.LocalDate;
 
 /**
  * Core 뱅킹 서버의 계좌 조회 API를 호출하는 클라이언트입니다.
@@ -83,26 +83,18 @@ public class CoreAccountClient {
 	}
 
 	/**
-	 * Core 서버에서 특정 계좌의 년/월별 거래내역을 조회합니다.
+	 * 특정 계좌의 기간별 거래내역을 조회합니다.
 	 *
-	 * @param accountNumber 계좌번호
-	 * @param year 조회할 년도
-	 * @param month 조회할 월
-	 * @return 거래 내역 및 잔액 정보
+	 * @param accountNo 계좌 번호
+	 * @param startDate 조회 시작일
+	 * @param endDate   조회 종료일
+	 * @return 거래내역 리스트 (CoreTransactionHistoryRes)
 	 */
-	public CoreTransactionHistoryRes getAccountTransactionsByMonth(
-			String accountNumber, int year, int month) {
-
-		String url = properties.getBaseUrl() +
-				"/core/transaction/account/{accountNo}/{year}/{month}";
-
+	public CoreTransactionHistoryRes getAccountTransactionsByPeriod(String accountNo, LocalDate startDate, LocalDate endDate) {
 		return coreRestTemplate.getForObject(
-				url,
+				properties.getBaseUrl() + "/core/transaction/account/{accountNo}/period?startDate={startDate}&endDate={endDate}",
 				CoreTransactionHistoryRes.class,
-				accountNumber,
-				year,
-				month
-		);
+				accountNo, startDate, endDate);
 	}
 
 
