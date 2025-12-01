@@ -65,7 +65,7 @@ public enum ErrorBaseCode implements ErrorCode {
 	/**
 	 * 403 FORBIDDEN - 리소스 접근 금지
 	 */
-	FORBIDDEN(HttpStatus.FORBIDDEN, "리소스 접근이 거부되었습니다."),
+	FORBIDDEN(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
 	TX_NO_PERMISSION(HttpStatus.FORBIDDEN, "해당 계좌에 대한 접근 권한이 없습니다."),
 	GOAL_REQUEST_FORBIDDEN(HttpStatus.FORBIDDEN, "부모는 목표에 관해 요청할 수 없습니다."),
 	GOAL_CHILD_NOT_MATCH(HttpStatus.FORBIDDEN, "해당 목표는 당신의 자녀가 생성한 목표가 아닙니다."),
@@ -96,7 +96,7 @@ public enum ErrorBaseCode implements ErrorCode {
 	/**
 	 * 409 CONFLICT
 	 */
-	CONFLICT(HttpStatus.CONFLICT, "이미 존재하는 리소스입니다."),
+	CONFLICT(HttpStatus.CONFLICT, "이미 존재합니다."),
 	GOAL_ALREADY_DECIDED(HttpStatus.CONFLICT, "이미 승인 또는 거절된 목표입니다."),
 	GOAL_CANCEL_ALREADY_REQUESTED(HttpStatus.CONFLICT, "이미 목표 중도 해지 요청을 보냈습니다."),
 	CARD_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 카드입니다."),
@@ -133,6 +133,7 @@ public enum ErrorBaseCode implements ErrorCode {
 	AUTO_TRANSFER_CREATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "자동이체 생성에 실패했습니다."),
 	AUTO_TRANSFER_UPDATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "자동이체 수정에 실패했습니다."),
 	AUTO_TRANSFER_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "자동이체 삭제에 실패했습니다."),
+	SSE_CONNECT_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "초기 SSE 연결 이벤트 전송에 실패했습니다."),
 
 	/**
 	 * 카카오 로그인 관련 에러

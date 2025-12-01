@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import dev.syntax.domain.auth.dto.OtpGenerateRes;
 import dev.syntax.domain.auth.dto.OtpVerifyReq;
 import dev.syntax.domain.auth.dto.OtpVerifyRes;
+import dev.syntax.domain.notification.service.NotificationService;
 import dev.syntax.domain.user.entity.User;
 import dev.syntax.domain.user.entity.UserRelationship;
 import dev.syntax.domain.user.enums.Role;
@@ -28,6 +29,7 @@ public class FamilyServiceImpl implements FamilyService {
     private final UserRepository userRepository;
     private final UserRelationshipRepository relationshipRepository;
     private final OtpRateLimitService otpRateLimitService;
+    private final NotificationService notificationService;
     private static final SecureRandom RANDOM = new SecureRandom();
     private static final long OTP_EXPIRATION_MINUTES = 1;
 
@@ -111,6 +113,10 @@ public class FamilyServiceImpl implements FamilyService {
                 .build();
         
         relationshipRepository.save(updatedRelationship);
+
+        // 가족 등록 완료 알림 전송
+        notificationService.sendFamilyRegistrationNotice(parent, child.getName());
+        notificationService.sendFamilyRegistrationChildNotice(child, parent.getName());
 
         return OtpVerifyRes.builder()
                 .userId(child.getId())

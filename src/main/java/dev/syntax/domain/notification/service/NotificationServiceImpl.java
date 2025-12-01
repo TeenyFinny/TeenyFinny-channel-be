@@ -1,5 +1,10 @@
 package dev.syntax.domain.notification.service;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import dev.syntax.domain.notification.dto.NotificationExistOutput;
 import dev.syntax.domain.notification.dto.NotificationOutput;
 import dev.syntax.domain.notification.entity.Notification;
@@ -9,10 +14,6 @@ import dev.syntax.domain.user.entity.User;
 import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorBaseCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 /**
  * NotificationServiceImpl
@@ -25,6 +26,8 @@ import java.util.List;
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final SseService sseService;
+	private static final String NOTIFICATION = "notification";
 
     /**
      * 새로운 알림 존재 여부 확인
@@ -86,6 +89,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .build();
 
         notificationRepository.save(notification);
+        sseService.send(parent.getId(), NOTIFICATION, new NotificationOutput(notification));
     }
 
     /**
@@ -109,6 +113,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .build();
 
         notificationRepository.save(notification);
+        sseService.send(parent.getId(), NOTIFICATION, new NotificationOutput(notification));
     }
 
     /**
@@ -125,7 +130,38 @@ public class NotificationServiceImpl implements NotificationService {
                 .build();
 
         notificationRepository.save(notification);
+        sseService.send(parent.getId(), NOTIFICATION, new NotificationOutput(notification));
     }
+
+    /**
+     * 가족 등록 완료 알림 생성 (부모용)
+     */
+	@Override
+	@Transactional
+	public void sendFamilyRegistrationNotice(User parent, String childName) {
+		createAndSendNotification(parent, "가족 등록 완료", childName + "님과 가족 연결이 완료되었습니다!", NotificationType.SYSTEM);
+	}
+
+    /**
+     * 가족 등록 완료 알림 생성 (자녀용)
+     */
+	@Override
+	@Transactional
+	public void sendFamilyRegistrationChildNotice(User child, String parentName) {
+		createAndSendNotification(child, "가족 등록 완료", parentName + "님과 가족 연결이 완료되었습니다!", NotificationType.SYSTEM);
+	}
+
+	private void createAndSendNotification(User targetUser, String title, String content, NotificationType type) {
+		Notification notification = Notification.builder()
+			.targetUser(targetUser)
+			.title(title)
+			.content(content)
+			.type(type)
+			.build();
+
+		notificationRepository.save(notification);
+		sseService.send(targetUser.getId(), NOTIFICATION, new NotificationOutput(notification));
+	}
 
     /**
      * 알림 삭제 (현재는 주석 처리)
