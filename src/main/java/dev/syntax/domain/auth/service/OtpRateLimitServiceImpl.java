@@ -16,11 +16,12 @@ public class OtpRateLimitServiceImpl implements OtpRateLimitService {
 
 	private final OtpRateLimitRepository repository;
 
-	// 1분 제한: 1회
-	private static final int LIMIT_1_MIN = 1;
-	// 10분 제한: 3회
-	private static final int LIMIT_10_MIN = 3;
+	// 1분 제한: 3회
+	private static final int LIMIT_1_MIN = 3;
+	// 10분 제한: 5회
+	private static final int LIMIT_10_MIN = 5;
 
+	@Override
 	public void validateAndRecordOtpRequest(Long userId) {
 
 		long count1Min = repository.countRecentRequests(
