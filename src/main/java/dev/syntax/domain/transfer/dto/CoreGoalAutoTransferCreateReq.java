@@ -8,7 +8,7 @@ import java.math.BigDecimal;
  * Core 목표 자동이체 생성 요청 DTO.
  *
  * <p>
- * 부모가 자녀의 목표 계좌로 자동이체를 등록할 때 사용됩니다.
+ * 부모가 자녀의 용돈 계좌에서 자녀의 목표 계좌로 자동 이체를 생성할 때 사용됩니다.
  * </p>
  *
  * @param childCoreId 자녀 CoreUser ID
