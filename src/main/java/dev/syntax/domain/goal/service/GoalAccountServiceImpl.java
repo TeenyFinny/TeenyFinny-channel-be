@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import dev.syntax.domain.account.client.CoreAccountClient;
 import dev.syntax.domain.account.dto.core.CoreAccountItemRes;
 import dev.syntax.domain.account.dto.core.CoreGoalAccountReq;
+import dev.syntax.domain.account.dto.core.CoreUserAccountListRes;
 import dev.syntax.domain.account.entity.Account;
 import dev.syntax.domain.account.enums.AccountType;
 import dev.syntax.domain.account.repository.AccountRepository;
@@ -161,10 +162,61 @@ public class GoalAccountServiceImpl implements GoalAccountService {
 			autoTransferRepository.save(autoTransfer);
 
 		} catch (Exception e) {
-			log.warn("[COMPENSATION] 채널 DB 자동이체 저장 실패 → Core 자동이체 롤백 시도. autoTransferId={}",
+			log.warn("[CHANNEL] 채널 DB 자동이체 저장 실패. Core에 계좌 존재 여부 확인 후 재시도. autoTransferId={}",
 				transferRes.autoTransferId());
-			coreAutoTransferClient.deleteAutoTransfer(transferRes.autoTransferId());
-			throw e; // 트랜잭션 롤백 유도
+
+			// Core에 계좌가 실제로 존재하는지 확인
+			boolean accountExistsInCore = verifyAccountExistsInCore(goalAccount.getAccountNo());
+
+			if (accountExistsInCore) {
+				log.info("[CHANNEL] Core에 계좌 존재 확인. 채널 DB 재등록 시도. accountNo={}",
+					goalAccount.getAccountNo());
+
+				// 재시도
+				try {
+					AutoTransfer autoTransfer = AutoTransfer.builder()
+						.user(goal.getUser())
+						.account(goalAccount)
+						.transferAmount(goal.getMonthlyAmount())
+						.type(AutoTransferType.GOAL)
+						.frequency(AutoTransferFrequency.MONTHLY)
+						.primaryBankTransferId(transferRes.autoTransferId())
+						.transferDate(goal.getPayDay())
+						.build();
+
+					autoTransferRepository.save(autoTransfer);
+					log.info("[CHANNEL] 채널 DB 재등록 성공. autoTransferId={}", transferRes.autoTransferId());
+				} catch (Exception retryException) {
+					log.error("[CHANNEL] 채널 DB 재등록 실패. Core 자동이체 롤백 시도. autoTransferId={}",
+						transferRes.autoTransferId(), retryException);
+					coreAutoTransferClient.deleteAutoTransfer(transferRes.autoTransferId());
+					throw retryException;
+				}
+			} else {
+				log.warn("[CORE] Core에 계좌 미존재. Core 자동이체 롤백 시도. autoTransferId={}",
+					transferRes.autoTransferId());
+				coreAutoTransferClient.deleteAutoTransfer(transferRes.autoTransferId());
+				throw e;
+			}
+		}
+	}
+
+	/**
+	 * Core 서버에 계좌가 존재하는지 확인합니다.
+	 *
+	 * @param accountNo 확인할 계좌 번호
+	 * @return 계좌 존재 여부
+	 */
+	private boolean verifyAccountExistsInCore(String accountNo) {
+		try {
+			CoreUserAccountListRes accountList = coreAccountClient.getUserAccounts();
+
+			// 모든 계좌 목록에서 해당 계좌 번호가 있는지 확인
+			return accountList.accounts().stream()
+				.anyMatch(account -> account.accountNumber().equals(accountNo));
+		} catch (Exception e) {
+			log.error("[CORE] Core 목표 계좌 조회 실패. accountNo={}", accountNo, e);
+			return false; // 조회 실패 시 안전하게 false 반환
 		}
 	}
 }
