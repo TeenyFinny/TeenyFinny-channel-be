@@ -3,14 +3,7 @@ package dev.syntax.domain.goal.controller;
 import dev.syntax.domain.goal.dto.*;
 import dev.syntax.domain.goal.entity.Goal;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.*;
 import dev.syntax.domain.goal.dto.GoalApproveReq;
 import dev.syntax.domain.goal.dto.GoalApproveRes;
 import dev.syntax.domain.goal.dto.GoalCreateReq;
@@ -203,23 +196,6 @@ public class GoalController {
     }
 
     /**
-     * 거래 이벤트 수신 API (Core -> Channel)
-     *
-     * <p>Core 시스템에서 거래가 발생했을 때 호출되는 웹훅 엔드포인트입니다.
-     * 목표 계좌의 입금으로 인해 목표 금액이 달성되었는지 확인하고 알림을 발송합니다.</p>
-     *
-     * @param req 거래 이벤트 정보 (계좌번호, 잔액 등)
-     * @return 성공 응답
-     */
-//    @PostMapping("/transaction-event")
-//    public ResponseEntity<BaseResponse<?>> handleTransactionEvent(
-//            @RequestBody dev.syntax.domain.goal.dto.GoalTransactionEventReq req
-//    ) {
-//        goalService.handleTransactionEvent(req);
-//        return ApiResponseUtil.success(SuccessCode.OK);
-//    }
-
-    /**
      * 자녀의 진행 중인 목표 ID 조회 API
      *
      * <p>부모가 자녀의 진행 중인 목표 ID를 조회합니다.
@@ -271,4 +247,14 @@ public class GoalController {
         Long goalId = goalService.getMyOngoingGoalId(userContext);
         return ApiResponseUtil.success(SuccessCode.OK, goalId);
     }
+
+	@GetMapping("/account/create")
+	public ResponseEntity<BaseResponse<?>> getGoalForAccountCreate(
+			@CurrentUser UserContext userContext,
+			@RequestParam Long goalId
+	) {
+		GoalInfoRes result = goalService.getGoalForAccountCreate(userContext, goalId);
+		return ApiResponseUtil.success(SuccessCode.OK, result);
+	}
+
 }
