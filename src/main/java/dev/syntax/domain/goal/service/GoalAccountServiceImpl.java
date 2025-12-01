@@ -189,14 +189,16 @@ public class GoalAccountServiceImpl implements GoalAccountService {
 				} catch (Exception retryException) {
 					log.error("[CHANNEL] 채널 DB 재등록 실패. Core 자동이체 롤백 시도. autoTransferId={}",
 						transferRes.autoTransferId(), retryException);
+
 					coreAutoTransferClient.deleteAutoTransfer(transferRes.autoTransferId());
-					throw retryException;
+
+					throw new BusinessException(ErrorBaseCode.AUTO_TRANSFER_SAVE_FAILED);
 				}
 			} else {
 				log.warn("[CORE] Core에 계좌 미존재. Core 자동이체 롤백 시도. autoTransferId={}",
 					transferRes.autoTransferId());
 				coreAutoTransferClient.deleteAutoTransfer(transferRes.autoTransferId());
-				throw e;
+				throw new BusinessException(ErrorBaseCode.AUTO_TRANSFER_SAVE_FAILED);
 			}
 		}
 	}
