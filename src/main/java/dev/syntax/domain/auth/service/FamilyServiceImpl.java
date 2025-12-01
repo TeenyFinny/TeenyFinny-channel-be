@@ -27,6 +27,7 @@ public class FamilyServiceImpl implements FamilyService {
 
     private final UserRepository userRepository;
     private final UserRelationshipRepository relationshipRepository;
+    private final OtpRateLimitService otpRateLimitService;
     private static final SecureRandom RANDOM = new SecureRandom();
     private static final long OTP_EXPIRATION_MINUTES = 1;
 
@@ -44,6 +45,9 @@ public class FamilyServiceImpl implements FamilyService {
         if (parent.getRole() != Role.PARENT) {
             throw new BusinessException(ErrorAuthCode.ACCESS_DENIED);
         }
+
+        // OTP 발급 횟수 제한 확인 및 기록
+		otpRateLimitService.validateAndRecordOtpRequest(userId);
 
         // 기존 pending OTP가 있으면 삭제 (createdAt 갱신을 위해)
         Optional<UserRelationship> existingPending = relationshipRepository.findByParentAndChildIsNull(parent);

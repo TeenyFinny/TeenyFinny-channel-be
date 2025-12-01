@@ -121,6 +121,8 @@ public enum ErrorBaseCode implements ErrorCode {
 	 * 429 TOO_MANY_REQUESTS
 	 */
 	TOO_MANY_REQUESTS(HttpStatus.TOO_MANY_REQUESTS, "너무 많은 요청입니다."),
+	OTP_TOO_MANY_REQUESTS(HttpStatus.TOO_MANY_REQUESTS, "OTP 요청이 너무 많습니다. 잠시 후 다시 시도해주세요."),
+
 
 	/**
 	 * 500 INTERNAL SERVER ERROR
