@@ -134,6 +134,7 @@ public enum ErrorBaseCode implements ErrorCode {
 	AUTO_TRANSFER_UPDATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "자동이체 수정에 실패했습니다."),
 	AUTO_TRANSFER_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "자동이체 삭제에 실패했습니다."),
 	SSE_CONNECT_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "초기 SSE 연결 이벤트 전송에 실패했습니다."),
+	AUTO_TRANSFER_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "자동이체 정보 저장에 실패했습니다."),
 
 	/**
 	 * 카카오 로그인 관련 에러
