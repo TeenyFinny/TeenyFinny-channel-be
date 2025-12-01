@@ -9,7 +9,7 @@ spring:
     time-zone: Asia/Seoul
 
 server:
-  port: 8081
+  port: 8080
   shutdown: graceful
   timezone: Asia/Seoul
 
