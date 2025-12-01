@@ -85,6 +85,17 @@ public class AccountHistoryDetailServiceImpl implements AccountHistoryDetailServ
             throw new BusinessException(ErrorBaseCode.NOT_FOUND_ENTITY);
         }
 
+        log.info("=== Core Detail Response ===");
+        log.info("merchantName: {}", coreDetail.merchantName());
+        log.info("amount: {}", coreDetail.amount());
+        log.info("transactionDate: {}", coreDetail.transactionDate());
+        log.info("type: {}", coreDetail.type());
+        log.info("code: {}", coreDetail.code());
+        log.info("category: {}", coreDetail.category());
+        log.info("approveAmount: {}", coreDetail.approveAmount());
+        log.info("balanceAfter: {}", coreDetail.balanceAfter());
+        log.info("===========================");
+
         // 응답 변환 (Core → Channel)
         return convertToAccountHistoryDetailRes(coreDetail);
     }
@@ -101,10 +112,17 @@ public class AccountHistoryDetailServiceImpl implements AccountHistoryDetailServ
                 coreDetail.merchantName(),
                 coreDetail.amount(), // 이미 포맷팅됨
                 coreDetail.transactionDate(), // 이미 포맷팅됨
-                coreDetail.type(),
+                convertPaymentMethod(coreDetail.type()), // code 필드에 일시불/할부 (결제방식)
                 coreDetail.category().getKoreanName(), // 한글 카테고리명 사용
                 coreDetail.approveAmount(), // 이미 포맷팅됨
-                coreDetail.balanceAfter() // 이미 포맷팅됨
+                coreDetail.balanceAfter(), // 이미 포맷팅됨
+                coreDetail.code() // type 필드에 WITHDRAW/DEPOSIT (거래유형)
         );
+    }
+
+    private String convertPaymentMethod(String type) {
+        if ("PAY_IN_FULL".equals(type)) return "일시불";
+        if ("INSTALLMENT".equals(type)) return "할부";
+        return "";
     }
 }

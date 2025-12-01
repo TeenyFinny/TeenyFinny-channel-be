@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
+
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -89,7 +89,7 @@ public class AccountHistoryServiceImpl implements AccountHistoryService {
         return items.stream()
                 .map(item -> new AccountHistoryRes(
                         item.transactionId(),
-                        item.amount().compareTo(BigDecimal.ZERO) >= 0 ? "deposit" : "withdrawal",
+                        item.code(),
                         item.merchantName(),
                         Utils.NumberFormattingService(item.amount().abs()), // 프론트에서 문자열 원함
                         Utils.NumberFormattingService(item.balanceAfter()), // 프론트에서 문자열 원함
