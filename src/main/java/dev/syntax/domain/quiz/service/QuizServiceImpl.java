@@ -143,4 +143,11 @@ public class QuizServiceImpl implements QuizService {
                 .firstQuizIdToday(progress.getFirstQuizIdToday())
                 .build();
     }
+
+    public boolean isRequestCompleted(Long childId) {
+        QuizProgress progress = quizProgressRepository.findByUserId(childId)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.QUIZ_PROGRESS_NOT_FOUND));
+
+        return progress.isRequestCompleted();
+    }
 }

@@ -3,12 +3,15 @@ package dev.syntax.domain.quiz.controller;
 import dev.syntax.domain.quiz.dto.QuizInfoRes;
 import dev.syntax.domain.quiz.dto.QuizProgressRes;
 import dev.syntax.domain.quiz.dto.QuizProgressUpdateReq;
+import dev.syntax.domain.quiz.dto.RequestCompletedRes;
 import dev.syntax.domain.quiz.service.QuizService;
 import dev.syntax.global.auth.annotation.CurrentUser;
 import dev.syntax.global.auth.dto.UserContext;
+import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.ApiResponseUtil;
 import dev.syntax.global.response.BaseResponse;
 import dev.syntax.global.response.SuccessCode;
+import dev.syntax.global.response.error.ErrorBaseCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -95,6 +98,36 @@ public class QuizController {
     ) {
         QuizInfoRes response = quizService.getQuizInfo(quizId);
         log.info("퀴즈 정보 조회 성공: quizId={}", quizId);
+        return ApiResponseUtil.success(SuccessCode.OK, response);
+    }
+
+    /**
+     * 특정 자녀의 request_completed 여부를 조회합니다.
+     *
+     * @param context 인증된 사용자 컨텍스트
+     * @param childId 자녀 ID
+     * @return RequestCompletedRes(Boolean)
+     */
+    @GetMapping("/{childId}/progresses")
+    public ResponseEntity<BaseResponse<?>> getChildQuizProgress(
+            @CurrentUser UserContext context,
+            @PathVariable Long childId
+    ) {
+
+        // 1. 자녀 권한 검증
+//        if (!context.getChildIds().contains(childId)) {
+//            log.warn("권한 없는 자녀 접근 시도: parentId={}, childId={}", context.getId(), childId);
+//            throw new BusinessException(ErrorBaseCode.INVALID_CHILD);
+//        }
+    
+        // 2. 해당 자녀의 request_completed 상태 조회
+        boolean requestCompleted = quizService.isRequestCompleted(childId);
+
+        // 3. 응답 생성
+        RequestCompletedRes response = new RequestCompletedRes(requestCompleted);
+        log.info("자녀 퀴즈 완료 여부 조회: parentId={}, childId={}, completed={}",
+                context.getId(), childId, requestCompleted);
+
         return ApiResponseUtil.success(SuccessCode.OK, response);
     }
 

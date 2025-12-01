@@ -19,6 +19,7 @@ public interface QuizService {
     QuizProgressRes getQuizProgress(UserContext context);
     QuizProgressRes createQuizProgress(UserContext context);
     QuizProgressRes updateQuizProgress(UserContext context, QuizProgressUpdateReq req);
+    public boolean isRequestCompleted(Long childId);
 
     QuizInfoRes getQuizInfo(Long quizId);
 }
