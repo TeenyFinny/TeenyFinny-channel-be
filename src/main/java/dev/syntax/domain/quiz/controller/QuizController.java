@@ -127,4 +127,21 @@ public class QuizController {
         return ApiResponseUtil.success(SuccessCode.OK, response);
     }
 
+    /**
+     * 특정 자녀의 requestCompleted 상태 업데이트
+     *
+     * @param childId 자녀 ID
+     * @param context 인증된 부모 UserContext
+     * @return 업데이트된 requestCompleted 상태
+     */
+    @PatchMapping("/{childId}/progresses")
+    public ResponseEntity<BaseResponse<?>> updateChildRequestCompleted(
+            @PathVariable Long childId,
+            @CurrentUser UserContext context
+    ) {
+        RequestCompletedRes response = quizService.updateRequestCompleted(context, childId);
+        log.info("requestCompleted 업데이트: parentId={}, childId={}", context.getId(), childId);
+        return ApiResponseUtil.success(SuccessCode.OK, response);
+    }
+
 }

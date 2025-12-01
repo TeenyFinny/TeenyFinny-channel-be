@@ -2,6 +2,7 @@ package dev.syntax.domain.quiz.service;
 
 import dev.syntax.domain.quiz.dto.QuizInfoRes;
 import dev.syntax.domain.quiz.dto.QuizProgressUpdateReq;
+import dev.syntax.domain.quiz.dto.RequestCompletedRes;
 import dev.syntax.domain.quiz.entity.QuizInfo;
 import dev.syntax.domain.quiz.repository.QuizInfoRepository;
 import dev.syntax.global.response.error.ErrorBaseCode;
@@ -150,4 +151,22 @@ public class QuizServiceImpl implements QuizService {
 
         return progress.isRequestCompleted();
     }
+
+    @Transactional
+    public RequestCompletedRes updateRequestCompleted(UserContext parent, Long childId) {
+//        // 1) 자녀가 부모의 가족인지 검증 TODO
+
+        // 2) 기존 상태 조회
+        QuizProgress progress = quizProgressRepository.findByUserId(childId)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.NOT_FOUND_ENTITY));
+
+        // 3) requestCompleted false로 업데이트
+        progress.updateRequestCompleted(false);
+        quizProgressRepository.save(progress);
+
+        return new RequestCompletedRes(progress.isRequestCompleted());
+    }
+
+
+
 }
