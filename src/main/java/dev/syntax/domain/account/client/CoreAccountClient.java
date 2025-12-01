@@ -7,9 +7,12 @@ import dev.syntax.domain.account.dto.core.CoreAccountItemRes;
 import dev.syntax.domain.account.dto.core.CoreCreateAccountReq;
 import dev.syntax.domain.account.dto.core.CoreGoalAccountReq;
 import dev.syntax.domain.account.dto.core.CoreInvestmentAccountRes;
+import dev.syntax.domain.account.dto.core.CoreTransactionDetailItemRes;
+import dev.syntax.domain.account.dto.core.CoreTransactionHistoryRes;
 import dev.syntax.domain.account.dto.core.CoreUserAccountListRes;
 import dev.syntax.global.core.CoreApiProperties;
 import lombok.RequiredArgsConstructor;
+import java.time.LocalDate;
 
 /**
  * Core 뱅킹 서버의 계좌 조회 API를 호출하는 클라이언트입니다.
@@ -27,7 +30,6 @@ public class CoreAccountClient {
 	private static final String ACCOUNT_URL = "/core/banking/account";
 	private static final String INVESTMENT_ACCOUNT_URL = "/core/banking/account/investment";
 	private static final String ALLOWANCE_ACCOUNT_URL = "/core/banking/account/create";
-
 	/**
 	 * Core 서버에서 사용자의 전체 계좌 정보를 조회합니다.
 	 * <p>
@@ -77,6 +79,43 @@ public class CoreAccountClient {
 			properties.getBaseUrl() + ALLOWANCE_ACCOUNT_URL,
 			req,
 			CoreAccountItemRes.class
+		);
+	}
+
+	/**
+	 * 특정 계좌의 기간별 거래내역을 조회합니다.
+	 *
+	 * @param accountNo 계좌 번호
+	 * @param startDate 조회 시작일
+	 * @param endDate   조회 종료일
+	 * @return 거래내역 리스트 (CoreTransactionHistoryRes)
+	 */
+	public CoreTransactionHistoryRes getAccountTransactionsByPeriod(String accountNo, LocalDate startDate, LocalDate endDate) {
+		return coreRestTemplate.getForObject(
+				properties.getBaseUrl() + "/core/transaction/account/{accountNo}/period?startDate={startDate}&endDate={endDate}",
+				CoreTransactionHistoryRes.class,
+				accountNo, startDate, endDate);
+	}
+
+
+	/**
+	 * Core 서버에서 특정 거래의 상세 정보를 조회합니다.
+	 * <p>
+	 * 거래 ID로 단일 거래를 조회하여 거래 타입, 카테고리, 승인 금액 등
+	 * 상세 정보를 반환합니다.
+	 * </p>
+	 *
+	 * @param transactionId 조회할 거래 ID
+	 * @return 거래 상세 정보
+	 */
+	public CoreTransactionDetailItemRes getTransactionDetail(Long transactionId) {
+		String url = properties.getBaseUrl() +
+				"/core/transaction/detail/{transactionId}";
+
+		return coreRestTemplate.getForObject(
+				url,
+				CoreTransactionDetailItemRes.class,
+				transactionId
 		);
 	}
 }

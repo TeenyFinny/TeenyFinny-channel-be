@@ -317,13 +317,8 @@ public class GoalServiceImpl implements GoalService {
 			.toList();
 
 		// 목표 기간 계산
-		if (goal.getMonthlyAmount().compareTo(BigDecimal.ZERO) <= 0) {
-			throw new BusinessException(ErrorBaseCode.GOAL_INVALID_AMOUNT);
-		}
-		int period = goal.getTargetAmount()
-			.divide(goal.getMonthlyAmount(), RoundingMode.CEILING)
-			.intValue();
-
+		int period = depositTransactions.size();
+		
 		// 진행률 계산
 		int progress = 0;
 		if (goal.getTargetAmount().compareTo(BigDecimal.ZERO) > 0) {
@@ -363,9 +358,10 @@ public class GoalServiceImpl implements GoalService {
 
 		validateGoalOwner(user, goal);
 		validateGoalIsOngoing(goal);
+		validateGoalIsNotCompleted(goal);
 
 		User parent = getParent(userContext);
-		notificationService.sendGoalCancelRequestNotice(parent, user.getName());
+		notificationService.sendGoalCancelRequestNotice(parent, user.getName(), goal.getName());
 
 		return new GoalDeleteRes(goalId, "중도 해지 요청이 부모에게 전달되었습니다.");
 	}
@@ -454,4 +450,48 @@ public class GoalServiceImpl implements GoalService {
 
 		return new GoalDeleteRes(goal.getId(), "목표가 달성 완료되었습니다!");
 	}
+
+//    @Override
+//    @Transactional
+//    public void handleTransactionEvent(dev.syntax.domain.goal.dto.GoalTransactionEventReq req) {
+//        log.info("Handling transaction event for account: {}", req.getAccountNo());
+//
+//        goalRepository.findByAccount_AccountNo(req.getAccountNo()).ifPresent(goal -> {
+//            if (goal.getStatus() == GoalStatus.ONGOING) {
+//                if (req.getBalanceAfter().compareTo(goal.getTargetAmount()) >= 0) {
+//                    log.info("Goal achieved for user: {}, goal: {}", goal.getUser().getId(), goal.getName());
+//                    notificationService.sendGoalAchievedNotice(goal.getUser(), goal.getName());
+//                }
+//            }
+//        });
+//    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Long getOngoingGoalId(UserContext userContext, Long childId) {
+        User parent = getUser(userContext);
+        if (parent.getRole() != Role.PARENT) {
+            throw new BusinessException(ErrorBaseCode.GOAL_ACCESS_FORBIDDEN);
+        }
+
+        if (!userContext.getChildren().contains(childId)) {
+            throw new BusinessException(ErrorBaseCode.GOAL_CHILD_NOT_MATCH);
+        }
+
+        User child = userRepository.findById(childId)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.USER_NOT_FOUND));
+
+        Goal goal = goalRepository.findByUserAndStatus(child, GoalStatus.ONGOING)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_NOT_ONGOING));
+
+        return goal.getId();
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public Long getMyOngoingGoalId(UserContext userContext) {
+        User user = getUser(userContext);
+        Goal goal = goalRepository.findByUserAndStatus(user, GoalStatus.ONGOING)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_NOT_ONGOING));
+        return goal.getId();
+    }
 }

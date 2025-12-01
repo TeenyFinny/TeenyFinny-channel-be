@@ -37,11 +37,11 @@ public class CardCreateReq {
     private boolean transit;
 
     /**
-     * 카드 비밀번호 (숫자 6자리).
+     * 카드 비밀번호 (숫자 4자리).
      */
     @NotBlank(message = "비밀번호는 필수입니다.")
-    @Size(min = 6, max = 6, message = "비밀번호는 6자리여야 합니다.")
-    @Pattern(regexp = "\\d{6}", message = "비밀번호는 숫자로만 구성되어야 합니다.")
+    @Size(min = 4, max = 4, message = "비밀번호는 6자리여야 합니다.")
+    @Pattern(regexp = "\\d{4}", message = "비밀번호는 숫자로만 구성되어야 합니다.")
     private String password;
 }
 

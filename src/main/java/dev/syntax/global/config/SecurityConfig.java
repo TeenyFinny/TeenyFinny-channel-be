@@ -96,7 +96,11 @@ public class SecurityConfig {
 			.authorizeHttpRequests(authorize -> authorize
 				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 				.requestMatchers(
-					"/auth/**",
+					"/auth/login",
+					"/auth/signup",
+					"/auth/email",
+					"/auth/identity",
+					"/auth/oauth/**",
 					"/public/**",
 					"/sample/**",
 					"/docs/**").permitAll()

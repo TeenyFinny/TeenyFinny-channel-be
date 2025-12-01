@@ -1,12 +1,17 @@
 package dev.syntax.domain.report.service;
 
+import dev.syntax.domain.account.client.CoreAccountClient;
+import dev.syntax.domain.account.dto.core.CoreAccountItemRes;
+import dev.syntax.domain.account.dto.core.CoreTransactionHistoryRes;
+import dev.syntax.domain.account.dto.core.CoreTransactionItemRes;
+import dev.syntax.domain.account.dto.core.CoreUserAccountListRes;
+import dev.syntax.domain.account.enums.AccountType;
 import dev.syntax.domain.report.dto.CategoryRes;
 import dev.syntax.domain.report.dto.CoreTransactionRes;
 import dev.syntax.domain.report.dto.ReportRes;
 import dev.syntax.domain.report.entity.DetailReport;
 import dev.syntax.domain.report.entity.SummaryReport;
 import dev.syntax.domain.report.enums.Category;
-import dev.syntax.domain.report.mock.MockCoreBankClient;
 import dev.syntax.domain.report.repository.DetailReportRepository;
 import dev.syntax.domain.report.repository.SummaryReportRepository;
 import dev.syntax.domain.report.utils.ReportUtils;
@@ -18,16 +23,15 @@ import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorBaseCode;
 import dev.syntax.global.service.Utils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -36,43 +40,84 @@ public class ReportServiceImpl implements ReportService {
     private final SummaryReportRepository summaryReportRepository;
     private final DetailReportRepository detailReportRepository;
     private final UserRepository userRepository;
-    private final MockCoreBankClient coreBankClient;
+    private final CoreAccountClient coreAccountClient;
 
     @Override
     public ReportRes getMonthlyReport(Long userId, int month, UserContext ctx) {
-        // 조회 기간 검증 (현재 월 포함 미래는 조회 불가)
+
         LocalDate now = LocalDate.now();
-        // "2025년 한정" 요구사항에 따라, 조회하려는 월이 현재 시점보다 이전인지 연도까지 포함하여 검증합니다.
         java.time.YearMonth requestedYm = java.time.YearMonth.of(2025, month);
         java.time.YearMonth currentYm = java.time.YearMonth.from(now);
         if (!requestedYm.isBefore(currentYm)) {
             throw new BusinessException(ErrorBaseCode.REPORT_NOT_AVAILABLE_YET);
         }
-        // 0. 검증
+
         validateAccess(userId, ctx);
 
         User childUser = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorBaseCode.USER_NOT_FOUND));        
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.USER_NOT_FOUND));
 
-        // 1. summary_report 에 저장된 리포트 먼저 조회
-        Optional<SummaryReport> exist = 
+        Optional<SummaryReport> exist =
                 summaryReportRepository.findByUserIdAndMonth(userId, month);
 
         if (exist.isPresent()) {
             SummaryReport summary = exist.get();
             List<DetailReport> details =
                     detailReportRepository.findByReportId(summary.getId());
-
             return buildResponse(summary, details);
         }
 
-        // 2. 없으면 CoreBank 서버에서 해당 월 거래내역 조회
-        List<CoreTransactionRes> histories =
-                coreBankClient.getMonthlyHistory(userId, month);
+        log.info("[리포트 생성] user={}, month={}, Core 서버 조회 시작", userId, month);
 
-        // 3. 거래내역이 없는 경우 → 빈 리포트 생성 후 반환
+        CoreUserAccountListRes userAccounts = coreAccountClient.getUserAccounts();
+        List<CoreAccountItemRes> targetAccounts = findTargetUserAccounts(userAccounts, userId);
+
+        List<CoreTransactionRes> histories = new ArrayList<>();
+        int currentYear = 2025;
+
+        for (CoreAccountItemRes acc : targetAccounts) {
+            if (acc.accountType() != AccountType.ALLOWANCE) continue;
+
+            log.info("ALW 계좌 감지: {}", acc.accountNumber());
+
+            // 2. 거래내역 조회
+            LocalDate startDate = LocalDate.of(currentYear, month, 1);
+            LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+
+            CoreTransactionHistoryRes txRes = coreAccountClient.getAccountTransactionsByPeriod(
+                    acc.accountNumber(), startDate, endDate);
+
+            if (txRes != null && txRes.transactions() != null) {
+                log.info("거래 {}건 조회됨", txRes.transactions().size());
+
+                int expenseCount = 0;
+
+                for (CoreTransactionItemRes item : txRes.transactions()) {
+                    // 지출만 포함
+                    if (item.amount().compareTo(BigDecimal.ZERO) >= 0) {
+                        continue;
+                    }
+                    expenseCount++;
+
+                    // 이제 items에 category 정보가 포함되어 있음
+                    log.debug("[리포트 생성] 거래 처리 - merchant: {}, category: {}",
+                            item.merchantName(), item.category());
+
+                    Category category = item.category();
+                    if (category == null) {
+                         log.warn("[리포트 생성] 카테고리 정보 없음 - merchant: {} -> ETC로 처리",
+                                 item.merchantName());
+                         category = Category.ETC;
+                    }
+
+                    histories.add(new CoreTransactionRes(category, item.amount().abs()));
+                }
+
+                log.info("지출 {}건 반영", expenseCount);
+            }
+        }
+
         if (histories.isEmpty()) {
-
             SummaryReport emptyReport = SummaryReport.builder()
                     .user(childUser)
                     .month(month)
@@ -81,30 +126,24 @@ public class ReportServiceImpl implements ReportService {
                     .build();
 
             summaryReportRepository.save(emptyReport);
-
-            return buildResponse(emptyReport, List.of()); // categories = []
+            return buildResponse(emptyReport, List.of());
         }
 
-        // 4. 거래내역이 있는 경우 → 카테고리별 금액 합산
         Map<Category, BigDecimal> amountByCategory = ReportUtils.sumByCategory(histories);
         BigDecimal totalExpense = amountByCategory.values().stream()
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // 5. 요약 리포트 저장
         SummaryReport summary = SummaryReport.builder()
                 .user(childUser)
                 .month(month)
                 .totalExpense(totalExpense)
                 .prevTotalExpense(fetchPrevTotal(childUser.getId(), month))
                 .build();
-
         summaryReportRepository.save(summary);
 
-        // 6. DetailReport 저장
         List<DetailReport> details = new ArrayList<>();
         amountByCategory.forEach((category, amount) -> {
             BigDecimal percent = ReportUtils.calcPercent(amount, totalExpense);
-
             details.add(
                     DetailReport.builder()
                             .report(summary)
@@ -114,49 +153,39 @@ public class ReportServiceImpl implements ReportService {
                             .build()
             );
         });
-
         detailReportRepository.saveAll(details);
 
-        // 7. 최종 응답 생성
         return buildResponse(summary, details);
     }
 
+    private List<CoreAccountItemRes> findTargetUserAccounts(CoreUserAccountListRes res, Long targetUserId) {
+        if (res.children() != null) {
+            for (var childAcc : res.children()) {
+                if (childAcc.userId().equals(targetUserId)) {
+                    return childAcc.accounts();
+                }
+            }
+        }
+        return res.accounts();
+    }
+
     private void validateAccess(Long childId, UserContext ctx) {
-        // 자녀 본인의 리포트 조회 ok
-        if (ctx.getId().equals(childId)) {
-            return;
-        }
-
-        // 부모가 자신의 자녀 리포트 조회 ok
+        if (ctx.getId().equals(childId)) return;
         if (ctx.getRole().equals(Role.PARENT.name()) &&
-                ctx.getChildren().contains(childId)) {
-            return; 
-        }
+                ctx.getChildren().contains(childId)) return;
 
-        // 그 외는 조회 불가
         throw new BusinessException(ErrorBaseCode.UNAUTHORIZED);
     }
 
-    /**
-     * 전월 소비 총액 조회
-     */
     private BigDecimal fetchPrevTotal(Long userId, int month) {
-        // 1월의 경우, 전년도 데이터 조회가 불가능하므로 0을 반환합니다.
-        if (month == 1) {
-            return BigDecimal.ZERO;
-        }
-        int prev = month - 1;
+        if (month == 1) return BigDecimal.ZERO;
 
-        return summaryReportRepository.findByUserIdAndMonth(userId, prev)
+        return summaryReportRepository.findByUserIdAndMonth(userId, month - 1)
                 .map(SummaryReport::getTotalExpense)
                 .orElse(BigDecimal.ZERO);
     }
 
-    /**
-     * SummaryReport + DetailReport -> Front Response 변환
-     */
     private ReportRes buildResponse(SummaryReport summary, List<DetailReport> details) {
-
         BigDecimal prev = summary.getPrevTotalExpense() == null
                 ? BigDecimal.ZERO
                 : summary.getPrevTotalExpense();
@@ -165,17 +194,13 @@ public class ReportServiceImpl implements ReportService {
 
         String comparedType;
         int comparison = summary.getTotalExpense().compareTo(prev);
-        if (comparison > 0) {
-            comparedType = "more";
-        } else if (comparison < 0) {
-            comparedType = "less";
-        } else {
-            comparedType = "same";
-        }
+        if (comparison > 0) comparedType = "more";
+        else if (comparison < 0) comparedType = "less";
+        else comparedType = "same";
 
         List<CategoryRes> categoryList = details.stream()
                 .map(d -> new CategoryRes(
-                        d.getCategory().getKoreanName(), // Enum -> 한글 변환
+                        d.getCategory().getKoreanName(),
                         Utils.NumberFormattingService(d.getAmount()),
                         d.getPercent().doubleValue()
                 ))

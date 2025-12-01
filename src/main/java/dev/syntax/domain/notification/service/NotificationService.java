@@ -59,8 +59,9 @@ public interface NotificationService {
      *
      * @param parent 부모 사용자
      * @param childName 자녀 이름
+     * @param goalName 목표 이름
      */
-    void sendGoalCancelRequestNotice(User parent, String childName);
+    void sendGoalCancelRequestNotice(User parent, String childName, String goalName);
 
     /**
      * 자녀의 목표 완료 요청 알림 생성

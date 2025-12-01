@@ -3,13 +3,12 @@ package dev.syntax.domain.account.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDate;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import dev.syntax.domain.account.dto.AccountHistoryReq;
-import dev.syntax.domain.account.dto.AccountSummaryRes;
 import dev.syntax.domain.account.enums.AccountType;
 import dev.syntax.domain.account.service.AccountHistoryDetailService;
 import dev.syntax.domain.account.service.AccountHistoryService;
@@ -92,21 +90,10 @@ public class AccountController {
         }
 
         /**
-         * 📌 본인 계좌 요약 조회 (자녀/부모 공통)
-         *
-         * GET /account/summary
-         */
-        @GetMapping("/summary")
-        public ResponseEntity<BaseResponse<?>> getMySummary(
-                        @CurrentUser UserContext user) {
-
-                return ApiResponseUtil.success(SuccessCode.OK, accountSummaryService.getSummary(user, user.getId()));
-        }
-
-        /**
          * 📌 부모 → 자녀 계좌 요약 조회
          *
          * GET /account/{childId}/summary
+         * 특정 자녀의 계좌 목록 및 잔액 조회 
          */
         @GetMapping("/{childId}/summary")
         public ResponseEntity<BaseResponse<?>> getChildSummary(
@@ -135,10 +122,13 @@ public class AccountController {
          */
         @GetMapping("/history")
         public ResponseEntity<BaseResponse<?>> getMyHistory(
-                        @CurrentUser UserContext user,
-                        @ModelAttribute AccountHistoryReq req) {
-                return ApiResponseUtil.success(SuccessCode.OK,
-                                accountHistoryService.getHistory(user.getId(), req, user));
+                @CurrentUser UserContext user,
+                @RequestParam LocalDate startDate,
+                @RequestParam LocalDate endDate) {
+
+        AccountHistoryReq req = new AccountHistoryReq(startDate, endDate);
+        return ApiResponseUtil.success(SuccessCode.OK,
+                accountHistoryService.getHistory(user.getId(), req, user));
         }
 
         /**
@@ -152,7 +142,7 @@ public class AccountController {
          *
          * @param user    로그인한 사용자 컨텍스트 (PARENT 권한)
          * @param childId 거래내역을 조회할 자녀 ID
-         * @param req     거래내역 조회 조건 (계좌유형, 연도, 월)
+         * @param req     거래내역 조회 조건 (계좌유형, 기간)
          * @return 자녀 계좌의 거래내역 리스트가 담긴 성공 응답
          *
          * @throws dev.syntax.global.exception.BusinessException 권한 없을 때
@@ -161,11 +151,14 @@ public class AccountController {
          */
         @GetMapping("/{childId}/history")
         public ResponseEntity<BaseResponse<?>> getChildHistory(
-                        @CurrentUser UserContext user,
-                        @PathVariable Long childId,
-                        @ModelAttribute AccountHistoryReq req) {
-                return ApiResponseUtil.success(SuccessCode.OK,
-                                accountHistoryService.getHistory(childId, req, user));
+                @CurrentUser UserContext user,
+                @PathVariable Long childId,
+                @RequestParam LocalDate startDate,
+                @RequestParam LocalDate endDate) {
+
+        AccountHistoryReq req = new AccountHistoryReq(startDate, endDate);
+        return ApiResponseUtil.success(SuccessCode.OK,
+                accountHistoryService.getHistory(childId, req, user));
         }
 
         /**
@@ -208,6 +201,15 @@ public class AccountController {
          */
         @GetMapping("/history/{transactionId}")
         public ResponseEntity<BaseResponse<?>> getDetail(
+                        @CurrentUser UserContext user,
+                        @PathVariable Long transactionId) {
+
+                return ApiResponseUtil.success(SuccessCode.OK,
+                                accountHistoryDetailService.getDetail(transactionId, user));
+        }
+
+        @GetMapping("/{childId}/history/{transactionId}")
+        public ResponseEntity<BaseResponse<?>> getChildDetail(
                         @CurrentUser UserContext user,
                         @PathVariable Long transactionId) {
 

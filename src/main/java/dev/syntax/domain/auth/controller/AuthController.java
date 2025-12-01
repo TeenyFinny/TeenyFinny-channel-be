@@ -136,7 +136,7 @@ public class AuthController {
 		@CurrentUser UserContext context,
 		@Valid @RequestBody SimplePasswordVerifyReq req
 	) {
-		PasswordVerifyRes response = authService.verifySimplePassword(context.getId(), req);
+		PasswordVerifyRes response = authService.verifySimplePassword(context.getUser().getId(), req);
 		return ApiResponseUtil.success(SuccessCode.OK, response);
 	}
 
@@ -176,26 +176,6 @@ public class AuthController {
 		@Valid @RequestBody SimplePasswordVerifyReq request
 	) {
 		authService.updateSimplePassword(user, request);
-		return ApiResponseUtil.success(SuccessCode.OK);
-	}
-
-	/**
-	 * 푸시 알림 설정을 변경합니다.
-	 * <p>
-	 * 푸시 알림과 야간 푸시 알림 설정을 변경합니다.
-	 * 요청 본문에 포함된 필드만 업데이트되며, null인 필드는 기존 값을 유지합니다.
-	 * </p>
-	 *
-	 * @param user 현재 인증된 사용자 정보
-	 * @param request 푸시 알림 설정 (pushEnabled, nightPushEnabled)
-	 * @return 성공 응답
-	 */
-	@PatchMapping("/push")
-	public ResponseEntity<BaseResponse<?>> updatePushSettings(
-		@CurrentUser UserContext user,
-		@Valid @RequestBody UpdatePushReq request
-	) {
-		authService.updatePushSettings(user, request);
 		return ApiResponseUtil.success(SuccessCode.OK);
 	}
 
@@ -244,5 +224,35 @@ public class AuthController {
 		LoginRes response = kakaoOAuthService.signupWithKakao(request);
 		log.info("[카카오 회원가입 완료] user_id: {}", response.user().userId());
 		return ApiResponseUtil.success(SuccessCode.CREATED, response);
+	}
+
+	/**
+	 * 전화번호, 생년월일, 이름으로 이메일을 찾습니다.
+	 *
+	 * @param request ID 찾기 요청 DTO
+	 * @return 찾은 이메일 주소
+	 */
+	@PostMapping("/find-email")
+	public ResponseEntity<BaseResponse<?>> findEmail(
+		@Valid @RequestBody FindEmailReq request
+	) {
+		FindEmailRes response = authService.findEmail(request);
+		log.info("[ID 찾기 요청 처리 완료] email: {}", response.email());
+		return ApiResponseUtil.success(SuccessCode.OK, response);
+	}
+
+	/**
+	 * 비밀번호 재설정 링크를 이메일로 발송합니다.
+	 *
+	 * @param request 비밀번호 재설정 요청 DTO
+	 * @return 성공 응답
+	 */
+	@PostMapping("/reset-password")
+	public ResponseEntity<BaseResponse<?>> resetPassword(
+		@Valid @RequestBody ResetPasswordReq request
+	) {
+		authService.resetPassword(request);
+		log.info("[비밀번호 재설정 요청 처리 완료] email: {}", request.email());
+		return ApiResponseUtil.success(SuccessCode.OK);
 	}
 }

@@ -1,12 +1,8 @@
 package dev.syntax.domain.profile.controller;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import dev.syntax.domain.auth.dto.UpdatePushReq;
+import dev.syntax.domain.auth.service.AuthService;
+import dev.syntax.domain.profile.dto.PushInfoRes;
 import dev.syntax.domain.profile.dto.UpdateProfileReq;
 import dev.syntax.domain.profile.service.ProfileService;
 import dev.syntax.global.auth.annotation.CurrentUser;
@@ -16,6 +12,8 @@ import dev.syntax.global.response.BaseResponse;
 import dev.syntax.global.response.SuccessCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 프로필 관련 API 컨트롤러
@@ -28,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProfileController {
 
+	private final AuthService authService;
 	private final ProfileService profileService;
 
 	/**
@@ -61,6 +60,38 @@ public class ProfileController {
 		@Valid @RequestBody UpdateProfileReq request
 	) {
 		profileService.updateProfile(user, request);
+		return ApiResponseUtil.success(SuccessCode.OK);
+	}
+
+	/**
+	 * 푸시 알림 설정 정보를 조회합니다.
+	 *
+	 */
+	@GetMapping("/push")
+	public ResponseEntity<BaseResponse<?>> getProfilePush(@CurrentUser UserContext user) {
+		return ApiResponseUtil.success(SuccessCode.OK, PushInfoRes.builder()
+				.pushEnabled(user.getUser().getPushEnabled())
+				.nightPushEnabled(user.getUser().getNightPushEnabled())
+				.build());
+	}
+
+	/**
+	 * 푸시 알림 설정을 변경합니다.
+	 * <p>
+	 * 푸시 알림과 야간 푸시 알림 설정을 변경합니다.
+	 * 요청 본문에 포함된 필드만 업데이트되며, null인 필드는 기존 값을 유지합니다.
+	 * </p>
+	 *
+	 * @param user 현재 인증된 사용자 정보
+	 * @param request 푸시 알림 설정 (pushEnabled, nightPushEnabled)
+	 * @return 성공 응답
+	 */
+	@PatchMapping("/push")
+	public ResponseEntity<BaseResponse<?>> updatePushSettings(
+			@CurrentUser UserContext user,
+			@Valid @RequestBody UpdatePushReq request
+	) {
+		authService.updatePushSettings(user, request);
 		return ApiResponseUtil.success(SuccessCode.OK);
 	}
 

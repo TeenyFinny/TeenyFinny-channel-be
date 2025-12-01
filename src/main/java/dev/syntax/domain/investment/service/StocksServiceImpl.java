@@ -16,8 +16,13 @@ public class StocksServiceImpl implements StocksService{
     public StocksRes getStocks() {
         // Core API 호출 - 에러 처리 자동
         StocksRes res = coreInvestmentClient.getStocks();
-        log.info(res.toString());
 
+        return res;
+    }
+
+    @Override
+    public StocksRes getStock(String code) {
+        StocksRes res = coreInvestmentClient.getStock(code);
         return res;
     }
 }

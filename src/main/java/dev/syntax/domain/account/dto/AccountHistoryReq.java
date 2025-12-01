@@ -2,8 +2,7 @@ package dev.syntax.domain.account.dto;
 
 import dev.syntax.domain.account.enums.AccountType;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Max;
+import java.time.LocalDate;
 
 /**
  * 계좌 거래내역 조회 요청 DTO.
@@ -31,13 +30,9 @@ import jakarta.validation.constraints.Max;
  * </pre>
  */
 public record AccountHistoryReq(
-        @NotNull(message = "계좌 유형(accountType)은 필수입니다.") 
-        AccountType accountType,
+        @NotNull(message = "시작일(startDate)은 필수입니다.")
+        LocalDate startDate,
 
-        @Min(value = 2025, message = "년도(year)는 2025년 이상이어야 합니다.") 
-        int year,
-
-        @Min(value = 1, message = "월(month)는 1월 이상이어야 합니다.") 
-        @Max(value = 12, message = "월(month)는 12월 이하이어야 합니다.") 
-        int month) {
+        @NotNull(message = "종료일(endDate)은 필수입니다.")
+        LocalDate endDate) {
 }

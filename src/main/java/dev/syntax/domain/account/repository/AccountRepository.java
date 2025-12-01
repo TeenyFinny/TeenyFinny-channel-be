@@ -12,4 +12,10 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
      * 예: (userId=5, type=ALLOWANCE)
      */
     Optional<Account> findByUserIdAndType(Long userId, AccountType type);
+
+    /**
+     * 계좌번호로 계좌 조회
+     * 거래 상세 조회 시 계좌 소유자 검증에 사용
+     */
+    Optional<Account> findByAccountNo(String accountNo);
 }
