@@ -94,7 +94,9 @@ public class GoalAccountServiceImpl implements GoalAccountService {
 		goalRepository.save(goal);
 
 		// 4. 자동이체 등록 (private 메소드로 분리)
-		registerAutoTransfer(goal, account);
+		Account allowanceAccount = accountRepository.findByUserIdAndType(goal.getUser().getId(), AccountType.ALLOWANCE)
+				.orElseThrow(() -> new BusinessException(ErrorBaseCode.ACCOUNT_NOT_FOUND));
+		registerAutoTransfer(goal, allowanceAccount);
 
 		log.info("[CHANNEL] 목표 계좌 자동이체 등록 완료");
 

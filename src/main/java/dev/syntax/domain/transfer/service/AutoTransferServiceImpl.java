@@ -216,6 +216,7 @@ public class AutoTransferServiceImpl implements AutoTransferService {
     @Transactional
     public void deleteAutoTransfer(Long accountId, AutoTransferType type) {
 
+        log.info("accountId={}, type={}", accountId, type);
         AutoTransfer autoTransfer = autoTransferRepository.findByAccountIdAndType(accountId, type)
                 .orElseThrow(() -> new BusinessException(ErrorBaseCode.AUTO_TRANSFER_NOT_FOUND));
 

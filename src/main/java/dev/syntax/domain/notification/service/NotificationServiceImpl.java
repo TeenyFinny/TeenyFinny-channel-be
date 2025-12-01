@@ -151,7 +151,28 @@ public class NotificationServiceImpl implements NotificationService {
 		createAndSendNotification(child, "가족 등록 완료", parentName + "님과 가족 연결이 완료되었습니다!", NotificationType.SYSTEM);
 	}
 
-	private void createAndSendNotification(User targetUser, String title, String content, NotificationType type) {
+    /**
+     * 목표 달성 완료 알림 (자녀용)
+     */
+    @Override
+    @Transactional
+    public void sendGoalAchievedNotice(User child) {
+
+        String title = "목표 달성 완료!";
+        String content = "드디어 목표를 달성했어요 🎉";
+
+        Notification notification = Notification.builder()
+                .targetUser(child)
+                .title(title)
+                .content(content)
+                .type(NotificationType.GOAL)
+                .build();
+
+        notificationRepository.save(notification);
+        sseService.send(child.getId(), "notification", new NotificationOutput(notification));
+    }
+
+    private void createAndSendNotification(User targetUser, String title, String content, NotificationType type) {
 		Notification notification = Notification.builder()
 			.targetUser(targetUser)
 			.title(title)
