@@ -7,6 +7,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import dev.syntax.global.exception.BusinessException;
+import dev.syntax.global.response.error.ErrorBaseCode;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -32,8 +34,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SseService {
 
-    private final Map<Long, SseEmitter> emitters = new ConcurrentHashMap<>();
-    private static final Long DEFAULT_TIMEOUT = 60L * 1000 * 60; // 60분
+	private static final long DEFAULT_TIMEOUT = 60L * 60 * 1000; // 60분
+
+	private final Map<Long, SseEmitter> emitters = new ConcurrentHashMap<>();
 
 	/**
 	 * 사용자의 SSE 구독을 생성하고 Emitter를 반환합니다.
@@ -45,27 +48,30 @@ public class SseService {
 	 *
 	 * @param userId SSE 알림을 받을 사용자 ID
 	 * @return 사용자와의 연결을 유지하는 {@link SseEmitter}
-	 * @throws RuntimeException 초기 더미 이벤트 전송 실패 시 발생
+	 * @throws IllegalStateException 초기 더미 이벤트 전송 실패 시 발생
 	 */
-    public SseEmitter subscribe(Long userId) {
-        SseEmitter emitter = new SseEmitter(DEFAULT_TIMEOUT);
-        emitters.put(userId, emitter);
+	public SseEmitter subscribe(Long userId) {
+		SseEmitter emitter = new SseEmitter(DEFAULT_TIMEOUT);
+		emitters.put(userId, emitter);
 
-        emitter.onCompletion(() -> emitters.remove(userId));
-        emitter.onTimeout(() -> emitters.remove(userId));
-        emitter.onError((e) -> emitters.remove(userId));
+		// emitter 제거 콜백
+		emitter.onCompletion(() -> emitters.remove(userId));
+		emitter.onTimeout(() -> emitters.remove(userId));
+		emitter.onError(e -> emitters.remove(userId));
 
-        // 503 Service Unavailable 방지용 더미 이벤트 전송
-        try {
-            emitter.send(SseEmitter.event()
-                    .name("connect")
-                    .data("connected!"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+		try {
+			emitter.send(
+				SseEmitter.event()
+					.name("connect")
+					.data("connected")
+			);
+		} catch (IOException ex) {
+			log.error("초기 SSE 연결 이벤트 전송 실패: userId={}", userId, ex);
+			throw new BusinessException(ErrorBaseCode.SSE_CONNECT_FAIL);
+		}
 
-        return emitter;
-    }
+		return emitter;
+	}
 
 	/**
 	 * 특정 사용자에게 SSE 이벤트를 전송합니다.
@@ -78,17 +84,22 @@ public class SseService {
 	 * @param name   이벤트 이름(event: {name})
 	 * @param data   전송할 데이터(payload)
 	 */
-    public void send(Long userId, String name, Object data) {
-        SseEmitter emitter = emitters.get(userId);
-        if (emitter != null) {
-            try {
-                emitter.send(SseEmitter.event()
-                        .name(name)
-                        .data(data));
-            } catch (IOException e) {
-                emitters.remove(userId);
-                log.error("SSE Send Error", e);
-            }
-        }
-    }
+	public void send(Long userId, String name, Object data) {
+		SseEmitter emitter = emitters.get(userId);
+		if (emitter == null) {
+			log.debug("활성화된 SSE Emitter가 없음: userId={}", userId);
+			return;
+		}
+
+		try {
+			emitter.send(
+				SseEmitter.event()
+					.name(name)
+					.data(data)
+			);
+		} catch (IOException ex) {
+			log.error("SSE 이벤트 전송 실패: userId={}", userId, ex);
+			emitters.remove(userId);
+		}
+	}
 }
