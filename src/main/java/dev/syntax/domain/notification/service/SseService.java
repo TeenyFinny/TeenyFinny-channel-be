@@ -48,16 +48,28 @@ public class SseService {
 	 *
 	 * @param userId SSE 알림을 받을 사용자 ID
 	 * @return 사용자와의 연결을 유지하는 {@link SseEmitter}
-	 * @throws IllegalStateException 초기 더미 이벤트 전송 실패 시 발생
+	 * @throws BusinessException 초기 더미 이벤트 전송 실패 시 발생
 	 */
 	public SseEmitter subscribe(Long userId) {
 		SseEmitter emitter = new SseEmitter(DEFAULT_TIMEOUT);
 		emitters.put(userId, emitter);
 
 		// emitter 제거 콜백
-		emitter.onCompletion(() -> emitters.remove(userId));
-		emitter.onTimeout(() -> emitters.remove(userId));
-		emitter.onError(e -> emitters.remove(userId));
+		emitter.onCompletion(() -> {
+			log.info("SSE 연결이 정상적으로 종료되었습니다. userId={}", userId);
+			emitters.remove(userId);
+		});
+
+		emitter.onTimeout(() -> {
+			log.info("SSE 연결이 타임아웃되었습니다. userId={}", userId);
+			emitters.remove(userId);
+		});
+
+		emitter.onError(e -> {
+			log.error("SSE 연결 중 오류가 발생했습니다. userId={}", userId, e);
+			emitters.remove(userId);
+		});
+
 
 		try {
 			emitter.send(

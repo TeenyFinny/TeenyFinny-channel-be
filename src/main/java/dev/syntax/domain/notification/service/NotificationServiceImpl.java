@@ -136,36 +136,32 @@ public class NotificationServiceImpl implements NotificationService {
     /**
      * 가족 등록 완료 알림 생성 (부모용)
      */
-    @Override
-    @Transactional
-    public void sendFamilyRegistrationNotice(User parent, String childName) {
-        Notification notification = Notification.builder()
-                .targetUser(parent)
-                .title("가족 등록 완료")
-                .content(childName + "님과 가족 연결이 완료되었습니다!")
-                .type(NotificationType.SYSTEM)
-                .build();
-
-        notificationRepository.save(notification);
-        sseService.send(parent.getId(), NOTIFICATION, new NotificationOutput(notification));
-    }
+	@Override
+	@Transactional
+	public void sendFamilyRegistrationNotice(User parent, String childName) {
+		createAndSendNotification(parent, "가족 등록 완료", childName + "님과 가족 연결이 완료되었습니다!", NotificationType.SYSTEM);
+	}
 
     /**
      * 가족 등록 완료 알림 생성 (자녀용)
      */
-    @Override
-    @Transactional
-    public void sendFamilyRegistrationChildNotice(User child, String parentName) {
-        Notification notification = Notification.builder()
-                .targetUser(child)
-                .title("가족 등록 완료")
-                .content(parentName + "님과 가족 연결이 완료되었습니다!")
-                .type(NotificationType.SYSTEM)
-                .build();
+	@Override
+	@Transactional
+	public void sendFamilyRegistrationChildNotice(User child, String parentName) {
+		createAndSendNotification(child, "가족 등록 완료", parentName + "님과 가족 연결이 완료되었습니다!", NotificationType.SYSTEM);
+	}
 
-        notificationRepository.save(notification);
-        sseService.send(child.getId(), NOTIFICATION, new NotificationOutput(notification));
-    }
+	private void createAndSendNotification(User targetUser, String title, String content, NotificationType type) {
+		Notification notification = Notification.builder()
+			.targetUser(targetUser)
+			.title(title)
+			.content(content)
+			.type(type)
+			.build();
+
+		notificationRepository.save(notification);
+		sseService.send(targetUser.getId(), NOTIFICATION, new NotificationOutput(notification));
+	}
 
     /**
      * 알림 삭제 (현재는 주석 처리)
