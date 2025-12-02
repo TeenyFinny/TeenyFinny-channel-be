@@ -14,6 +14,7 @@ import dev.syntax.domain.transfer.entity.AutoTransfer;
 import dev.syntax.domain.transfer.enums.AutoTransferType;
 import dev.syntax.domain.transfer.repository.AutoTransferRepository;
 import dev.syntax.domain.transfer.service.AutoTransferService;
+import dev.syntax.domain.user.entity.UserRelationship;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -212,6 +213,7 @@ public class GoalServiceImpl implements GoalService {
 		validatePayDay(payDayForUpdate);
 
         goal.updatePayDay(payDayForUpdate);
+		autoTransfer.updateAutoTransferDay(payDayForUpdate);
 
         coreGoalClient.updateAutoTransferDay(autoTransfer.getPrimaryBankTransferId(), payDayForUpdate);
 
@@ -506,4 +508,63 @@ public class GoalServiceImpl implements GoalService {
                 .orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_NOT_ONGOING));
         return goal.getId();
     }
+
+	@Override
+	@Transactional
+	public void handleGoalDeposit(GoalDepositEventReq req) {
+
+		log.info("[GoalService] 목표 입금 처리 시작 - accountNo={}, balanceAfter={}",
+				req.getAccountNo(), req.getBalanceAfter());
+
+		Goal goal = goalRepository.findByAccount_AccountNo(req.getAccountNo())
+				.orElse(null);
+
+		if (goal == null) {
+			log.warn("[GoalService] 목표 없음: accountNo={}", req.getAccountNo());
+			return;
+		}
+
+		if (goal.getStatus() != GoalStatus.ONGOING) {
+			return;
+		}
+
+		if (req.getBalanceAfter().compareTo(goal.getTargetAmount()) >= 0) {
+
+			log.info("[GoalService] 목표 달성 완료! goalId={}, userId={}",
+					goal.getId(), goal.getUser().getId());
+
+			User child = goal.getUser();
+
+			notificationService.sendGoalAchievedNotice(child);
+		}
+	}
+
+	@Override
+	public GoalInfoRes getGoalForAccountCreate(UserContext userContext, Long goalId) {
+
+		User parent = getUser(userContext);
+
+		// 1) 목표 조회
+		Goal goal = goalRepository.findById(goalId)
+				.orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_NOT_FOUND));
+
+		// 2) 목표 상태 확인 (Pending)
+		if (goal.getStatus() != GoalStatus.PENDING) {
+			throw new BusinessException(ErrorBaseCode.GOAL_ALREADY_ONGOING);
+		}
+
+		// 3) 목표를 만든 자녀
+		User child = goal.getUser();
+
+		// 4) 부모-자녀 관계 검증
+		boolean isMyChild = child.getParents().stream()
+				.anyMatch(rel -> rel.getParent().getId().equals(parent.getId()));
+
+		if (!isMyChild) {
+			throw new BusinessException(ErrorBaseCode.UNAUTHORIZED);
+		}
+
+		// 5) 반환
+		return new GoalInfoRes(goal);
+	}
 }
