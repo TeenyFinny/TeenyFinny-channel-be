@@ -55,6 +55,16 @@ public class SseService {
 		emitters.put(userId, emitter);
 
 		// emitter 제거 콜백
+		emitter.onCompletion(() -> {
+			log.info("SSE 연결이 정상적으로 종료되었습니다. userId={}", userId);
+			emitters.remove(userId);
+		});
+
+		emitter.onTimeout(() -> {
+			log.info("SSE 연결이 타임아웃되었습니다. userId={}", userId);
+			emitters.remove(userId);
+		});
+
 		emitter.onError(e -> {
 			if (e instanceof AsyncRequestNotUsableException
 					|| e.getCause() instanceof IOException) {

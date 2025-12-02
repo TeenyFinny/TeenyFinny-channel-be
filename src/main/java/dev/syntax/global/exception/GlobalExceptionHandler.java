@@ -19,8 +19,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 
-import java.io.IOException;
-
 /**
  * 전역 예외 처리를 담당하는 핸들러입니다.
  * <p>
@@ -158,13 +156,6 @@ public class GlobalExceptionHandler {
 	public void handleSseClosing(AsyncRequestNotUsableException e) {
 		log.debug("[SSE 종료] 클라이언트가 연결을 닫았습니다: {}", e.getMessage());
 	}
-
-	@ExceptionHandler(IOException.class)
-	public void handleSseIOException(IOException e) {
-		log.debug("[SSE 전송 중단] {}", e.getMessage());
-	}
-
-
 
 	private Long getCurrentUserId() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
