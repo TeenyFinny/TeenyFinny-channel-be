@@ -72,7 +72,7 @@ sonarqube {
 
         // Windows에서도 문제 없는 슬래시 사용, 절대경로
         property "sonar.coverage.jacoco.xmlReportPaths",
-                "C:/woori_workspace/final_project/TeenyFinny-channel-be/build/reports/jacoco/test/jacocoTestReport.xml"
+                "/build/reports/jacoco/test/jacocoTestReport.xml"
     }
 }
 
