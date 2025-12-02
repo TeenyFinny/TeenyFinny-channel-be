@@ -252,7 +252,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .build();
 
         notificationRepository.save(notification);
-        sseService.send(parent.getId(), "notification", new NotificationOutput(notification));
+        sseService.send(parent.getId(), NOTIFICATION, new NotificationOutput(notification));
     }
 
 }
