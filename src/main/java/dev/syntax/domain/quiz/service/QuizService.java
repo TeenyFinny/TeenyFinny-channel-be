@@ -25,4 +25,6 @@ public interface QuizService {
     QuizInfoRes getQuizInfo(Long quizId);
 
     RequestCompletedRes updateRequestCompleted(UserContext context,Long id);
+
+    void sendInvestmentAccountRequest(UserContext userContext);
 }
