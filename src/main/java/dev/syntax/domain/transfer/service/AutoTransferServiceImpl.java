@@ -224,6 +224,7 @@ public class AutoTransferServiceImpl implements AutoTransferService {
             coreAutoTransferClient.deleteAutoTransfer(autoTransfer.getInvestBankTransferId());
         }
         coreAutoTransferClient.deleteAutoTransfer(autoTransfer.getPrimaryBankTransferId());
+        log.info("[Channel 자동 이체 삭제] autoTransferId={}", autoTransfer.getId());
         autoTransferRepository.delete(autoTransfer);
     }
     

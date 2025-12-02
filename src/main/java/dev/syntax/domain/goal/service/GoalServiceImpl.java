@@ -384,6 +384,7 @@ public class GoalServiceImpl implements GoalService {
         validateGoalIsNotCompleted(goal);
 
         goal.updateStatus(GoalStatus.CANCELLED);
+		log.info("[목표 상태 변경] ONGOING -> {}", goal.getStatus().toString());
         coreGoalClient.updateAccountStatus(accountNo, new CoreUpdateAccountStatusReq("SUSPENDED"));
         autoTransferService.deleteAutoTransfer(allowanceAccount.getId(), AutoTransferType.GOAL);
 

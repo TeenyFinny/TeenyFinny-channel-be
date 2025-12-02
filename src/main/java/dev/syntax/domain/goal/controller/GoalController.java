@@ -2,6 +2,8 @@ package dev.syntax.domain.goal.controller;
 
 import dev.syntax.domain.goal.dto.*;
 import dev.syntax.domain.goal.entity.Goal;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import dev.syntax.domain.goal.dto.GoalApproveReq;
@@ -33,6 +35,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/goal")
 public class GoalController {
 
+	private static final Logger log = LoggerFactory.getLogger(GoalController.class);
 	private final GoalService goalService;
 
 	/**
@@ -155,6 +158,7 @@ public class GoalController {
             @CurrentUser UserContext userContext,
             @PathVariable Long goalId
     ) {
+		log.info("[목표 중도 해지] userId: {} goalId: {}", userContext.getId(), goalId);
         GoalDeleteRes result = goalService.confirmCancel(userContext, goalId);
         return ApiResponseUtil.success(SuccessCode.OK, result);
     }
