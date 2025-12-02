@@ -1,6 +1,7 @@
 package dev.syntax.domain.goal.service;
 
 import dev.syntax.domain.goal.dto.*;
+import dev.syntax.domain.goal.entity.Goal;
 import dev.syntax.global.auth.dto.UserContext;
 
 /**
@@ -99,5 +100,11 @@ public interface GoalService {
 
     Long getOngoingGoalId(UserContext userContext, Long childId);
 
+    GoalPendingRes getPendingGoal(UserContext userContext, Long childId);
+
     Long getMyOngoingGoalId(UserContext userContext);
+
+    void handleGoalDeposit(GoalDepositEventReq req);
+
+    GoalInfoRes getGoalForAccountCreate(UserContext userContext, Long goalId);
 }

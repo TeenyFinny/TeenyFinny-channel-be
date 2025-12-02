@@ -9,25 +9,17 @@ import java.util.List;
 
 import dev.syntax.domain.account.enums.AccountType;
 import dev.syntax.domain.account.repository.AccountRepository;
+import dev.syntax.domain.goal.dto.*;
 import dev.syntax.domain.transfer.entity.AutoTransfer;
 import dev.syntax.domain.transfer.enums.AutoTransferType;
 import dev.syntax.domain.transfer.repository.AutoTransferRepository;
 import dev.syntax.domain.transfer.service.AutoTransferService;
+import dev.syntax.domain.user.entity.UserRelationship;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import dev.syntax.domain.account.entity.Account;
 import dev.syntax.domain.goal.client.CoreGoalClient;
-import dev.syntax.domain.goal.dto.CoreTransactionHistoryRes;
-import dev.syntax.domain.goal.dto.CoreUpdateAccountStatusReq;
-import dev.syntax.domain.goal.dto.GoalApproveRes;
-import dev.syntax.domain.goal.dto.GoalCreateReq;
-import dev.syntax.domain.goal.dto.GoalCreateRes;
-import dev.syntax.domain.goal.dto.GoalDeleteRes;
-import dev.syntax.domain.goal.dto.GoalDetailRes;
-import dev.syntax.domain.goal.dto.GoalInfoRes;
-import dev.syntax.domain.goal.dto.GoalUpdateReq;
-import dev.syntax.domain.goal.dto.GoalUpdateRes;
 import dev.syntax.domain.goal.entity.Goal;
 import dev.syntax.domain.goal.enums.GoalStatus;
 import dev.syntax.domain.goal.repository.GoalRepository;
@@ -221,6 +213,7 @@ public class GoalServiceImpl implements GoalService {
 		validatePayDay(payDayForUpdate);
 
         goal.updatePayDay(payDayForUpdate);
+		autoTransfer.updateAutoTransferDay(payDayForUpdate);
 
         coreGoalClient.updateAutoTransferDay(autoTransfer.getPrimaryBankTransferId(), payDayForUpdate);
 
@@ -267,6 +260,9 @@ public class GoalServiceImpl implements GoalService {
 		if (approve) {
 			// core에 계좌 생성 요청
 			Goal createdGoal = goalAccountService.createGoalAccount(goal);
+
+			notificationService.sendGoalAccountCreatedNotice(goal.getUser());
+
 			return new GoalApproveRes(createdGoal);
 		}
 
@@ -391,6 +387,8 @@ public class GoalServiceImpl implements GoalService {
         coreGoalClient.updateAccountStatus(accountNo, new CoreUpdateAccountStatusReq("SUSPENDED"));
         autoTransferService.deleteAutoTransfer(allowanceAccount.getId(), AutoTransferType.GOAL);
 
+		notificationService.sendGoalCancelConfirm(goal.getUser());
+
 		return new GoalDeleteRes(goalId, "목표 계좌가 중도 해지되었습니다.");
 	}
 
@@ -486,6 +484,27 @@ public class GoalServiceImpl implements GoalService {
 
         return goal.getId();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public GoalPendingRes getPendingGoal(UserContext userContext, Long childId) {
+        User parent = getUser(userContext);
+        if (parent.getRole() != Role.PARENT) {
+            throw new BusinessException(ErrorBaseCode.GOAL_ACCESS_FORBIDDEN);
+        }
+
+        if (!userContext.getChildren().contains(childId)) {
+            throw new BusinessException(ErrorBaseCode.GOAL_CHILD_NOT_MATCH);
+        }
+
+        User child = userRepository.findById(childId)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.USER_NOT_FOUND));
+
+        Goal goal = goalRepository.findByUserAndStatus(child, GoalStatus.PENDING)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_NOT_FOUND));
+
+        return new GoalPendingRes(goal);
+    }
     @Override
     @Transactional(readOnly = true)
     public Long getMyOngoingGoalId(UserContext userContext) {
@@ -494,4 +513,63 @@ public class GoalServiceImpl implements GoalService {
                 .orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_NOT_ONGOING));
         return goal.getId();
     }
+
+	@Override
+	@Transactional
+	public void handleGoalDeposit(GoalDepositEventReq req) {
+
+		log.info("[GoalService] 목표 입금 처리 시작 - accountNo={}, balanceAfter={}",
+				req.getAccountNo(), req.getBalanceAfter());
+
+		Goal goal = goalRepository.findByAccount_AccountNo(req.getAccountNo())
+				.orElse(null);
+
+		if (goal == null) {
+			log.warn("[GoalService] 목표 없음: accountNo={}", req.getAccountNo());
+			return;
+		}
+
+		if (goal.getStatus() != GoalStatus.ONGOING) {
+			return;
+		}
+
+		if (req.getBalanceAfter().compareTo(goal.getTargetAmount()) >= 0) {
+
+			log.info("[GoalService] 목표 달성 완료! goalId={}, userId={}",
+					goal.getId(), goal.getUser().getId());
+
+			User child = goal.getUser();
+
+			notificationService.sendGoalAchievedNotice(child);
+		}
+	}
+
+	@Override
+	public GoalInfoRes getGoalForAccountCreate(UserContext userContext, Long goalId) {
+
+		User parent = getUser(userContext);
+
+		// 1) 목표 조회
+		Goal goal = goalRepository.findById(goalId)
+				.orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_NOT_FOUND));
+
+		// 2) 목표 상태 확인 (Pending)
+		if (goal.getStatus() != GoalStatus.PENDING) {
+			throw new BusinessException(ErrorBaseCode.GOAL_ALREADY_ONGOING);
+		}
+
+		// 3) 목표를 만든 자녀
+		User child = goal.getUser();
+
+		// 4) 부모-자녀 관계 검증
+		boolean isMyChild = child.getParents().stream()
+				.anyMatch(rel -> rel.getParent().getId().equals(parent.getId()));
+
+		if (!isMyChild) {
+			throw new BusinessException(ErrorBaseCode.UNAUTHORIZED);
+		}
+
+		// 5) 반환
+		return new GoalInfoRes(goal);
+	}
 }

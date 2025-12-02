@@ -86,4 +86,12 @@ public interface NotificationService {
 	 * @param parentName 부모 이름
 	 */
 	void sendFamilyRegistrationChildNotice(User child, String parentName);
+
+	void sendGoalAchievedNotice(User child);
+
+	void sendGoalAccountCreatedNotice(User child);
+
+	void sendGoalCancelConfirm(User child);
+
+    void sendInvestmentAccountRequestNotice(User parent, String childName);
 }

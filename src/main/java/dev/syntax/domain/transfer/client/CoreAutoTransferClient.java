@@ -1,15 +1,15 @@
 package dev.syntax.domain.transfer.client;
 
+import dev.syntax.domain.transfer.dto.CoreAllowanceUpdateAutoTransferReq;
+import dev.syntax.domain.transfer.dto.CoreCreateAutoTransferReq;
+import dev.syntax.domain.transfer.dto.CoreCreateAutoTransferRes;
+import dev.syntax.domain.transfer.dto.CoreGoalAutoTransferCreateReq;
+import dev.syntax.global.core.CoreApiProperties;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
-import dev.syntax.domain.transfer.dto.CoreAllowanceUpdateAutoTransferReq;
-import dev.syntax.domain.transfer.dto.CoreCreateAutoTransferReq;
-import dev.syntax.domain.transfer.dto.CoreCreateAutoTransferRes;
-import dev.syntax.global.core.CoreApiProperties;
-import lombok.RequiredArgsConstructor;
 
 /**
  * Core 뱅킹 서버의 자동이체 생성 API를 호출하는 클라이언트입니다.
@@ -59,6 +59,22 @@ public class CoreAutoTransferClient {
         coreRestTemplate.delete(
                 properties.getBaseUrl() + DELETE_AUTO_TRANSFER_URL,
                 autoTransferId
+        );
+    }
+
+    private static final String GOAL_AUTO_TRANSFER_CREATE_URL = "/core/banking/auto-transfer/goal-by-user";
+
+    /**
+     * Core 목표 자동이체 생성 요청
+     *
+     * @param req 목표 자동이체 생성 요청 정보
+     * @return CoreAutoTransferRes (autoTransferId)
+     */
+    public CoreCreateAutoTransferRes createGoalAutoTransfer(CoreGoalAutoTransferCreateReq req) {
+        return coreRestTemplate.postForObject(
+                properties.getBaseUrl() + GOAL_AUTO_TRANSFER_CREATE_URL,
+                req,
+                CoreCreateAutoTransferRes.class
         );
     }
 }
