@@ -1,10 +1,10 @@
 package dev.syntax.domain.account.service;
 
+import java.util.List;
+
 import dev.syntax.domain.account.dto.AccountHistoryReq;
 import dev.syntax.domain.account.dto.AccountHistoryRes;
 import dev.syntax.global.auth.dto.UserContext;
-import java.util.List;
-//import dev.syntax.global.auth.UserContext;
 
 /**
  * 계좌 거래내역 조회 서비스 인터페이스.

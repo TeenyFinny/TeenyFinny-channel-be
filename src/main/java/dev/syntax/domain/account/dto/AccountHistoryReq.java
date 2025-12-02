@@ -1,8 +1,8 @@
 package dev.syntax.domain.account.dto;
 
-import dev.syntax.domain.account.enums.AccountType;
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
+
+import jakarta.validation.constraints.NotNull;
 
 /**
  * 계좌 거래내역 조회 요청 DTO.
