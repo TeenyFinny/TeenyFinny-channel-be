@@ -318,7 +318,7 @@ public class AccountController {
                 @PathVariable("id") Long id,
                 @Valid @RequestBody DeleteAutoTransferReq req,
                 @CurrentUser UserContext ctx) {
-        autoTransferService.deleteAutoTransfer(req.autoTransferId(), AutoTransferType.ALLOWANCE); // 이 엔드포인트에 접근하는 경우는 용돈만 가능하기 때문에 하드코딩
+        autoTransferService.deleteAutoTransferById(req.autoTransferId()); // 이 엔드포인트에 접근하는 경우는 용돈만 가능하기 때문에 하드코딩
         return ApiResponseUtil.success(SuccessCode.OK);
         }
 }
