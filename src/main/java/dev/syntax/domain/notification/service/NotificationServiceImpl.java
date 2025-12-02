@@ -169,7 +169,41 @@ public class NotificationServiceImpl implements NotificationService {
                 .build();
 
         notificationRepository.save(notification);
-        sseService.send(child.getId(), "notification", new NotificationOutput(notification));
+        sseService.send(child.getId(), NOTIFICATION, new NotificationOutput(notification));
+    }
+
+    @Override
+    @Transactional
+    public void sendGoalAccountCreatedNotice(User child) {
+        String title = "목표 승인 완료!";
+        String content = "부모님이 목표 허락 후 계좌를 생성했어요!";
+
+        Notification notification = Notification.builder()
+                .targetUser(child)
+                .title(title)
+                .content(content)
+                .type(NotificationType.GOAL)
+                .build();
+
+        notificationRepository.save(notification);
+        sseService.send(child.getId(), NOTIFICATION, new NotificationOutput(notification));
+    }
+
+    @Override
+    @Transactional
+    public void sendGoalCancelConfirm(User child) {
+        String title = "목표 중도해지 완료!";
+        String content = "부모님과 함께 가까운 은행에 방문하여 해지해주세요";
+
+        Notification notification = Notification.builder()
+                .targetUser(child)
+                .title(title)
+                .content(content)
+                .type(NotificationType.GOAL)
+                .build();
+
+        notificationRepository.save(notification);
+        sseService.send(child.getId(), NOTIFICATION, new NotificationOutput(notification));
     }
 
     private void createAndSendNotification(User targetUser, String title, String content, NotificationType type) {
