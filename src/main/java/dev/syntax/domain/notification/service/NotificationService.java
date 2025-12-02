@@ -1,10 +1,10 @@
 package dev.syntax.domain.notification.service;
 
+import java.util.List;
+
 import dev.syntax.domain.notification.dto.NotificationExistOutput;
 import dev.syntax.domain.notification.dto.NotificationOutput;
 import dev.syntax.domain.user.entity.User;
-
-import java.util.List;
 
 /**
  * NotificationService
@@ -70,4 +70,22 @@ public interface NotificationService {
      * @param childName 자녀 이름
      */
     void sendGoalCompleteRequestNotice(User parent, String childName);
+
+	/**
+	 * 가족 등록 완료 요청 알림 생성 (부모용)
+	 *
+	 * @param parent 부모 사용자
+	 * @param childName 자녀 이름
+	 */
+	void sendFamilyRegistrationNotice(User parent, String childName);
+
+	/**
+	 * 가족 등록 완료 요청 알림 생성 (자녀용)
+	 *
+	 * @param child 자녀 사용자
+	 * @param parentName 부모 이름
+	 */
+	void sendFamilyRegistrationChildNotice(User child, String parentName);
+
+	void sendGoalAchievedNotice(User child);
 }

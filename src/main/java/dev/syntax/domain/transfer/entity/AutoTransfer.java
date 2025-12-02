@@ -79,4 +79,8 @@ public class AutoTransfer extends BaseTimeEntity {
         this.transferAmount = newReq.getTotalAmount();
         this.investBankTransferId = newInvestTransferId;
     }
+
+    public void updateAutoTransferDay(Integer newDate) {
+        this.transferDate = newDate;
+    }
 }

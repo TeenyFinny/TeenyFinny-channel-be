@@ -33,7 +33,7 @@ public class AccountSummaryRes {
     /**
      * 저축 계좌(SAVING) 잔액.
      */
-    private String saving;
+    private String goal;
 
     /**
      * 카드 정보 (보유 여부 등).

@@ -13,6 +13,7 @@ import dev.syntax.global.response.ApiResponseUtil;
 import dev.syntax.global.response.BaseResponse;
 import dev.syntax.global.response.SuccessCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * 용돈 계좌 관련 API 컨트롤러
  */
+@Slf4j
 @RestController
 @RequestMapping("/allowance")
 @RequiredArgsConstructor
@@ -51,28 +53,31 @@ public class AllowanceController {
 
     /**
      * 자녀 본인 리포트 조회
-     * GET /allowance/report?month=1
+     * GET /allowance/report?year=2025&month=1
      */
     @GetMapping("/report")
     public ResponseEntity<BaseResponse<?>> getMyReport(
+            @RequestParam int year,
             @RequestParam int month,
             @AuthenticationPrincipal UserContext ctx
     ) {
-        ReportRes result = reportService.getMonthlyReport(ctx.getId(), month, ctx);
+        log.info("[컸트롤러] 본인 리포트 조회 요청 - userId: {}, year: {}, month: {}", ctx.getId(), year, month);
+        ReportRes result = reportService.getMonthlyReport(ctx.getId(), year, month, ctx);
         return ApiResponseUtil.success(SuccessCode.OK, result);
     }
 
     /**
      * 부모가 자녀 리포트 조회
-     * GET /allowance/{childId}/report?month=1
+     * GET /allowance/{childId}/report?year=2025&month=1
      */
     @GetMapping("/{childId}/report")
     public ResponseEntity<BaseResponse<?>> getChildReport(
             @PathVariable Long childId,
+            @RequestParam int year,
             @RequestParam int month,
             @AuthenticationPrincipal UserContext ctx
     ) {
-        ReportRes result = reportService.getMonthlyReport(childId, month, ctx);
+        ReportRes result = reportService.getMonthlyReport(childId, year, month, ctx);
         return ApiResponseUtil.success(SuccessCode.OK, result);
     }
 

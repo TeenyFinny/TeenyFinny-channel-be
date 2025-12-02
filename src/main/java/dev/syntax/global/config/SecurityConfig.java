@@ -103,7 +103,9 @@ public class SecurityConfig {
 					"/auth/oauth/**",
 					"/public/**",
 					"/sample/**",
-					"/docs/**").permitAll()
+					"/docs/**",
+					"/actuator/**",
+						"/internal/**").permitAll()
 				.anyRequest().authenticated()
 			)
 			// UsernamePasswordAuthenticationFilter 전에 JWT 필터 등록

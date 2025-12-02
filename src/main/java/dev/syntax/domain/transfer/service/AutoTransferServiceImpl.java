@@ -216,6 +216,7 @@ public class AutoTransferServiceImpl implements AutoTransferService {
     @Transactional
     public void deleteAutoTransfer(Long accountId, AutoTransferType type) {
 
+        log.info("accountId={}, type={}", accountId, type);
         AutoTransfer autoTransfer = autoTransferRepository.findByAccountIdAndType(accountId, type)
                 .orElseThrow(() -> new BusinessException(ErrorBaseCode.AUTO_TRANSFER_NOT_FOUND));
 
@@ -226,6 +227,22 @@ public class AutoTransferServiceImpl implements AutoTransferService {
         autoTransferRepository.delete(autoTransfer);
     }
     
+    @Override
+    @Transactional
+    public void deleteAutoTransferById(Long autoTransferId) {
+
+        log.info("autoTransferId={}", autoTransferId);
+        AutoTransfer autoTransfer = autoTransferRepository.findById(autoTransferId)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.AUTO_TRANSFER_NOT_FOUND));
+
+        if(autoTransfer.getRatio() > 0) { // 비율이 1 이상인데 타입이 용돈인 경우에는 투자도 삭제되도록
+            coreAutoTransferClient.deleteAutoTransfer(autoTransfer.getInvestBankTransferId());
+        }
+        coreAutoTransferClient.deleteAutoTransfer(autoTransfer.getPrimaryBankTransferId());
+        autoTransferRepository.delete(autoTransfer);
+    }
+
+
     /**
      * 부모 권한 및 자녀 관계를 검증합니다.
      *

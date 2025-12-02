@@ -61,7 +61,7 @@ public class CoreInvestmentClient {
 
     public CoreInvestmentAccountRes createInvestmentAccount(Long userId) {
         return coreRestTemplate.postForObject(
-                properties.getBaseUrl() + INVESTMENT_ACCOUNT_URL,
+                properties.getBaseUrl() + INVESTMENT_ACCOUNT_URL  + "?userId=" + userId,
                 null,
                 CoreInvestmentAccountRes.class
         );

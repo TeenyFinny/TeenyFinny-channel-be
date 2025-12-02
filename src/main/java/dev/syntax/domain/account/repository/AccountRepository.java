@@ -4,6 +4,7 @@ import dev.syntax.domain.account.entity.Account;
 import dev.syntax.domain.account.enums.AccountType;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface AccountRepository extends JpaRepository<Account, Long> {
@@ -18,4 +19,9 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
      * 거래 상세 조회 시 계좌 소유자 검증에 사용
      */
     Optional<Account> findByAccountNo(String accountNo);
+
+    /**
+     * 특정 타입의 모든 계좌 조회 (배치 작업용)
+     */
+    List<Account> findAllByType(AccountType type);
 }

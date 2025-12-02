@@ -14,5 +14,10 @@ public interface ReportService {
      * @param ctx 현재 요청을 수행하는 사용자 정보(권한 및 인증 정보 포함)
      * @return ReportResponse  프론트가 그대로 사용할 수 있는 월별 소비 리포트 데이터
      */ 
-    ReportRes getMonthlyReport(Long userId, int month, UserContext ctx);
+    ReportRes getMonthlyReport(Long userId, int year, int month, UserContext ctx);
+
+    /**
+     * 1년 지난 리포트 자동 삭제 (배치용)
+     */
+    void deleteOldReports(int year, int month);
 }

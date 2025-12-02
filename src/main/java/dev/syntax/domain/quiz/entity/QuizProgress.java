@@ -56,6 +56,11 @@ public class QuizProgress extends BaseTimeEntity {
     @Column(name = "first_quiz_id_today")
     private int firstQuizIdToday = 0;
 
+    public void updateRequestCompleted(boolean requestCompleted)
+    {
+            this.requestCompleted = requestCompleted;
+    }
+
     public void update(QuizProgressUpdateReq req) {
         if (req.getTodaySolved() != null) {
             this.todaySolved = req.getTodaySolved();

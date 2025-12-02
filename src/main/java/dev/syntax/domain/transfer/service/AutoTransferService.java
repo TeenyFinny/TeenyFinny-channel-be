@@ -31,5 +31,6 @@ public interface AutoTransferService {
   
   
     void deleteAutoTransfer(Long accountId, AutoTransferType type);
+    void deleteAutoTransferById(Long autoTransferId);
   
 }
