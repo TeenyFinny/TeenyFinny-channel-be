@@ -260,6 +260,9 @@ public class GoalServiceImpl implements GoalService {
 		if (approve) {
 			// core에 계좌 생성 요청
 			Goal createdGoal = goalAccountService.createGoalAccount(goal);
+
+			notificationService.sendGoalAccountCreatedNotice(goal.getUser());
+
 			return new GoalApproveRes(createdGoal);
 		}
 
@@ -383,6 +386,8 @@ public class GoalServiceImpl implements GoalService {
         goal.updateStatus(GoalStatus.CANCELLED);
         coreGoalClient.updateAccountStatus(accountNo, new CoreUpdateAccountStatusReq("SUSPENDED"));
         autoTransferService.deleteAutoTransfer(allowanceAccount.getId(), AutoTransferType.GOAL);
+
+		notificationService.sendGoalCancelConfirm(goal.getUser());
 
 		return new GoalDeleteRes(goalId, "목표 계좌가 중도 해지되었습니다.");
 	}

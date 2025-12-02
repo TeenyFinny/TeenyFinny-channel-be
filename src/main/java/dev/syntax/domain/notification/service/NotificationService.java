@@ -88,4 +88,8 @@ public interface NotificationService {
 	void sendFamilyRegistrationChildNotice(User child, String parentName);
 
 	void sendGoalAchievedNotice(User child);
+
+	void sendGoalAccountCreatedNotice(User child);
+
+	void sendGoalCancelConfirm(User child);
 }
