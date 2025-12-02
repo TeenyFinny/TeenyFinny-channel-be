@@ -2,6 +2,9 @@ package dev.syntax.domain.investment.client;
 
 import dev.syntax.domain.investment.dto.core.CoreInvestTradeOrderReq;
 import dev.syntax.domain.investment.dto.res.*;
+import java.util.List;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -16,7 +19,9 @@ public class CoreInvestmentClient {
     private final RestTemplate coreRestTemplate;
     private final CoreApiProperties properties;
 
-    private static final String STOCKS_URL = "/core/investments/stocks";
+    private static final String STOCKS_BUY_URL = "/core/investments/stocks/buy";
+    private static final String STOCKS_SELL_URL = "/core/investments/stocks/sell";
+    private static final String STOCK_DETAIL_URL = "/core/investments/stocks/detail/";
     private static final String INVEST_ACCOUNT_PORTFOLIO_URL = "/core/investments/account";
     private static final String INVESTMENT_ACCOUNT_URL = "/core/banking/account/investment";
     private static final String DASHBOARD_URL = "/core/investments/dashboard/";
@@ -26,16 +31,24 @@ public class CoreInvestmentClient {
     private static final String CHECK_ACCOUNT_URL = "/core/banking/account/check?userId=";
 
 
-    public StocksRes getStocks() {
+    public StocksRes getStocksForBuy() {
         return coreRestTemplate.getForObject(
-                properties.getBaseUrl() + STOCKS_URL,
+                properties.getBaseUrl() + STOCKS_BUY_URL,
                 StocksRes.class
         );
     }
 
-    public StocksRes getStock(String code) {
-        String url = properties.getBaseUrl() + STOCKS_URL + "/" + code;
-        return coreRestTemplate.getForObject(url, StocksRes.class);
+    public StocksRes getStocksForSell() {
+        return coreRestTemplate.getForObject(
+                properties.getBaseUrl() + STOCKS_SELL_URL,
+                StocksRes.class
+        );
+    }
+
+    public StockDetailRes getStockDetail(String code) {
+        String url = properties.getBaseUrl() + STOCK_DETAIL_URL + code;
+
+        return coreRestTemplate.getForObject(url, StockDetailRes.class);
     }
 
     public InvestAccountPortfolioRes getInvestAccount(String cano) {
@@ -60,6 +73,8 @@ public class CoreInvestmentClient {
                 InvestDashboardRes.class
         );
     }
+
+
 
     public InvestTradeOrderRes tradeOrderBuy(CoreInvestTradeOrderReq buyReq) {
         return coreRestTemplate.postForObject(
@@ -90,6 +105,18 @@ public class CoreInvestmentClient {
                 url,
                 PortfolioRes.class
         );
+    }
+
+    public List<PortfolioDateRes> getAvailableDates(String cano) {
+        String url = properties.getBaseUrl()
+                + "/core/investments/portfolio/dates?cano=" + cano;
+
+        return coreRestTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<PortfolioDateRes>>() {}
+        ).getBody();
     }
 
     public boolean checkAccount(Long userId) {
