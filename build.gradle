@@ -46,6 +46,12 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+// SonarQube task가 Jacoco 리포트 이후 실행되도록 의존성 설정
+tasks.named('sonarqube') {
+    dependsOn tasks.named('jacocoTestReport')
 }
 
 sonarqube {
@@ -61,10 +67,12 @@ sonarqube {
         property "sonar.exclusions", "**/build/**"
         property "sonar.java.binaries", "build/classes/java/main"
 
-        // (선택) 테스트 리포트/커버리지 쓰는 경우
-        // property "sonar.junit.reportPaths", "build/test-results/test"
-        // property "sonar.java.coveragePlugin", "jacoco"
-        // property "sonar.jacoco.reportPaths", "build/jacoco/test.exec"
+        // 커버리지 리포트 지정
+        property "sonar.java.coveragePlugin", "jacoco"
+
+        // Windows에서도 문제 없는 슬래시 사용, 절대경로
+        property "sonar.coverage.jacoco.xmlReportPaths",
+                "C:/woori_workspace/final_project/TeenyFinny-channel-be/build/reports/jacoco/test/jacocoTestReport.xml"
     }
 }
 
@@ -73,6 +81,7 @@ jacoco {
 }
 
 jacocoTestReport {
+    dependsOn tasks.named('test') // 테스트 후 보고서 생성
     reports {
         xml.required.set(true)
         csv.required.set(false)
@@ -83,47 +92,15 @@ jacocoTestReport {
 jacocoTestCoverageVerification {
     violationRules {
         rule {
-            // 'element'가 없으면 프로젝트의 전체 파일을 합친 값을 기준으로 한다.
-            limit {
-                // 'counter'를 지정하지 않으면 default는 'INSTRUCTION'
-                // 'value'를 지정하지 않으면 default는 'COVEREDRATIO'
-                minimum = 0.30
-            }
+            limit { minimum = 0.30 }
         }
-
         rule {
-            // 룰을 간단히 켜고 끌 수 있다.
             enabled = true
-
-            // 룰을 체크할 단위는 클래스 단위
             element = 'CLASS'
-
-            // 브랜치 커버리지를 최소한 50% 만족시켜야 한다.
-            limit {
-                counter = 'BRANCH'
-                value = 'COVEREDRATIO'
-                minimum = 0.50
-            }
-
-            // 라인 커버리지를 최소한 50% 만족시켜야 한다.
-            limit {
-                counter = 'LINE'
-                value = 'COVEREDRATIO'
-                minimum = 0.50
-            }
-
-            // 빈 줄을 제외한 코드의 라인수를 최대 300라인으로 제한한다.
-            limit {
-                counter = 'LINE'
-                value = 'TOTALCOUNT'
-                maximum = 300
-//              maximum = 8
-            }
-
-            // 커버리지 체크를 제외할 클래스들
-            excludes = [
-                    '*.test.*',
-            ]
+            limit { counter = 'BRANCH'; value = 'COVEREDRATIO'; minimum = 0.50 }
+            limit { counter = 'LINE'; value = 'COVEREDRATIO'; minimum = 0.50 }
+            limit { counter = 'LINE'; value = 'TOTALCOUNT'; maximum = 300 }
+            excludes = ['*.test.*']
         }
     }
 }
