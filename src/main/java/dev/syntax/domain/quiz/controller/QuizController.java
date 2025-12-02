@@ -144,4 +144,22 @@ public class QuizController {
         return ApiResponseUtil.success(SuccessCode.OK, response);
     }
 
+    /**
+     * 자녀의 투자 계좌 생성 요청 알림 전송
+     *
+     * <p>자녀가 부모에게 투자 계좌 요청 알림을 보내도록 합니다.
+     * DTO 필요 없음, UserContext 기준으로 동작합니다.</p>
+     *
+     * @param context 인증된 사용자 컨텍스트 (자녀)
+     * @return 성공 여부
+     */
+    @PostMapping("/investment-account/request")
+    public ResponseEntity<BaseResponse<?>> sendInvestmentAccountRequest(
+            @CurrentUser UserContext context
+    ) {
+        quizService.sendInvestmentAccountRequest(context);
+        log.info("투자 계좌 요청 알림 전송: userId={}", context.getId());
+        return ApiResponseUtil.success(SuccessCode.OK, "투자 계좌 요청 알림이 부모에게 전달되었습니다.");
+    }
+
 }

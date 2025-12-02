@@ -1,10 +1,14 @@
 package dev.syntax.domain.quiz.service;
 
+import dev.syntax.domain.notification.service.NotificationService;
 import dev.syntax.domain.quiz.dto.QuizInfoRes;
 import dev.syntax.domain.quiz.dto.QuizProgressUpdateReq;
 import dev.syntax.domain.quiz.dto.RequestCompletedRes;
 import dev.syntax.domain.quiz.entity.QuizInfo;
 import dev.syntax.domain.quiz.repository.QuizInfoRepository;
+import dev.syntax.domain.user.entity.User;
+import dev.syntax.domain.user.enums.Role;
+import dev.syntax.domain.user.repository.UserRepository;
 import dev.syntax.global.response.error.ErrorBaseCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +27,8 @@ import lombok.RequiredArgsConstructor;
 public class QuizServiceImpl implements QuizService {
 
     private final QuizProgressRepository quizProgressRepository;
-
+    private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     /**
      * 인증된 사용자 기준으로 퀴즈 진행도를 조회합니다.
@@ -167,6 +172,47 @@ public class QuizServiceImpl implements QuizService {
         return new RequestCompletedRes(progress.isRequestCompleted());
     }
 
+    /**
+     * UserContext로부터 User 엔티티 조회
+     *
+     * @param userContext 현재 로그인한 사용자 컨텍스트
+     * @return User 엔티티
+     */
+    private User getUser(UserContext userContext) {
+        return userContext.getUser();
+    }
+
+    /**
+     * 부모 엔티티 조회
+     *
+     * @param userContext 로그인한 사용자 컨텍스트
+     * @return User 엔티티
+     */
+    private User getParent(UserContext userContext) {
+        return userRepository.findById(userContext.getParentId())
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_PARENT_NOT_FOUND));
+    }
+
+    @Override
+    @Transactional
+    public void sendInvestmentAccountRequest(UserContext userContext) {
+
+        User child = getUser(userContext);
+
+        // 자녀만 요청 가능하도록 최소 검증
+//        if (child.getRole() != Role.CHILD) {
+//            throw new BusinessException(ErrorBaseCode.);
+//        }
+
+        // 부모 찾기 (Goal과 동일)
+        User parent = getParent(userContext);
+
+        // 알림 전송
+        notificationService.sendInvestmentAccountRequestNotice(
+                parent,
+                child.getName()
+        );
+    }
 
 
 }

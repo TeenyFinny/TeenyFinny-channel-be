@@ -236,4 +236,23 @@ public class NotificationServiceImpl implements NotificationService {
 //
 //        notificationRepository.delete(notification);
 //    }
+
+    @Override
+    @Transactional
+    public void sendInvestmentAccountRequestNotice(User parent, String childName) {
+
+        String title = "투자 계좌 개설 요청";
+        String content = childName + "(이)가 투자 계좌 개설을 요청했습니다!";
+
+        Notification notification = Notification.builder()
+                .targetUser(parent)
+                .title(title)
+                .content(content)
+                .type(NotificationType.QUIZ)
+                .build();
+
+        notificationRepository.save(notification);
+        sseService.send(parent.getId(), NOTIFICATION, new NotificationOutput(notification));
+    }
+
 }

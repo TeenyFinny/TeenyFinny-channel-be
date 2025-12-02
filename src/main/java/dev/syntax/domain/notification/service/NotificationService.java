@@ -92,4 +92,6 @@ public interface NotificationService {
 	void sendGoalAccountCreatedNotice(User child);
 
 	void sendGoalCancelConfirm(User child);
+
+    void sendInvestmentAccountRequestNotice(User parent, String childName);
 }
