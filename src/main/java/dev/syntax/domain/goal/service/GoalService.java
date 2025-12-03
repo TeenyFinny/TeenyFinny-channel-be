@@ -104,6 +104,8 @@ public interface GoalService {
 
     Long getMyOngoingGoalId(UserContext userContext);
 
+    Long getMyPendingGoalId(UserContext userContext);
+
     void handleGoalDeposit(GoalDepositEventReq req);
 
     GoalInfoRes getGoalForAccountCreate(UserContext userContext, Long goalId);
