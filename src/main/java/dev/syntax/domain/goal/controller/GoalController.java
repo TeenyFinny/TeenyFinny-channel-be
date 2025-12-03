@@ -252,6 +252,22 @@ public class GoalController {
         return ApiResponseUtil.success(SuccessCode.OK, goalId);
     }
 
+    /**
+     * 내 승인 대기 중인 목표 ID 조회 API
+     *
+     * <p>현재 로그인한 사용자의 승인 대기 중인 목표 ID를 조회합니다.</p>
+     *
+     * @param userContext 현재 로그인한 사용자 정보
+     * @return 승인 대기 중인 목표 ID
+     */
+    @GetMapping("/pending")
+    public ResponseEntity<BaseResponse<?>> getMyPendingGoalId(
+            @CurrentUser UserContext userContext
+    ) {
+        Long goalId = goalService.getMyPendingGoalId(userContext);
+        return ApiResponseUtil.success(SuccessCode.OK, goalId);
+    }
+
 	@GetMapping("/account/create")
 	public ResponseEntity<BaseResponse<?>> getGoalForAccountCreate(
 			@CurrentUser UserContext userContext,

@@ -516,6 +516,15 @@ public class GoalServiceImpl implements GoalService {
     }
 
 	@Override
+    @Transactional(readOnly = true)
+    public Long getMyPendingGoalId(UserContext userContext) {
+        User user = getUser(userContext);
+        Goal goal = goalRepository.findByUserAndStatus(user, GoalStatus.PENDING)
+                .orElseThrow(() -> new BusinessException(ErrorBaseCode.GOAL_NOT_FOUND));
+        return goal.getId();
+    }
+
+	@Override
 	@Transactional
 	public void handleGoalDeposit(GoalDepositEventReq req) {
 
