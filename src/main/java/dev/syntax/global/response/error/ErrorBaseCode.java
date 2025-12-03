@@ -102,6 +102,7 @@ public enum ErrorBaseCode implements ErrorCode {
 	CARD_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 카드입니다."),
 	DUPLICATE_REPORT(HttpStatus.CONFLICT, "해당 월의 리포트가 이미 존재합니다."),
 	AUTO_TRANSFER_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 자동이체가 설정되어 있습니다."),
+	ACCOUNT_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 계좌입니다."),
 	/**
 	 * 410 GONE
 	 */
