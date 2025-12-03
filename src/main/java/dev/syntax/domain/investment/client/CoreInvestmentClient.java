@@ -1,15 +1,21 @@
 package dev.syntax.domain.investment.client;
 
-import dev.syntax.domain.investment.dto.core.CoreInvestTradeOrderReq;
-import dev.syntax.domain.investment.dto.res.*;
 import java.util.List;
+
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import dev.syntax.domain.account.dto.core.CoreInvestmentAccountRes;
-import dev.syntax.domain.investment.dto.req.InvestTradeOrderReq;
+import dev.syntax.domain.investment.dto.core.CoreInvestTradeOrderReq;
+import dev.syntax.domain.investment.dto.res.InvestAccountPortfolioRes;
+import dev.syntax.domain.investment.dto.res.InvestDashboardRes;
+import dev.syntax.domain.investment.dto.res.InvestTradeOrderRes;
+import dev.syntax.domain.investment.dto.res.PortfolioDateRes;
+import dev.syntax.domain.investment.dto.res.PortfolioRes;
+import dev.syntax.domain.investment.dto.res.StockDetailRes;
+import dev.syntax.domain.investment.dto.res.StocksRes;
 import dev.syntax.global.core.CoreApiProperties;
 import lombok.RequiredArgsConstructor;
 

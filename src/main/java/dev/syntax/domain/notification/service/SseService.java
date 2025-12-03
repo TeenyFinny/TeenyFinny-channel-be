@@ -1,15 +1,15 @@
 package dev.syntax.domain.notification.service;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
 import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorBaseCode;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * SSE(Server-Sent Events)를 통해 사용자에게 실시간 알림을 전송하는 서비스 클래스입니다.
@@ -66,7 +66,12 @@ public class SseService {
 		});
 
 		emitter.onError(e -> {
-			log.error("SSE 연결 중 오류가 발생했습니다. userId={}", userId, e);
+			if (e instanceof AsyncRequestNotUsableException
+					|| e.getCause() instanceof IOException) {
+				log.info("SSE 연결 종료(userId={}): {}", userId, e.getMessage());
+			} else {
+				log.error("SSE emitter 에러 발생(userId={})", userId, e);
+			}
 			emitters.remove(userId);
 		});
 
