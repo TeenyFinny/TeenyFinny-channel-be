@@ -205,38 +205,38 @@ class AccountHistoryServiceImplTest {
     // ----------------------------------------------------------------------------------
     // 2. 예외 처리 테스트: 계좌를 찾을 수 없는 경우
     // ----------------------------------------------------------------------------------
-//
-//    @Test
-//    @DisplayName("TC-HISTORY-001_Exception: 용돈 계좌를 찾을 수 없는 경우 NOT_FOUND_ENTITY 발생")
-//    void getHistory_AccountNotFound_ThrowsException() {
-//        // GIVEN
-//        when(accountRepository.findByUserIdAndType(CHILD_USER_ID, AccountType.ALLOWANCE))
-//                .thenReturn(Optional.empty()); // 계좌 없음 Mocking
-//
-//        // WHEN & THEN
-//        BusinessException thrown = assertThrows(BusinessException.class, () -> {
-//            accountHistoryService.getHistory(CHILD_USER_ID, historyReq, childContext);
-//        });
-//
-//        assertEquals(ErrorBaseCode.NOT_FOUND_ENTITY, thrown.getBaseCode());
-//    }
-//
-//    // ----------------------------------------------------------------------------------
-//    // 3. 예외 처리 테스트: 다른 사람의 계좌를 조회 시도 (인가 실패)
-//    // ----------------------------------------------------------------------------------
-//
-//    @Test
-//    @DisplayName("TC-HISTORY-001_Exception: 자녀가 다른 자녀의 계좌 조회 시도 시 UNAUTHORIZED 발생")
-//    void getHistory_ChildAccessingOtherUserAccount_ThrowsException() {
-//        // GIVEN
-//        Long OTHER_CHILD_ID = 200L; // 다른 사용자의 ID
-//
-//        // WHEN & THEN
-//        BusinessException thrown = assertThrows(BusinessException.class, () -> {
-//            // childContext(ID: 100L)로 OTHER_CHILD_ID(200L)의 계좌 조회 시도
-//            accountHistoryService.getHistory(OTHER_CHILD_ID, historyReq, childContext);
-//        });
-//
-//        assertEquals(ErrorBaseCode.UNAUTHORIZED, thrown.getBaseCode());
-//    }
+
+    @Test
+    @DisplayName("TC-HISTORY-001_Exception: 용돈 계좌를 찾을 수 없는 경우 NOT_FOUND_ENTITY 발생")
+    void getHistory_AccountNotFound_ThrowsException() {
+        // GIVEN
+        when(accountRepository.findByUserIdAndType(CHILD_USER_ID, AccountType.ALLOWANCE))
+                .thenReturn(Optional.empty()); // 계좌 없음 Mocking
+
+        // WHEN & THEN
+        BusinessException thrown = assertThrows(BusinessException.class, () -> {
+            accountHistoryService.getHistory(CHILD_USER_ID, historyReq, childContext);
+        });
+
+        assertEquals(ErrorBaseCode.NOT_FOUND_ENTITY, thrown.getErrorCode());
+    }
+
+    // ----------------------------------------------------------------------------------
+    // 3. 예외 처리 테스트: 다른 사람의 계좌를 조회 시도 (인가 실패)
+    // ----------------------------------------------------------------------------------
+
+    @Test
+    @DisplayName("TC-HISTORY-001_Exception: 자녀가 다른 자녀의 계좌 조회 시도 시 UNAUTHORIZED 발생")
+    void getHistory_ChildAccessingOtherUserAccount_ThrowsException() {
+        // GIVEN
+        Long OTHER_CHILD_ID = 200L; // 다른 사용자의 ID
+
+        // WHEN & THEN
+        BusinessException thrown = assertThrows(BusinessException.class, () -> {
+            // childContext(ID: 100L)로 OTHER_CHILD_ID(200L)의 계좌 조회 시도
+            accountHistoryService.getHistory(OTHER_CHILD_ID, historyReq, childContext);
+        });
+
+        assertEquals(ErrorBaseCode.UNAUTHORIZED, thrown.getErrorCode());
+    }
 }
