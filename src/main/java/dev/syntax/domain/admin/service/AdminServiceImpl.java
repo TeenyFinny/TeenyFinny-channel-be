@@ -33,7 +33,7 @@ public class AdminServiceImpl implements AdminService {
 		int page,
 		int size
 	) {
-		log.info("[ADMIN] 자동이체 조회(page={}, size={})", page, size);
+		log.info("[ADMIN] 자동이체 조회(status={}, startDate={}, endDate={}, page={}, size={})", status, startDate, endDate, page, size);
 
 		PageResponse<CoreAutoTransferListRes> corePage =
 			coreAutoTransferAdminClient.getAutoTransferList(status, startDate, endDate, page, size);

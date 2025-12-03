@@ -48,6 +48,6 @@ public class CoreTransactionAdminClient {
 				new ParameterizedTypeReference<PageResponse<CoreFailedTransactionListRes>>() {}
 			);
 
-		return response.getBody();
+		return java.util.Objects.requireNonNull(response.getBody(), "[CORE ADMIN API] 자동이체 실패 목록 조회 Body가 null입니다.");
 	}
 }

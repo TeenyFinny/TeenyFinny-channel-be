@@ -60,7 +60,7 @@ public class CoreAutoTransferAdminClient {
 				new ParameterizedTypeReference<PageResponse<CoreAutoTransferListRes>>() {}
 			);
 
-		return response.getBody();
+		return java.util.Objects.requireNonNull(response.getBody(), "[CORE ADMIN API] 자동이체 목록 조회 Body가 null입니다.");
 	}
 
 	public void executeAutoTransfer(Long autoTransferId) {
