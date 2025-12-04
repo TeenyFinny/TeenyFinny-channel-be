@@ -53,7 +53,29 @@ class AccountBalanceServiceTest {
 
    @Mock
    private UserRepository userRepository;
-   
+
+       /**
+     * TC-ACCOUNT-003: 자녀 본인 계좌 잔액 조회 성공
+     *
+     * <p>테스트 시나리오:</p>
+     * <ul>
+     *     <li>부모가 특정 자녀의 계좌 요약 정보를 조회한다</li>
+     *     <li>부모-자녀 관계(UserRelationship) 검증</li>
+     *     <li>채널 DB(UserRepository)에서 해당 자녀가 존재하는지 확인</li>
+     *     <li>Core Banking API(getUserAccounts)를 호출하여 자녀의 모든 계좌 정보 조회</li>
+     *     <li>ALLOWANCE / INVEST / GOAL 잔액을 각각 계산</li>
+     *     <li>총 자산(total)을 계산하여 AccountSummaryRes 형태로 반환</li>
+     *     <li>ALLOWANCE 계좌와 매핑된 카드가 존재하는지(cardRepository.existsByAccountId) 확인 후 card.hasCard 설정</li>
+     *     <li>최종적으로 정상적인 요약 정보가 반환되어야 한다</li>
+     * </ul>
+     *
+     * <p>API 요구사항:</p>
+     * <ul>
+     *     <li><b>GET /account/summary</b></li>
+     *     <li>요청한 자녀(childId)의 계좌 요약(total, allowance, invest, goal, card 보유 여부)을 반환</li>
+     * </ul>
+     */
+
    @Test
    @DisplayName("계좌 요약 조회 성공 케이스")
    void getSummary_Success() {

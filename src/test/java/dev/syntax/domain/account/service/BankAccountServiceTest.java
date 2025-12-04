@@ -119,6 +119,20 @@ class BankAccountServiceTest {
         verify(accountRepository).save(any(Account.class));
     }
 
+        /**
+     * TC-ACCOUNT-002: 부모가 자녀 투자 계좌 생성 성공
+     *
+     * <p>테스트 시나리오:</p>
+     * <ul>
+     *     <li>부모가 특정 자녀의 투자 계좌 생성 요청</li>
+     *     <li>채널 DB에서 해당 자녀의 투자 계좌가 이미 존재하는지 확인 → 존재하지 않음</li>
+     *     <li>Core Investment API를 호출하여 투자 계좌를 생성</li>
+     *     <li>Core 응답에 계좌번호가 포함되어 있는지 검증</li>
+     *     <li>채널 DB(UserRepository)에서 자녀 정보를 조회</li>
+     *     <li>Account 엔티티를 생성하여 투자 계좌 정보를 채널 DB에 저장</li>
+     *     <li>정상 흐름일 경우 예외 없이 성공적으로 계좌 저장이 이루어져야 함</li>
+     * </ul>
+     */
 
     @Test
     @DisplayName("부모가 자녀 투자 계좌 생성 성공 시 계좌가 저장된다")
