@@ -197,6 +197,7 @@ create table if not exists summary_report
     primary key,
     created_at         datetime(6)    not null,
     month              int            not null,
+    year               int            not null,
     prev_total_expense decimal(12, 2) null,
     total_expense      decimal(12, 2) not null,
     user_id            bigint         not null,
