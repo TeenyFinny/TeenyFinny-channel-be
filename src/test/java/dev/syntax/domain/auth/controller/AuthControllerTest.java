@@ -1,6 +1,7 @@
 package dev.syntax.domain.auth.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
@@ -25,10 +26,13 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dev.syntax.domain.auth.dto.LoginReq;
+import dev.syntax.domain.auth.dto.OtpVerifyReq;
+import dev.syntax.domain.auth.dto.OtpVerifyRes;
 import dev.syntax.domain.auth.dto.SignupReq;
 import dev.syntax.domain.auth.service.LoginService;
 import dev.syntax.domain.auth.service.SignupService;
 import dev.syntax.domain.user.enums.Role;
+import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.exception.GlobalExceptionHandler;
 import dev.syntax.global.response.error.ErrorAuthCode;
@@ -189,6 +193,4 @@ class AuthControllerTest {
 		// 예외가 발생했더라도 메서드는 호출되어야 함
 		verify(loginService, times(1)).login(any(LoginReq.class));
 	}
-
-	
 }
