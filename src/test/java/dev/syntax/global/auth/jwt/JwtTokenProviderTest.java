@@ -116,7 +116,7 @@ class JwtTokenProviderTest {
 	 */
 	@Test
     @DisplayName("토큰 갱신 성공: 새로운 토큰이 발급되며, 내용과 유효성이 유지된다")
-    void 토큰_갱신_성공() {
+    void 토큰_갱신_성공() throws InterruptedException {
         // given: 기존 사용자 정보로 첫 번째 토큰 생성
         User user = User.builder()
                 .id(1L)
@@ -134,6 +134,8 @@ class JwtTokenProviderTest {
 
         // 첫 번째 JWT 토큰 생성
         String originalToken = provider.generateToken(authentication);
+
+		Thread.sleep(5000);
 
         // when: 기존 토큰에서 Authentication을 복원하고 새로운 토큰 생성 (토큰 갱신 시뮬레이션)
         var restoredAuth = provider.getAuthentication(originalToken);
