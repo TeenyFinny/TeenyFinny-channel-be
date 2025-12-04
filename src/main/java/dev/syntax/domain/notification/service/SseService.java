@@ -1,81 +1,49 @@
 package dev.syntax.domain.notification.service;
 
-import dev.syntax.global.exception.BusinessException;
-import dev.syntax.global.response.error.ErrorBaseCode;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
-/**
- * SSE(Server-Sent Events)를 통해 사용자에게 실시간 알림을 전송하는 서비스 클래스입니다.
- *
- * <p>사용자별로 {@link SseEmitter} 인스턴스를 생성 및 관리하며,
- * 서버에서 발생한 알림 이벤트를 개별 사용자 채널로 전송합니다.
- * Emitter는 사용자 ID를 key로 하여 {@link ConcurrentHashMap} 형태로 저장됩니다.</p>
- *
- * <h3>동작 개요</h3>
- * <ul>
- *   <li>클라이언트가 subscribe() 엔드포인트를 호출하면 SSE 연결 생성</li>
- *   <li>사용자 ID 기반으로 Emitter 저장 및 연결 종료 시 자동 제거</li>
- *   <li>send() 메서드를 통해 특정 사용자에게 이벤트 push</li>
- *   <li>503 방지를 위해 초기 연결 시 더미 이벤트("connect")를 전송</li>
- * </ul>
- *
- * <h3>동시성 처리</h3>
- * <p>{@code ConcurrentHashMap}을 사용하여 여러 사용자의 이벤트 구독 및 송신이
- * 동시에 발생해도 thread-safe를 보장합니다.</p>
- */
+import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import lombok.extern.slf4j.Slf4j;
+
 @Service
 @Slf4j
 public class SseService {
 
-	private static final long DEFAULT_TIMEOUT = 60L * 60 * 1000; // 60분
-
-	private final Map<Long, SseEmitter> emitters = new ConcurrentHashMap<>();
+	// 너무 길면 커넥션 누적 → 30분로 제한
+	private static final long TIMEOUT = 30 * 60 * 1000L; // 30분
 
 	/**
-	 * 사용자의 SSE 구독을 생성하고 Emitter를 반환합니다.
-	 *
-	 * <p>Emitter가 생성되면 사용자 ID 기준으로 저장되며,
-	 * completion / timeout / error 이벤트 발생 시 자동으로 제거됩니다.
-	 * 또한 SSE 연결 유지 및 Chrome의 503 오류 방지를 위해
-	 * "connect" 라는 이름의 초기 더미 이벤트를 즉시 전송합니다.</p>
-	 *
-	 * @param userId SSE 알림을 받을 사용자 ID
-	 * @return 사용자와의 연결을 유지하는 {@link SseEmitter}
-	 * @throws BusinessException 초기 더미 이벤트 전송 실패 시 발생
+	 * 한 유저가 여러 탭을 열 수 있으므로
+	 * emitter를 1개가 아닌 "리스트"로 관리한다.
+	 * (기존 단일 Map<Long, SseEmitter> 구조는 누수 발생)
+	 */
+	private final Map<Long, List<SseEmitter>> emitters = new ConcurrentHashMap<>();
+
+	/**
+	 * SSE 구독 처리
 	 */
 	public SseEmitter subscribe(Long userId) {
-		SseEmitter emitter = new SseEmitter(DEFAULT_TIMEOUT);
-		emitters.put(userId, emitter);
 
-		// emitter 제거 콜백
-		emitter.onCompletion(() -> {
-			log.info("SSE 연결이 정상적으로 종료되었습니다. userId={}", userId);
-			emitters.remove(userId);
-		});
+		// timeout 설정 필수 (무한 연결 금지)
+		SseEmitter emitter = new SseEmitter(TIMEOUT);
 
-		emitter.onTimeout(() -> {
-			log.info("SSE 연결이 타임아웃되었습니다. userId={}", userId);
-			emitters.remove(userId);
-		});
+		// 같은 유저가 여러 번 접속해도 emitter가 덮어써지지 않도록 리스트로 저장
+		emitters.computeIfAbsent(userId, k -> new CopyOnWriteArrayList<>())
+			.add(emitter);
 
-		emitter.onError(e -> {
-			if (e instanceof AsyncRequestNotUsableException
-					|| e.getCause() instanceof IOException) {
-				log.info("SSE 연결 종료(userId={}): {}", userId, e.getMessage());
-			} else {
-				log.error("SSE emitter 에러 발생(userId={})", userId, e);
-			}
-			emitters.remove(userId);
-		});
+		// 연결 종료 시 emitter 정리 (메모리/소켓 누수 방지)
+		emitter.onCompletion(() -> removeEmitter(userId, emitter));
+		emitter.onTimeout(() -> removeEmitter(userId, emitter));
+		emitter.onError(e -> removeEmitter(userId, emitter));
 
-
+		// chrome 503 방지용 더미 connect 이벤트 전송
 		try {
 			emitter.send(
 				SseEmitter.event()
@@ -83,40 +51,47 @@ public class SseService {
 					.data("connected")
 			);
 		} catch (IOException ex) {
-			log.error("초기 SSE 연결 이벤트 전송 실패: userId={}", userId, ex);
-			throw new BusinessException(ErrorBaseCode.SSE_CONNECT_FAIL);
+			removeEmitter(userId, emitter);
 		}
 
 		return emitter;
 	}
 
 	/**
-	 * 특정 사용자에게 SSE 이벤트를 전송합니다.
-	 *
-	 * <p>연결이 유지 중인 사용자에게만 이벤트가 전송됩니다.
-	 * 전송 과정에서 IOException이 발생하면 emitter를 제거하고
-	 * 로그를 남깁니다.</p>
-	 *
-	 * @param userId 이벤트를 전달할 사용자 ID
-	 * @param name   이벤트 이름(event: {name})
-	 * @param data   전송할 데이터(payload)
+	 * emitter 제거 로직
+	 * (여기 빠지면 CLOSE_WAIT 누적)
+	 */
+	private void removeEmitter(Long userId, SseEmitter emitter) {
+		List<SseEmitter> list = emitters.get(userId);
+		if (list != null) {
+			list.remove(emitter);
+		}
+	}
+
+	/**
+	 * 특정 사용자에게 SSE 이벤트 push
 	 */
 	public void send(Long userId, String name, Object data) {
-		SseEmitter emitter = emitters.get(userId);
-		if (emitter == null) {
-			log.debug("활성화된 SSE Emitter가 없음: userId={}", userId);
-			return;
+
+		List<SseEmitter> list = emitters.get(userId);
+		if (list == null) return;
+
+		// 전송 실패한 emitter는 모아두었다가 한꺼번에 제거
+		List<SseEmitter> deadEmitters = new ArrayList<>();
+
+		for (SseEmitter emitter : list) {
+			try {
+				emitter.send(
+					SseEmitter.event()
+						.name(name)
+						.data(data)
+				);
+			} catch (IOException e) {
+				// 소켓 끊긴 emitter → 반드시 제거 (FIN_WAIT / CLOSE_WAIT 방지)
+				deadEmitters.add(emitter);
+			}
 		}
 
-		try {
-			emitter.send(
-				SseEmitter.event()
-					.name(name)
-					.data(data)
-			);
-		} catch (IOException ex) {
-			log.error("SSE 이벤트 전송 실패: userId={}", userId, ex);
-			emitters.remove(userId);
-		}
+		list.removeAll(deadEmitters);
 	}
 }
