@@ -15,8 +15,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.math.BigDecimal;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -38,8 +36,7 @@ class InvestTradeOrderServiceImplTest {
     private final String PRICE = "50000"; // InvestTradeOrderReq/CoreReq/Res의 price (String)
 
     private InvestTradeOrderReq mockReq;
-    private InvestTradeOrderRes mockRes; // Mock Buy/Sell 응답을 생성하기 위한 변수명 통일 (setUp에서 초기화만 진행)
-
+    
     @BeforeEach
     void setUp() {
         // 1. 요청 DTO Mock (InvestTradeOrderReq): 모든 테스트에서 공통으로 사용되므로 setUp에 유지
