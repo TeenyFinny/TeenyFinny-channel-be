@@ -28,7 +28,7 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
 
 	@Override
 	protected boolean shouldNotFilter(HttpServletRequest request) {
-		// /internal/** 경로는 이 필터를 건너뜁니다 (SecurityConfig에서 permitAll로 처리)
+		// 이 필터는 /channel/internal/** 로 시작하는 경로에만 적용됩니다.
 		return !request.getRequestURI().startsWith("/channel/internal");
 	}
 
