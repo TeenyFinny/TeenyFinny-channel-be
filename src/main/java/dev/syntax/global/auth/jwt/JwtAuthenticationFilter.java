@@ -39,6 +39,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
 		FilterChain filterChain) throws ServletException, IOException {
 
+		String path = request.getRequestURI();
+
+		// SSE 구독 요청은 JWT 실패 시 Security 계층으로 넘기지 않고 여기서 바로 처리
+		if (path.equals("/notifications/subscribe")) {
+			String token = resolveToken(request);
+			if (!StringUtils.hasText(token) || !jwtTokenProvider.validateToken(token)) {
+				response.setStatus(401);
+				response.getOutputStream().close();  // 스트림 종료
+				return; // Chain 더 내려가지 않음
+			}
+		}
+
 		String token = resolveToken(request);
 
 		if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
@@ -59,7 +71,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	@Override
 	protected boolean shouldNotFilter(HttpServletRequest request) {
 		String path = request.getRequestURI();
-		return path.startsWith("/channel/internal");
+		return path.startsWith("/channel/internal")
+			|| path.equals("/notifications/subscribe");
 	}
 
 	/**
