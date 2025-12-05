@@ -61,6 +61,7 @@ class AutoTransferServiceImplTest {
     // Mock Data
     private final Long PARENT_ID = 1L;
     private final Long CHILD_ID = 10L;
+	private final Long CORE_CHILD_ID = 11L;
     private final Long PARENT_DEPOSIT_ACCOUNT_ID = 100L;
     private final Long CHILD_ALLOWANCE_ACCOUNT_ID = 200L;
     private final Long CORE_ALLOWANCE_TRANSFER_ID = 900L;
@@ -117,7 +118,7 @@ class AutoTransferServiceImplTest {
         mockChild = mock(User.class);
         when(mockChild.getId()).thenReturn(CHILD_ID);
         when(mockChild.getRole()).thenReturn(Role.CHILD);
-
+		when(mockChild.getCoreUserId()).thenReturn(CORE_CHILD_ID);
         mockParent = mock(User.class);
         when(mockParent.getId()).thenReturn(PARENT_ID);
         when(mockParent.getRole()).thenReturn(Role.PARENT);
@@ -207,7 +208,7 @@ class AutoTransferServiceImplTest {
 
         CoreCreateAutoTransferReq capturedReq = coreReqCaptor.getValue();
         // DTO 필드명 변경 반영
-        assertEquals(CHILD_ID, capturedReq.userId());
+        assertEquals(CORE_CHILD_ID, capturedReq.userId());
         assertEquals(PARENT_DEPOSIT_ACCOUNT_ID, capturedReq.fromAccountId());
         assertEquals(CHILD_ALLOWANCE_ACCOUNT_ID, capturedReq.toAccountId());
         assertEquals(TOTAL_AMOUNT, capturedReq.amount()); // Ratio=0이므로 용돈 금액은 전체 금액과 동일
