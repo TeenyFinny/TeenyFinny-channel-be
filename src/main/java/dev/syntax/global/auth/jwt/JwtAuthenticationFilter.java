@@ -50,6 +50,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	}
 
 	/**
+	 * JWT 필터를 건너뛸 경로를 설정합니다.
+	 * /internal/** 경로는 Core 서버에서 API-KEY로 인증하는 경로이므로 JWT 검증을 건너뜁니다.
+	 *
+	 * @param request HttpServletRequest
+	 * @return 필터를 건너뛸지 여부
+	 */
+	@Override
+	protected boolean shouldNotFilter(HttpServletRequest request) {
+		String path = request.getRequestURI();
+		return path.startsWith("/channel/internal");
+	}
+
+	/**
 	 * 요청 헤더에서 Bearer 토큰을 추출합니다.
 	 *
 	 * @param request HttpServletRequest
