@@ -39,6 +39,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
 		FilterChain filterChain) throws ServletException, IOException {
 
+		String path = request.getRequestURI();
+
+		// SSE 구독 요청은 JWT 실패 시 Security 계층으로 넘기지 않고 여기서 바로 처리
+		if (path.equals("/notifications/subscribe")) {
+			String token = resolveToken(request);
+			if (!StringUtils.hasText(token) || !jwtTokenProvider.validateToken(token)) {
+				response.setStatus(401);
+				response.getOutputStream().close();  // 스트림 종료
+				return; // Chain 더 내려가지 않음
+			}
+		}
+
 		String token = resolveToken(request);
 
 		if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
@@ -47,6 +59,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		}
 
 		filterChain.doFilter(request, response);
+	}
+
+	/**
+	 * JWT 필터를 건너뛸 경로를 설정합니다.
+	 * /internal/** 경로는 Core 서버에서 API-KEY로 인증하는 경로이므로 JWT 검증을 건너뜁니다.
+	 *
+	 * @param request HttpServletRequest
+	 * @return 필터를 건너뛸지 여부
+	 */
+	@Override
+	protected boolean shouldNotFilter(HttpServletRequest request) {
+		String path = request.getRequestURI();
+		return path.startsWith("/channel/internal")
+			|| path.equals("/notifications/subscribe");
 	}
 
 	/**

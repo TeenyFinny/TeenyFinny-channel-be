@@ -55,10 +55,23 @@ class CardCreateServiceTest {
     @DisplayName("카드 생성 테스트")
     class CreateCard {
 
+        /**
+         * TC-ALLOWANCE-001 : 카드 생성 성공
+         *
+         * <p>테스트 시나리오:</p>
+         * <ul>
+         *   <li>부모가 자녀의 카드 생성 요청</li>
+         *   <li>해당 자녀가 부모 계정에 속해 있음</li>
+         *   <li>자녀의 용돈 계좌가 존재함</li>
+         *   <li>카드가 아직 존재하지 않음</li>
+         *   <li>카드가 정상 생성되고 저장되는지 검증</li>
+         * </ul>
+         */
+
         @Test
         @DisplayName("성공: 부모가 자녀의 카드를 생성한다")
         void success_ParentCreatesChildCard() {
-            // given
+            // given: 자녀 ID, 부모 ID, 계좌 정보, 생성할 카드 정보 준비
             Long childId = 10L;
             Long parentId = 1L;
             Account account = Account.builder().id(100L).build();
@@ -70,20 +83,22 @@ class CardCreateServiceTest {
                     .expiredAt("12/25")
                     .build();
 
+            // 부모 권한 및 자녀 관계 Mocking
             given(req.getChildId()).willReturn(childId);
             given(userContext.getId()).willReturn(parentId);
             given(userContext.getRole()).willReturn(Role.PARENT.name());
             given(userContext.getChildren()).willReturn(List.of(childId));
 
+            // 계좌 조회 및 카드 중복 확인 Mocking
             given(accountRepository.findByUserIdAndType(childId, AccountType.ALLOWANCE))
                     .willReturn(Optional.of(account));
             given(cardRepository.existsByAccountId(account.getId())).willReturn(false);
             given(cardFactory.create(account, req)).willReturn(card);
 
-            // when
+            // when: 카드 생성 서비스 호출 (POST /allowance/cards)
             CardInfoRes res = cardCreateService.createCard(req, userContext);
 
-            // then
+            // then: 생성된 카드 정보 검증 및 저장 호출 확인
             assertThat(res.getCardId()).isEqualTo(500L);
             assertThat(res.getCardNumber()).isEqualTo("1234 5678 1234 5678"); // Formatting check
             verify(cardRepository).save(card);

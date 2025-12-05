@@ -2,7 +2,6 @@ package dev.syntax.domain.account.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import java.math.BigDecimal;
 
 /**
  * 계좌 요약 정보 응답 DTO.

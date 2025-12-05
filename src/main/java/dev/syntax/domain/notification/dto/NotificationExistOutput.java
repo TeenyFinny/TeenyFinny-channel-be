@@ -1,6 +1,5 @@
 package dev.syntax.domain.notification.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter

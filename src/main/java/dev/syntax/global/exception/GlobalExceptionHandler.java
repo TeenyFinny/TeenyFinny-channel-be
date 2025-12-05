@@ -1,12 +1,5 @@
 package dev.syntax.global.exception;
 
-import dev.syntax.global.auth.dto.UserContext;
-import dev.syntax.global.response.ApiResponseUtil;
-import dev.syntax.global.response.BaseResponse;
-import dev.syntax.global.response.error.ErrorAuthCode;
-import dev.syntax.global.response.error.ErrorBaseCode;
-import dev.syntax.global.response.error.ErrorCode;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -17,6 +10,15 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
+
+import dev.syntax.global.auth.dto.UserContext;
+import dev.syntax.global.response.ApiResponseUtil;
+import dev.syntax.global.response.BaseResponse;
+import dev.syntax.global.response.error.ErrorAuthCode;
+import dev.syntax.global.response.error.ErrorBaseCode;
+import dev.syntax.global.response.error.ErrorCode;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 전역 예외 처리를 담당하는 핸들러입니다.
@@ -27,7 +29,6 @@ import org.springframework.web.client.ResourceAccessException;
  * - AuthenticationException: 인증 실패 시 발생하는 스프링 시큐리티 예외
  * - AccessDeniedException: 인가 실패(권한 부족) 예외
  * - Exception: 위에 포함되지 않는 모든 예외(서버 오류)
- *
  * 모든 예외는 ApiResponseUtil을 통해 BaseResponse 형태로 변환되며,
  * HTTP 상태 코드와 메시지는 ErrorCode 계열(enum)에서 정의한 값으로 매핑됩니다.
  * </p>
@@ -108,7 +109,7 @@ public class GlobalExceptionHandler {
 	}
 
 	/**
-	 * @Valid / @Validated 실패 시 발생
+	 * Valid / @Validated 실패 시 발생
 	 */
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<BaseResponse<?>> handleValidationExceptions(MethodArgumentNotValidException ex) {
@@ -145,6 +146,14 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<BaseResponse<?>> handleException(Exception e) {
 		log.error("[Exception] {}", e.getMessage(), e);
 		return ApiResponseUtil.failure(ErrorBaseCode.INTERNAL_SERVER_ERROR);
+	}
+
+	/**
+	 * SSE 예외처리
+	 */
+	@ExceptionHandler(AsyncRequestNotUsableException.class)
+	public void handleSseClosing(AsyncRequestNotUsableException e) {
+		log.debug("[SSE 종료] 클라이언트가 연결을 닫았습니다: {}", e.getMessage());
 	}
 
 	private Long getCurrentUserId() {

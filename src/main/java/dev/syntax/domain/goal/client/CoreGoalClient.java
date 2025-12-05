@@ -1,12 +1,16 @@
 package dev.syntax.domain.goal.client;
 
-import dev.syntax.domain.goal.dto.*;
-import dev.syntax.global.core.CoreApiProperties;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import dev.syntax.domain.goal.dto.CoreTransactionHistoryRes;
+import dev.syntax.domain.goal.dto.CoreUpdateAccountStatusReq;
+import dev.syntax.domain.goal.dto.CoreUpdateAccountStatusRes;
+import dev.syntax.domain.goal.dto.CoreUpdateAutoTransferDayRes;
+import dev.syntax.global.core.CoreApiProperties;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -14,9 +18,9 @@ public class CoreGoalClient {
     private final RestTemplate coreRestTemplate;
     private final CoreApiProperties properties;
 
-    private final String GET_HISTORY_URL = "/core/transaction/account/";
-    private final String UPDATE_ACCOUNT_STATUS_URL = "/core/banking/account/{accountNo}/status";
-    private final String UPDATE_PAY_DAY_URL = "/core/banking/auto-transfer/{autoTransferId}/pay-day";
+    private final static String GET_HISTORY_URL = "/core/transaction/account/";
+    private final static String UPDATE_ACCOUNT_STATUS_URL = "/core/banking/account/{accountNo}/status";
+    private final static String UPDATE_PAY_DAY_URL = "/core/banking/auto-transfer/{autoTransferId}/pay-day";
 
     public CoreTransactionHistoryRes getAccountHistory(String accountNo) {
         return coreRestTemplate.getForObject(

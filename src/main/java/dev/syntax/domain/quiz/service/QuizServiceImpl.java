@@ -1,24 +1,22 @@
 package dev.syntax.domain.quiz.service;
 
-import dev.syntax.domain.notification.service.NotificationService;
-import dev.syntax.domain.quiz.dto.QuizInfoRes;
-import dev.syntax.domain.quiz.dto.QuizProgressUpdateReq;
-import dev.syntax.domain.quiz.dto.RequestCompletedRes;
-import dev.syntax.domain.quiz.entity.QuizInfo;
-import dev.syntax.domain.quiz.repository.QuizInfoRepository;
-import dev.syntax.domain.user.entity.User;
-import dev.syntax.domain.user.enums.Role;
-import dev.syntax.domain.user.repository.UserRepository;
-import dev.syntax.global.response.error.ErrorBaseCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import dev.syntax.global.exception.BusinessException;
-
+import dev.syntax.domain.notification.service.NotificationService;
+import dev.syntax.domain.quiz.dto.QuizInfoRes;
 import dev.syntax.domain.quiz.dto.QuizProgressRes;
+import dev.syntax.domain.quiz.dto.QuizProgressUpdateReq;
+import dev.syntax.domain.quiz.dto.RequestCompletedRes;
+import dev.syntax.domain.quiz.entity.QuizInfo;
 import dev.syntax.domain.quiz.entity.QuizProgress;
+import dev.syntax.domain.quiz.repository.QuizInfoRepository;
 import dev.syntax.domain.quiz.repository.QuizProgressRepository;
+import dev.syntax.domain.user.entity.User;
+import dev.syntax.domain.user.repository.UserRepository;
 import dev.syntax.global.auth.dto.UserContext;
+import dev.syntax.global.exception.BusinessException;
+import dev.syntax.global.response.error.ErrorBaseCode;
 import lombok.RequiredArgsConstructor;
 
 @Service

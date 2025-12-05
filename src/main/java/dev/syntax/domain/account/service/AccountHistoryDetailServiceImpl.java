@@ -1,15 +1,15 @@
 package dev.syntax.domain.account.service;
 
+import org.springframework.stereotype.Service;
+
 import dev.syntax.domain.account.client.CoreAccountClient;
 import dev.syntax.domain.account.dto.AccountHistoryDetailRes;
 import dev.syntax.domain.account.dto.core.CoreTransactionDetailItemRes;
-import dev.syntax.domain.account.repository.AccountRepository;
 import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorBaseCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
 /**
  * <h2>거래 단일 상세 조회 서비스 구현체</h2>
@@ -39,7 +39,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AccountHistoryDetailServiceImpl implements AccountHistoryDetailService {
 
-    private final AccountRepository accountRepository;
     private final CoreAccountClient coreAccountClient;
 
     /**

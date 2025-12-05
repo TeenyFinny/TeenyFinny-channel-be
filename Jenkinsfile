@@ -29,7 +29,7 @@ pipeline {
 set -euxo pipefail
 chmod +x ./gradlew
 
-./gradlew clean build
+./gradlew clean test jacocoTestReport build
                 '''
                 echo '빌드가 완료되었습니다.'
             }

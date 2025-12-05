@@ -1,6 +1,23 @@
 package dev.syntax.domain.auth.service;
 
-import dev.syntax.domain.auth.dto.*;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import dev.syntax.domain.auth.dto.EmailValidationReq;
+import dev.syntax.domain.auth.dto.FindEmailReq;
+import dev.syntax.domain.auth.dto.FindEmailRes;
+import dev.syntax.domain.auth.dto.IdentityVerifyReq;
+import dev.syntax.domain.auth.dto.IdentityVerifyRes;
+import dev.syntax.domain.auth.dto.PasswordVerifyReq;
+import dev.syntax.domain.auth.dto.PasswordVerifyRes;
+import dev.syntax.domain.auth.dto.RefreshTokenRes;
+import dev.syntax.domain.auth.dto.ResetPasswordReq;
+import dev.syntax.domain.auth.dto.SimplePasswordVerifyReq;
+import dev.syntax.domain.auth.dto.UpdatePasswordReq;
+import dev.syntax.domain.auth.dto.UpdatePushReq;
 import dev.syntax.domain.user.entity.User;
 import dev.syntax.domain.user.repository.UserRepository;
 import dev.syntax.global.auth.dto.UserContext;
@@ -11,11 +28,6 @@ import dev.syntax.global.response.error.ErrorAuthCode;
 import dev.syntax.global.response.error.ErrorBaseCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -200,7 +212,6 @@ public class AuthServiceImpl implements AuthService {
 
 		// 현재는 로그만 남기고, 추후 이메일 서비스 연동 필요
 		log.info("[비밀번호 재설정 링크 발송] userId: {}, email: {}", user.getId(), user.getEmail());
-		// 예시: emailService.sendPasswordResetLink(user.getEmail(), resetToken);
 	}
 
 	/**

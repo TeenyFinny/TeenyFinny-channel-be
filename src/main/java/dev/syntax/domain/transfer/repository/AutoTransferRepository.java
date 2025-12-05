@@ -1,13 +1,11 @@
 package dev.syntax.domain.transfer.repository;
 
-import dev.syntax.domain.account.entity.Account;
-import dev.syntax.domain.transfer.entity.AutoTransfer;
-import dev.syntax.domain.transfer.enums.AutoTransferType;
-
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import dev.syntax.domain.transfer.entity.AutoTransfer;
+import dev.syntax.domain.transfer.enums.AutoTransferType;
 
 /**
  * 자동이체 레포지토리.

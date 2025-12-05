@@ -18,7 +18,8 @@ public class GoalInternalController {
      * Core 서버에서 목표 계좌 입금 발생 시 호출하는 내부 전용 엔드포인트
      */
     @PostMapping("/deposit")
-    public void onGoalDeposit(@RequestBody GoalDepositEventReq req) {
+    public void onGoalDeposit(
+            @RequestBody GoalDepositEventReq req) {
         log.info("[Core→Channel] 목표 계좌 입금 이벤트 수신: accountNo={}, balanceAfter={}",
                 req.getAccountNo(), req.getBalanceAfter());
 

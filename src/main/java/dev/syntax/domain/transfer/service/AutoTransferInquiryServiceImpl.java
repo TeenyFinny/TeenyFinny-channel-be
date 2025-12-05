@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import dev.syntax.domain.transfer.dto.AutoTransferRes;
-import dev.syntax.domain.transfer.entity.AutoTransfer;
 import dev.syntax.domain.transfer.enums.AutoTransferType;
 import dev.syntax.domain.transfer.repository.AutoTransferRepository;
 import dev.syntax.domain.user.enums.Role;
