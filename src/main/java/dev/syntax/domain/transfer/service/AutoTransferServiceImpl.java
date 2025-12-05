@@ -18,7 +18,6 @@ import dev.syntax.domain.user.repository.UserRepository;
 import dev.syntax.global.auth.dto.UserContext;
 import dev.syntax.domain.transfer.enums.AutoTransferType;
 import dev.syntax.global.exception.BusinessException;
-import dev.syntax.global.response.error.ErrorAuthCode;
 import dev.syntax.global.response.error.ErrorBaseCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -89,7 +88,7 @@ public class AutoTransferServiceImpl implements AutoTransferService {
         Long investTransferId = null;
         if (req.getRatio() > 0) {
             try {
-                CoreCreateAutoTransferReq investReq = createCoreReq(childId, parentAccount.getId(),
+                CoreCreateAutoTransferReq investReq = createCoreReq(child.getCoreUserId(), parentAccount.getId(),
                         investAccount.getId(),
                         investAmount, req.getTransferDate());
                 CoreCreateAutoTransferRes coreInvestRes = coreAutoTransferClient.createAutoTransfer(investReq);
@@ -144,6 +143,8 @@ public class AutoTransferServiceImpl implements AutoTransferService {
 
         validateRatio(req.getRatio(), investAccount);
 
+		User child = userRepository.getReferenceById(childId);
+
         BigDecimal[] amounts = AutoTransferUtils.calculateAmounts(req.getTotalAmount(), req.getRatio());
         BigDecimal allowanceAmount = amounts[0];
         BigDecimal investAmount = amounts[1];
@@ -175,7 +176,7 @@ public class AutoTransferServiceImpl implements AutoTransferService {
             } else if (req.getRatio() > 0) {
                 // 신규 투자 자동이체 생성
                 CoreCreateAutoTransferReq newInvestReq = createCoreReq(
-                        childId, parentAccount.getId(), investAccount.getId(), investAmount, req.getTransferDate());
+					child.getCoreUserId(), parentAccount.getId(), investAccount.getId(), investAmount, req.getTransferDate());
                 CoreCreateAutoTransferRes investRes = coreAutoTransferClient.createAutoTransfer(newInvestReq);
 
                 if (investRes == null || investRes.autoTransferId() == null) {
