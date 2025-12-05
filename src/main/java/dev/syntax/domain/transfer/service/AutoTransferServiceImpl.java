@@ -78,7 +78,7 @@ public class AutoTransferServiceImpl implements AutoTransferService {
         BigDecimal allowanceAmount = amounts[0];
         BigDecimal investAmount = amounts[1];
 
-        CoreCreateAutoTransferReq allowanceReq = createCoreReq(childId, parentAccount.getId(), allowanceAccount.getId(),
+        CoreCreateAutoTransferReq allowanceReq = createCoreReq(child.getCoreUserId(), parentAccount.getId(), allowanceAccount.getId(),
                 allowanceAmount, req.getTransferDate());
         CoreCreateAutoTransferRes coreAllowanceRes = coreAutoTransferClient.createAutoTransfer(allowanceReq);
 
