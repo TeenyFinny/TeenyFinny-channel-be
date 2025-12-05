@@ -97,7 +97,22 @@ public class SecurityConfig {
 
 			// 인증 및 인가 관련 예외 처리기 등록
 			.exceptionHandling(exceptionHandling -> exceptionHandling
-				.authenticationEntryPoint(jwtAuthenticationEntryPoint)
+				.authenticationEntryPoint((request, response, authException) -> {
+					String uri = request.getRequestURI();
+
+					// SSE 구독 엔드포인트는 별도 처리
+					if (uri != null && uri.equals("/notifications/subscribe")) {
+						// 여기서는 기존 EntryPoint를 타지 않고, 스트림만 정리하고 끝냄
+						response.setStatus(401);
+						try {
+							response.getOutputStream().close();
+						} catch (Exception ignored) {}
+						return; // jwtAuthenticationEntryPoint.commence(...) 호출하지 않음
+					}
+
+					// 그 외 모든 요청은 기존 EntryPoint 로 처리
+					jwtAuthenticationEntryPoint.commence(request, response, authException);
+				})
 				.accessDeniedHandler(jwtAccessDeniedHandler)
 			)
 
@@ -109,6 +124,7 @@ public class SecurityConfig {
 			// 경로별 인증 여부 설정
 			.authorizeHttpRequests(authorize -> authorize
 				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+				.requestMatchers("/notifications/subscribe").permitAll()
 				.requestMatchers(
 					"/auth/login",
 					"/auth/signup",
@@ -120,7 +136,6 @@ public class SecurityConfig {
 					"/docs/**",
 					"/actuator/**").permitAll()
 				.requestMatchers("/internal/**").authenticated()
-				.requestMatchers("/notifications/subscribe").authenticated()
 				.anyRequest().authenticated()
 			)
 			// 필터 체인 순서:
