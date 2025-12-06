@@ -14,6 +14,7 @@ import dev.syntax.domain.user.entity.User;
 import dev.syntax.global.exception.BusinessException;
 import dev.syntax.global.response.error.ErrorBaseCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * NotificationServiceImpl
@@ -21,6 +22,7 @@ import lombok.RequiredArgsConstructor;
  * <p>알림 생성, 조회, 읽음 처리 등
  * 알림 관련 비즈니스 로직을 수행하는 구현체입니다.</p>
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
@@ -217,6 +219,36 @@ public class NotificationServiceImpl implements NotificationService {
 		notificationRepository.save(notification);
 		sseService.send(targetUser.getId(), NOTIFICATION, new NotificationOutput(notification));
 	}
+
+    /**
+     * 피드백 알림 전송 구현
+     * <p>
+     * 1. 알림 제목 및 내용 생성<br>
+     * 2. 알림 엔티티 저장 (DB)<br>
+     * 3. SSE를 통해 실시간 알림 전송
+     * </p>
+     */
+    @Override
+    @Transactional
+    public void sendFeedbackNotice(User child, int year, int month) {
+        log.info("[알림-피드백] 자녀에게 피드백 알림 전송 - childId: {}, year: {}, month: {}",
+            child.getId(), year, month);
+
+        String title = "새로운 피드백 도착!";
+        String content = String.format("%d년 %d월 소비리포트에\n부모님의 피드백이 등록되었어요!", year, month);
+
+        Notification notification = Notification.builder()
+                .targetUser(child)
+                .title(title)
+                .content(content)
+                .type(NotificationType.ALLOWANCE)
+                .build();
+
+        notificationRepository.save(notification);
+
+        // SSE 전송
+        sseService.send(child.getId(), NOTIFICATION, new NotificationOutput(notification));
+    }
 
     /**
      * 알림 삭제 (현재는 주석 처리)

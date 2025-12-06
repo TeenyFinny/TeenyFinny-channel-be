@@ -11,6 +11,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class ReportRes {
+    private Long reportId;
 
     /** 리포트 해당 월 (1~12) */
     private int month;
