@@ -73,12 +73,9 @@ public class FeedbackServiceImpl implements FeedbackService {
             throw new BusinessException(ErrorBaseCode.FEEDBACK_ALREADY_EXISTS);
         }
 
-        User parent = userRepository.findById(ctx.getId())
-                .orElseThrow(() -> new BusinessException(ErrorBaseCode.USER_NOT_FOUND));
-
         Feedback feedback = Feedback.builder()
                 .report(report)
-                .writer(parent)
+                .writer(ctx.getUser())
                 .message(req.message())
                 .build();
 

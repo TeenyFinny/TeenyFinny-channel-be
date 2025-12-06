@@ -6,6 +6,7 @@ import dev.syntax.domain.card.dto.CardCreateReq;
 import dev.syntax.domain.card.dto.CardInfoRes;
 import dev.syntax.domain.card.service.CardCreateService;
 import dev.syntax.domain.feedback.dto.FeedbackCreateReq;
+import dev.syntax.domain.feedback.dto.FeedbackRes;
 import dev.syntax.domain.feedback.service.FeedbackService;
 import dev.syntax.domain.report.dto.ReportRes;
 import dev.syntax.domain.report.service.ReportService;
@@ -113,8 +114,8 @@ public class AllowanceController {
             @AuthenticationPrincipal UserContext ctx,
             @RequestBody FeedbackCreateReq req) {
 
-        feedbackService.createFeedback(ctx, req);
-        return ApiResponseUtil.success(SuccessCode.CREATED);
+        FeedbackRes res = feedbackService.createFeedback(ctx, req);
+        return ApiResponseUtil.success(SuccessCode.CREATED, res);
     }
 
     /**
