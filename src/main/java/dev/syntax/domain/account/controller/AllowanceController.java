@@ -5,6 +5,8 @@ import dev.syntax.domain.account.service.BankAccountService;
 import dev.syntax.domain.card.dto.CardCreateReq;
 import dev.syntax.domain.card.dto.CardInfoRes;
 import dev.syntax.domain.card.service.CardCreateService;
+import dev.syntax.domain.feedback.dto.FeedbackCreateReq;
+import dev.syntax.domain.feedback.service.FeedbackService;
 import dev.syntax.domain.report.dto.ReportRes;
 import dev.syntax.domain.report.service.ReportService;
 import dev.syntax.global.auth.annotation.CurrentUser;
@@ -36,6 +38,7 @@ public class AllowanceController {
 	private final BankAccountService bankAccountService;
 	private final ReportService reportService;
 	private final CardCreateService cardCreateService;
+    private final FeedbackService feedbackService;
 
 	/**
 	 * 자녀의 용돈 계좌를 생성합니다.
@@ -93,5 +96,44 @@ public class AllowanceController {
         CardInfoRes res = cardCreateService.createCard(req, ctx);
 
         return ApiResponseUtil.success(SuccessCode.CREATED, res);
+    }
+
+    /**
+     * 리포트 피드백 생성
+     * <p>
+     * 부모가 자녀의 월간 리포트에 피드백(코멘트)을 작성합니다.
+     * </p>
+     *
+     * @param ctx 로그인한 사용자 컨텍스트 (부모 권한 필요)
+     * @param req 피드백 생성 요청 정보 (리포트 ID, 메시지)
+     * @return 성공 응답 (201 Created)
+     */
+    @PostMapping("/feedback")
+    public ResponseEntity<BaseResponse<?>> createFeedback(
+            @AuthenticationPrincipal UserContext ctx,
+            @RequestBody FeedbackCreateReq req) {
+
+        feedbackService.createFeedback(ctx, req);
+        return ApiResponseUtil.success(SuccessCode.CREATED);
+    }
+
+    /**
+     * 리포트 피드백 조회
+     * <p>
+     * 특정 리포트에 작성된 피드백을 조회합니다.
+     * 자녀(본인) 또는 부모(연결된 자녀)만 조회 가능합니다.
+     * </p>
+     *
+     * @param ctx      로그인한 사용자 컨텍스트
+     * @param reportId 조회할 리포트 ID
+     * @return 피드백 정보 (ID, 메시지)
+     */
+    @GetMapping("/feedback")
+    public ResponseEntity<BaseResponse<?>> getFeedback(
+        @AuthenticationPrincipal UserContext ctx,
+        @RequestParam("reportId") Long reportId
+    ) {
+        var result = feedbackService.getFeedback(ctx, reportId);
+        return ApiResponseUtil.success(SuccessCode.OK, result);
     }
 }

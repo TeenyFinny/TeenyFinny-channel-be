@@ -8,6 +8,7 @@ import dev.syntax.domain.account.dto.core.CoreTransactionItemRes;
 import dev.syntax.domain.account.entity.Account;
 import dev.syntax.domain.account.enums.AccountType;
 import dev.syntax.domain.account.repository.AccountRepository;
+import dev.syntax.domain.feedback.repository.FeedbackRepository;
 import dev.syntax.domain.report.dto.CategoryRes;
 import dev.syntax.domain.report.dto.CoreTransactionRes;
 import dev.syntax.domain.report.dto.ReportRes;
@@ -44,6 +45,7 @@ public class ReportServiceImpl implements ReportService {
     private final UserRepository userRepository;
     private final AccountRepository accountRepository;
     private final CoreAccountClient coreAccountClient;
+    private final FeedbackRepository feedbackRepository;
 
     @Override
     public ReportRes getMonthlyReport(Long userId, int year, int month, UserContext ctx) {
@@ -126,7 +128,9 @@ public class ReportServiceImpl implements ReportService {
             for (SummaryReport report : oldReports) {
                 // 1. DetailReport 삭제
                 detailReportRepository.deleteByReport(report);
-                // 2. SummaryReport 삭제
+                // 2. Feedback 삭제
+                feedbackRepository.deleteByReport(report);
+                // 3. SummaryReport 삭제
                 summaryReportRepository.delete(report);
             }
             
@@ -379,6 +383,7 @@ public class ReportServiceImpl implements ReportService {
         }
 
         return new ReportRes(
+                summary.getId(),
                 summary.getMonth(),
                 Utils.NumberFormattingService(summary.getTotalExpense()),
                 Utils.NumberFormattingService(diff),

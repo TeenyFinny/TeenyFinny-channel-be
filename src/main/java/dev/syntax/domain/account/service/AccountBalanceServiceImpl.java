@@ -61,7 +61,7 @@ public class AccountBalanceServiceImpl implements AccountBalanceService {
         List<CoreAccountItemRes> targetAccounts = extractTargetAccounts(coreAccounts, targetUser.getCoreUserId());
         
         if (targetAccounts == null) {
-            log.warn("Core API 응답에서 해당 자녀(coreUserId={})의 계좌 정보를 찾을 수 없습니다.", targetUser.getCoreUserId());
+            log.error("Core API 응답에서 해당 자녀(coreUserId={})의 계좌 정보를 찾을 수 없습니다.", targetUser.getCoreUserId());
             targetAccounts = List.of();
         }
 
