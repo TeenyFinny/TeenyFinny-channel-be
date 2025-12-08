@@ -94,4 +94,16 @@ public interface NotificationService {
 	void sendGoalCancelConfirm(User child);
 
     void sendInvestmentAccountRequestNotice(User parent, String childName);
+
+    /**
+     * 피드백 알림 전송
+     * <p>
+     * 부모가 리포트에 피드백을 남겼을 때 자녀에게 알림을 전송합니다.
+     * </p>
+     *
+     * @param child 알림을 받을 자녀
+     * @param year  리포트 연도
+     * @param month 리포트 월
+     */
+    void sendFeedbackNotice(User child, int year, int month);
 }

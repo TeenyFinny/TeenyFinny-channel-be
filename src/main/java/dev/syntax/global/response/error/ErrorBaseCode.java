@@ -57,6 +57,7 @@ public enum ErrorBaseCode implements ErrorCode {
 	INVALID_ACCOUNT_TYPE(HttpStatus.BAD_REQUEST, "입력값이 유효하지 않습니다."),
 	REPORT_NOT_AVAILABLE_YET(HttpStatus.BAD_REQUEST, "리포트는 전월까지만 조회할 수 있습니다."),
 	REPORT_OUT_OF_RANGE(HttpStatus.BAD_REQUEST, "최근 1년 이내의 리포트만 조회할 수 있습니다."),
+	FEEDBACK_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 존재하는 피드백입니다."),
 
 	/**
 	 * 401 UNAUTHORIZED - 리소스 접근 권한
