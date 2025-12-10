@@ -26,7 +26,6 @@ public class InvestDashboardController {
         @CurrentUser UserContext userContext
     ) {
         InvestDashboardRes response = dashboardService.getDashboard(userContext);
-        log.info("channel응답");
         return ApiResponseUtil.success(SuccessCode.OK, response);
     }
 }

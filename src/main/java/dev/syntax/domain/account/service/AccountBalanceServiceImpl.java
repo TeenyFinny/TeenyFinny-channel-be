@@ -5,15 +5,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 
 import dev.syntax.domain.account.client.CoreAccountClient;
 import dev.syntax.domain.account.dto.AccountBalanceRes;
 import dev.syntax.domain.account.dto.AccountSummaryRes;
 import dev.syntax.domain.account.dto.core.CoreAccountItemRes;
-import dev.syntax.domain.account.dto.core.CoreChildAccountInfoRes;
 import dev.syntax.domain.account.dto.core.CoreUserAccountListRes;
-import dev.syntax.domain.account.entity.Account;
 import dev.syntax.domain.account.enums.AccountType;
 import dev.syntax.domain.account.repository.AccountRepository;
 import dev.syntax.domain.card.repository.CardRepository;
@@ -62,7 +61,7 @@ public class AccountBalanceServiceImpl implements AccountBalanceService {
         List<CoreAccountItemRes> targetAccounts = extractTargetAccounts(coreAccounts, targetUser.getCoreUserId());
         
         if (targetAccounts == null) {
-            log.warn("Core API 응답에서 해당 자녀(coreUserId={})의 계좌 정보를 찾을 수 없습니다.", targetUser.getCoreUserId());
+            log.error("Core API 응답에서 해당 자녀(coreUserId={})의 계좌 정보를 찾을 수 없습니다.", targetUser.getCoreUserId());
             targetAccounts = List.of();
         }
 

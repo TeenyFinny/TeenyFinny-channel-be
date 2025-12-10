@@ -1,11 +1,18 @@
 package dev.syntax.domain.goal.controller;
 
-import dev.syntax.domain.goal.dto.*;
-import dev.syntax.domain.goal.entity.Goal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import dev.syntax.domain.goal.dto.GoalApproveReq;
 import dev.syntax.domain.goal.dto.GoalApproveRes;
 import dev.syntax.domain.goal.dto.GoalCreateReq;
@@ -13,6 +20,7 @@ import dev.syntax.domain.goal.dto.GoalCreateRes;
 import dev.syntax.domain.goal.dto.GoalDeleteRes;
 import dev.syntax.domain.goal.dto.GoalDetailRes;
 import dev.syntax.domain.goal.dto.GoalInfoRes;
+import dev.syntax.domain.goal.dto.GoalPendingRes;
 import dev.syntax.domain.goal.dto.GoalUpdateReq;
 import dev.syntax.domain.goal.dto.GoalUpdateRes;
 import dev.syntax.domain.goal.service.GoalService;
@@ -249,6 +257,22 @@ public class GoalController {
             @CurrentUser UserContext userContext
     ) {
         Long goalId = goalService.getMyOngoingGoalId(userContext);
+        return ApiResponseUtil.success(SuccessCode.OK, goalId);
+    }
+
+    /**
+     * 내 승인 대기 중인 목표 ID 조회 API
+     *
+     * <p>현재 로그인한 사용자의 승인 대기 중인 목표 ID를 조회합니다.</p>
+     *
+     * @param userContext 현재 로그인한 사용자 정보
+     * @return 승인 대기 중인 목표 ID
+     */
+    @GetMapping("/pending")
+    public ResponseEntity<BaseResponse<?>> getMyPendingGoalId(
+            @CurrentUser UserContext userContext
+    ) {
+        Long goalId = goalService.getMyPendingGoalId(userContext);
         return ApiResponseUtil.success(SuccessCode.OK, goalId);
     }
 

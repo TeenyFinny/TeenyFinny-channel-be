@@ -8,6 +8,7 @@ import dev.syntax.domain.account.dto.core.CoreTransactionItemRes;
 import dev.syntax.domain.account.entity.Account;
 import dev.syntax.domain.account.enums.AccountType;
 import dev.syntax.domain.account.repository.AccountRepository;
+import dev.syntax.domain.feedback.repository.FeedbackRepository;
 import dev.syntax.domain.report.dto.CategoryRes;
 import dev.syntax.domain.report.dto.CoreTransactionRes;
 import dev.syntax.domain.report.dto.ReportRes;
@@ -44,6 +45,7 @@ public class ReportServiceImpl implements ReportService {
     private final UserRepository userRepository;
     private final AccountRepository accountRepository;
     private final CoreAccountClient coreAccountClient;
+    private final FeedbackRepository feedbackRepository;
 
     @Override
     public ReportRes getMonthlyReport(Long userId, int year, int month, UserContext ctx) {
@@ -126,7 +128,9 @@ public class ReportServiceImpl implements ReportService {
             for (SummaryReport report : oldReports) {
                 // 1. DetailReport 삭제
                 detailReportRepository.deleteByReport(report);
-                // 2. SummaryReport 삭제
+                // 2. Feedback 삭제
+                feedbackRepository.deleteByReport(report);
+                // 3. SummaryReport 삭제
                 summaryReportRepository.delete(report);
             }
             
@@ -147,6 +151,9 @@ public class ReportServiceImpl implements ReportService {
 
         // 1. 권한 검증
         validateAccess(userId, ctx);
+
+        // 0. 요청 시점 검증: 미래 or 최근 1년 이전 데이터 요청 시 거부
+        validateReportTimeRange(year, month);
 
         // 2. 사용자 조회
         User user = userRepository.findById(userId)
@@ -280,6 +287,38 @@ public class ReportServiceImpl implements ReportService {
         return buildResponse(summary, details);
     }
 
+    /**
+     * 리포트 요청 년/월이 유효한지 검증
+     * - 미래 요청 ❌
+     * - 현재월 요청 ❌
+     * - 최근 1년 이전 요청 ❌
+     */
+    private void validateReportTimeRange(int year, int month) {
+
+        LocalDate now = LocalDate.now();
+        LocalDate nowMonth = now.withDayOfMonth(1);
+        LocalDate requested = LocalDate.of(year, month, 1);
+
+        // 1️⃣ 미래 조회 불가
+        if (requested.isAfter(nowMonth)) {
+            throw new BusinessException(ErrorBaseCode.REPORT_OUT_OF_RANGE);
+        }
+
+        // 2️⃣ 현재월 조회 불가
+        if (requested.isEqual(nowMonth)) {
+            throw new BusinessException(ErrorBaseCode.REPORT_NOT_AVAILABLE_YET);
+        }
+
+        // 3️⃣ 최근 1년 초과 요청 불가
+        LocalDate oneYearBefore = now.minusYears(1).withDayOfMonth(1);
+        if (requested.isBefore(oneYearBefore)) {
+            log.warn("[리포트 조회] 최근 1년 이외 요청: {}년 {}월 (허용: {} ~ {})",
+                    year, month, oneYearBefore, nowMonth.minusMonths(1));
+            throw new BusinessException(ErrorBaseCode.REPORT_OUT_OF_RANGE);
+        }
+    }
+
+
 
 
 
@@ -344,6 +383,7 @@ public class ReportServiceImpl implements ReportService {
         }
 
         return new ReportRes(
+                summary.getId(),
                 summary.getMonth(),
                 Utils.NumberFormattingService(summary.getTotalExpense()),
                 Utils.NumberFormattingService(diff),

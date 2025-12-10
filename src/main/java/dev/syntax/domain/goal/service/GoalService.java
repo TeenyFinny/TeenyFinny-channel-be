@@ -1,7 +1,15 @@
 package dev.syntax.domain.goal.service;
 
-import dev.syntax.domain.goal.dto.*;
-import dev.syntax.domain.goal.entity.Goal;
+import dev.syntax.domain.goal.dto.GoalApproveRes;
+import dev.syntax.domain.goal.dto.GoalCreateReq;
+import dev.syntax.domain.goal.dto.GoalCreateRes;
+import dev.syntax.domain.goal.dto.GoalDeleteRes;
+import dev.syntax.domain.goal.dto.GoalDepositEventReq;
+import dev.syntax.domain.goal.dto.GoalDetailRes;
+import dev.syntax.domain.goal.dto.GoalInfoRes;
+import dev.syntax.domain.goal.dto.GoalPendingRes;
+import dev.syntax.domain.goal.dto.GoalUpdateReq;
+import dev.syntax.domain.goal.dto.GoalUpdateRes;
 import dev.syntax.global.auth.dto.UserContext;
 
 /**
@@ -103,6 +111,8 @@ public interface GoalService {
     GoalPendingRes getPendingGoal(UserContext userContext, Long childId);
 
     Long getMyOngoingGoalId(UserContext userContext);
+
+    Long getMyPendingGoalId(UserContext userContext);
 
     void handleGoalDeposit(GoalDepositEventReq req);
 
