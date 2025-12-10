@@ -2,6 +2,15 @@
 
 TeenyFinny Channel Backend는 아이들과 청소년을 위한 금융 서비스 및 교육 플랫폼인 TeenyFinny의 **채널계(Channel System)** 역할을 담당하는 서버 애플리케이션입니다. 이 프로젝트는 사용자 인증, 계좌 관리, 금융 목표 설정, 투자, 그리고 코어 뱅킹 시스템(계정계)과의 연동 등을 처리합니다.
 
+## 👥 팀 소개
+
+| <img alt="profile" src ="https://github.com/yes2489.png" width ="100" height ="100" style="border-radius: 50%; object-fit: cover;"> | <img alt="profile" src ="https://github.com/JBL28.png" width ="100" height ="100" style="border-radius: 50%; object-fit: cover;"> | <img alt="profile" src ="https://github.com/mingQ28.png" width ="100" height ="100" style="border-radius: 50%; object-fit: cover;"> | <img alt="profile" src ="https://github.com/hyojeongbae.png" width ="100" height ="100" style="border-radius: 50%; object-fit: cover;"> | <img alt="profile" src ="https://github.com/yangyanghyunjung.png" width ="100" height ="100" style="border-radius: 50%; object-fit: cover;"> | <img alt="profile" src ="https://github.com/CHICHIT.png" width ="100" height ="100" style="border-radius: 50%; object-fit: cover;"> |
+| :---------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------: |
+|                                                             양은서 (PM)                                                             |                                                            이정복(PL)                                                             |                                                               박민서                                                                |                                                                 배효정                                                                  |                                                                    양현정                                                                    |                                                               이의섭                                                                |
+|                                                [yes2489](https://github.com/yes2489)                                                |                                                 [JBL28](https://github.com/JBL28)                                                 |                                                [mingQ28](https://github.com/mingQ28)                                                |                                              [hyojeongbae](https://github.com/hyojeongbae)                                              |                                           [yangyanghyunjung](https://github.com/yangyanghyunjung)                                            |                                                [CHICHIT](https://github.com/CHICHIT)                                                |
+
+---
+
 ## 🛠 기술 스택 (Tech Stack)
 
 - **Language**: Java 17
@@ -104,7 +113,3 @@ docker build -t teenyfinny-channel .
 
 Spring Boot Actuator와 Prometheus를 통해 메트릭을 수집합니다: `/actuator/prometheus`
 헬스 체크: `/actuator/health`
-
-## 📝 라이선스 (License)
-
-[라이선스 정보 입력]
